@@ -1,0 +1,13 @@
+name = "RoomSense.jl"
+uuid = "dd2ea650-580a-11e9-1e5b-f151053ab9fd"
+authors = ["dusty irwin <dusty.irwin@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
+FreeTypeAbstraction = "663a7486-cb36-511b-a19d-713bb74d65c9"
+ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+ImageSegmentation = "80713f31-8817-5129-9cf8-209ff8fb23e1"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+Interact = "c601a237-2ae4-5e1e-952c-7a85b0c7eef1"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
