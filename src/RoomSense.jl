@@ -4,7 +4,6 @@ using ImageMagick
 using Images
 using Blink
 using Interact
-using Random
 using Dates
 
 
@@ -17,5 +16,6 @@ body!(w, ui["html"]())
 
 # Blink tools
 opentools(w)
+closetools(w)
 
 # workspace

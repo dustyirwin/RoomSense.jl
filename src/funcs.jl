@@ -3,7 +3,7 @@ function get_random_color(seed)
     rand(RGB{N0f8})
 end
 
-function segment_img(img)
+function segment_image(img)
     try
         segments = ui["algorithm"][](img, ui["var1"][], ui["var2"])
     catch MethodError
@@ -13,20 +13,20 @@ function segment_img(img)
 end
 
 handle(w, "go") do args
-    if ui["img_filename"][] != ""
+    try
         img = load(ui["img_filename"][])
-        seg_img, segments = segment_image(img)
-        save(tmp_img_filename, seg_img)
-        yield()
-        @async body!(w, ui["html"](tmp_img_filename, segments))
+    catch
+        @js w alert("Please select a valid image file.")
     end
+    seg_img, segments = segment_image(img)
+    tmp_img_filename = ui["img_filename"][] * "_$(now())"
+    save(tmp_img_filename, seg_img)
+    @js_ w document.getElementById("main_img").src = $tmp_img_filename;
 end
 
 handle(w, "file_picked") do args
-    img = load(ui["img_filename"][])
-    size(w, size(img, 2), size(img, 1)+50)
-    yield()
-    @async body!(w, ui["html"](ui["img_filename"][]))
+    img_filename = ui["img_filename"][]
+    @js_ w document.getElementById("main_img").src = $img_filename;
 end
 
 handle(w, "seed_click") do args
@@ -37,11 +37,14 @@ handle(w, "seed_click") do args
         img_datetime_name = """$(ui["img_filename"][])_$(now()).png"""
         save(img_datetime_name, img)
         push!(seeds, (CartesianIndex(args[1], args[2]), ui["space_num"][]))
-        @async body!(w, html(img_datetime_name))
-    end
-end
+        @js_ w document.getElementById("main_img").src = $img_filename;
+    end end
 
 handle(w, "algorithm_selected") do args
     help_text = ui["help_text"][ui["algorithm"][]]
     @js_ w document.getElementById("help_text").innerHTML = $help_text;
+end
+
+handle(w, "export_data") do args
+    # save img to png, segment data to excel
 end
