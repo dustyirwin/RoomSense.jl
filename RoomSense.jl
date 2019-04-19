@@ -1,3 +1,6 @@
+using Pkg
+Pkg.activate(".")
+
 using FreeTypeAbstraction
 using ImageSegmentation
 using ImageMagick
@@ -6,19 +9,17 @@ using Blink
 using Interact
 using Dates
 using Random
-
+using Flux
 
 # Launch app into Blink window
 w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "RoomSense v0.1")
-include("ui.jl");
-include("funcs.jl")
-body!(w, ui["html"]())
 
+for f in readdir("./src")
+    include("./src/" * f);
+end
 
-# Blink tools
-opentools(w)
-closetools(w)
+body!(w, ui["param_seg_html"])
 
-# workspace
-meanshift()
+# Electron Tools
+# tools(w)
