@@ -4,24 +4,26 @@ function get_random_color(seed)
 end
 
 function segment_image(img)
-    try
-        segments = ui["algorithm"][](img, ui["var1"][], ui["var2"])
+    segments = try
+        ui["algorithm"][](img, ui["var1"][], ui["var2"])
     catch MethodError
-        segments = ui["algorithm"][](img, ui["var1"][])
+        ui["algorithm"][](img, ui["var1"][])
     end
     return map(i->segment_mean(segments, i), labels_map(segments)), segments
 end
 
 handle(w, "go") do args
-    try
-        img = load(ui["img_filename"][])
+    img = try
+        load(ui["img_filename"][])
     catch
         @js w alert("Please select a valid image file.")
     end
     seg_img, segments = segment_image(img)
-    tmp_img_filename = ui["img_filename"][] * "_$(now())"
+    tmp_img_filename = ui["img_filename"][][1:end-4] * "_$(join(rand(0:9, 10)))" * ui["img_filename"][][end-3:end]
+    seg_info = "Segments: $(length(segments.segment_labels))"
     save(tmp_img_filename, seg_img)
     @js_ w document.getElementById("main_img").src = $tmp_img_filename;
+    @js_ w document.getElementById("seg_info").innerHTML = $seg_info;
 end
 
 handle(w, "file_picked") do args

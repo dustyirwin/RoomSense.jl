@@ -5,6 +5,7 @@ using Images
 using Blink
 using Interact
 using Dates
+using Random
 
 
 # Launch app into Blink window
@@ -14,8 +15,10 @@ include("ui.jl");
 include("funcs.jl")
 body!(w, ui["html"]())
 
+
 # Blink tools
 opentools(w)
 closetools(w)
 
 # workspace
+meanshift()

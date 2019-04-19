@@ -29,18 +29,19 @@ ui = Dict(
         fuzzy_cmeans=>"var1 is the number of centers, var2 is the number of weights",
         seeded_region_growing=>"Under development!",
         watershed=>"Under development!",
-        prune_segments=>"Under development!",
-    ),
-    "html" => (img_filename="", segments="") -> node(:div,
-        vbox(
-            hbox(hskip(0.5em),
-                ui["algorithm"], ui["var1"], ui["var2"], ui["go"], hskip(0.5em),
-                node(:div, ui["img_filename"], attributes=Dict("onchange"=>"""Blink.msg("file_picked", [])""")), hskip(0.5em)),
-            hbox(hskip(0.75em),
-                node(:p, """$(ui["help_text"][ui["algorithm"][]])""", attributes=Dict("id"=>"help_text"))),
-            vskip(0.5em),
-            hbox(hskip(0.5em),
-                node(:img, attributes=Dict(
-                    "src"=>"$img_filename", "alt"=>"^^^ LOAD AN IMAGE ABOVE ^^^", "id"=>"main_img")))
-                ))
+        prune_segments=>"Under development!",)
+    )
+
+ui["html"] = node(:div,
+    vbox(
+        hbox(hskip(0.5em),
+            ui["algorithm"], ui["var1"], ui["var2"], ui["go"], hskip(0.5em),
+            node(:div, ui["img_filename"], attributes=Dict("onchange"=>"""Blink.msg("file_picked", [])""")), hskip(0.5em)),
+        hbox(hskip(0.75em),
+            node(:p, """$(ui["help_text"][ui["algorithm"][]])""", attributes=Dict("id"=>"help_text"))),
+        vskip(0.5em),
+        hbox(hskip(0.5em),
+            node(:img, attributes=Dict("id"=>"main_img", "src"=>"", "alt"=>"^^^ LOAD AN IMAGE ABOVE ^^^"))),
+        hbox(hskip(0.5em),
+            node(:p, "", attributes=Dict("id"=>"seg_info"))))
     )
