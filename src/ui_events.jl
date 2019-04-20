@@ -1,6 +1,7 @@
 working_img_filename = ""
 
 handle(w, "param_go") do args
+    @js_ w document.getElementById("param_go").classList = ["button is-primary is-loading"];
     global working_img_filename
     img = try
         load(ui["img_filename"][])
@@ -14,8 +15,9 @@ handle(w, "param_go") do args
     seg_info = "Segments: $(length(segments.segment_labels))"
     ui["img_tabs"][] = "Segmented Image"
     @js_ w document.getElementById("img_tabs").hidden = false;
-    @js_ w document.getElementById("display_img").src = $working_img_filename;
     @js_ w document.getElementById("seg_info").innerHTML = $seg_info;
+    @js_ w document.getElementById("display_img").src = $working_img_filename;
+    @js_ w document.getElementById("param_go").classList = ["button is-primary"];
 end
 
 handle(w, "img_selected") do args

@@ -2,7 +2,7 @@ ui = Dict(
     "face" => newface("./fonts/OpenSans-Bold.ttf"),
     "img_filename" => filepicker("Choose image"),
     "param_go" => button("GO", attributes=Dict(
-        "onclick"=>"""Blink.msg("param_go", [])""")),
+        "onclick"=>"""Blink.msg("param_go", [])""", "id"=>"param_go")),
     "export" => button("Export", attributes=Dict(
         "onclick"=>"""Blink.msg("export_data", [])""")),
     "param_algorithm" => dropdown(OrderedDict(
