@@ -1,4 +1,7 @@
+working_img_filename = ""
+
 handle(w, "param_go") do args
+    global working_img_filename
     img = try
         load(ui["img_filename"][])
     catch
@@ -6,17 +9,28 @@ handle(w, "param_go") do args
         return
     end
     seg_img, segments = param_segment_image(img)
-    tmp_img_filename = ui["img_filename"][][1:end-4] * "_$(join(rand(0:9, 10)))" * ui["img_filename"][][end-3:end]
+    working_img_filename = ui["img_filename"][][1:end-4] * replace("_$(now())", ":"=>".") * ui["img_filename"][][end-3:end]
+    save(working_img_filename, seg_img)
     seg_info = "Segments: $(length(segments.segment_labels))"
-    save(tmp_img_filename, seg_img)
-    @js_ w document.getElementById("main_img").src = $tmp_img_filename;
+    ui["img_tabs"][] = "Segmented Image"
+    @js_ w document.getElementById("img_tabs").hidden = false;
+    @js_ w document.getElementById("display_img").src = $working_img_filename;
     @js_ w document.getElementById("seg_info").innerHTML = $seg_info;
 end
 
-handle(w, "file_picked") do args
+handle(w, "img_selected") do args
     img_filename = ui["img_filename"][]
-    img = load(ui["img_filename"][]);
-    @js_ w document.getElementById("main_img").src = $img_filename;
+    @js_ w document.getElementById("img_tabs").hidden = true;
+    @js_ w document.getElementById("display_img").src = $img_filename;
+end
+
+handle(w, "img_tab_change") do args
+    if ui["img_tabs"][] == "Original Image"
+        img_filename = ui["img_filename"][]
+        @js_ w document.getElementById("display_img").src = $img_filename;
+    else
+        @js_ w document.getElementById("display_img").src = $working_img_filename;
+    end
 end
 
 handle(w, "seed_click") do args
@@ -33,10 +47,6 @@ handle(w, "seed_click") do args
 handle(w, "algorithm_selected") do args
     help_text = "Notes: " * ui["help_text"][ui["param_algorithm"][]]
     @js_ w document.getElementById("help_text").innerHTML = $help_text;
-end
-
-handle(w, "tab_change") do args
-
 end
 
 handle(w, "export_data") do args

@@ -17,7 +17,3 @@ end
 function seeded_segment_image(img, seeds)
     return "work work work"
 end
-
-function cleanup_tmp_files(dir_name)
-    return "clean up temp files"
-end
