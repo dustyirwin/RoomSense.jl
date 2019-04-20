@@ -18,7 +18,7 @@ function param_segment_image(img)
         """algorithm=$(ui["param_algorithm"][])  segments=$(length(segments.segment_labels))""",
         ui["face"], (20,20), 25, 10, halign=:hleft)
     renderstring!(seg_img,
-        """var1=$(ui["var1"][])  var2=$(ui["var2"][]) process_time=$(round(process_time, digits=2))s""",
+        """var1=$(ui["var1"][])  var2=$(ui["var2"][]) process_time=$(round(process_time, digits=3))s""",
         ui["face"], (20,20), 55, 10, halign=:hleft)
     return seg_img, segments
 end
@@ -34,5 +34,3 @@ end
 function merge_segment()
     return
 end
-
-round()

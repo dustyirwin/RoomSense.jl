@@ -17,7 +17,17 @@ handle(w, "param_go") do args
     @js_ w document.getElementById("img_tabs").hidden = false;
     @js_ w document.getElementById("seg_info").innerHTML = $seg_info;
     @js_ w document.getElementById("display_img").src = $working_img_filename;
-    @js_ w document.getElementById("param_go").classList = ["button is-primary"];
+    @js_ w document.getElementById("param_go").classList = ["button is-primary "];
+end
+
+handle(w, "operations_tab_change") do args
+    selected_op = ui["operations_tabs"][]
+    @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
+
+    for op in ui["operations"]
+        if op != selected_op
+            @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
+        end end
 end
 
 handle(w, "img_selected") do args
@@ -44,7 +54,8 @@ handle(w, "seed_click") do args
         save(img_datetime_name, img)
         push!(seeds, (CartesianIndex(args[1], args[2]), ui["space_num"][]))
         @js_ w document.getElementById("main_img").src = $img_filename;
-    end end
+    end
+end
 
 handle(w, "algorithm_selected") do args
     help_text = "Notes: " * ui["help_text"][ui["param_algorithm"][]]
