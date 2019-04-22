@@ -1,7 +1,6 @@
 using Pkg
 Pkg.activate(".")
 
-using FreeTypeAbstraction
 using ImageSegmentation
 using ImageMagick
 using Images
@@ -22,3 +21,9 @@ body!(w, ui["html"])
 
 # Electron Tools
 tools(w)
+
+
+im
+segs.segment_labels
+segs = remove_segments(w, segs, [4151])
+clr_im = map(i->get_random_color(i), labels_map(segs))

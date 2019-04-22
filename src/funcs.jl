@@ -13,18 +13,23 @@ function param_segment_image(img)
             seg_img = map(i->get_random_color(i), labels_map(segments))
         else
             seg_img =  map(i->segment_mean(segments, i), labels_map(segments))
-        end end
-    renderstring!(seg_img,
-        """algorithm=$(ui["param_algorithm"][])  segments=$(length(segments.segment_labels))""",
+    end end
+    renderstring!(seg_img, """algorithm=$(ui["param_algorithm"][]) segments=$(length(segments.segment_labels))""",
         ui["face"], (20,20), 25, 10, halign=:hleft)
-    renderstring!(seg_img,
-        """var1=$(ui["var1"][])  var2=$(ui["var2"][]) process_time=$(round(process_time, digits=3))s""",
+    renderstring!(seg_img, """var1=$(ui["var1"][]) var2=$(ui["var2"][]) process_time=$(round(process_time, digits=3))s""",
         ui["face"], (20,20), 55, 10, halign=:hleft)
     return seg_img, segments
 end
 
 function seeded_segment_image(img, seeds)
     return "work work work"
+end
+
+function remove_segments(w, segs, rm_segs)
+    # @js w alert("Remove segments?")
+    rm_segs = typeof(rm_segs) == Int ? [rm_segs] : rm_segs
+    diff_fn(rem_label, neigh_label) = segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
+    prune_segments(segs, rm_segs, diff_fn)
 end
 
 function split_segment()

@@ -1,4 +1,6 @@
 working_img_filename = ""
+working_segments = []
+working_history = Dict()
 
 handle(w, "param_go") do args
     @js_ w document.getElementById("param_go").classList = ["button is-primary is-loading"];
@@ -27,8 +29,7 @@ handle(w, "operations_tab_change") do args
     for op in ui["operations"]
         if op != selected_op
             @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
-        end end
-end
+        end end end
 
 handle(w, "img_selected") do args
     img_filename = ui["img_filename"][]
@@ -42,24 +43,15 @@ handle(w, "img_tab_change") do args
         @js_ w document.getElementById("display_img").src = $img_filename;
     else
         @js_ w document.getElementById("display_img").src = $working_img_filename;
-    end
-end
-
-handle(w, "seed_click") do args
-    if args[2] > 50 && ui["img_filename"][] != ""
-        @show args
-        img = load(ui["img_filename"][])
-        renderstring!(img, "$(ui["space_num"][])", face, (20, 20), args[1], args[2], halign=:hright)
-        img_datetime_name = """$(ui["img_filename"][])_$(now()).png"""
-        save(img_datetime_name, img)
-        push!(seeds, (CartesianIndex(args[1], args[2]), ui["space_num"][]))
-        @js_ w document.getElementById("main_img").src = $img_filename;
-    end
-end
+    end end
 
 handle(w, "algorithm_selected") do args
     help_text = "Notes: " * ui["help_text"][ui["param_algorithm"][]]
     @js_ w document.getElementById("help_text").innerHTML = $help_text;
+end
+
+handle(w, "img_click") do args
+    @show args
 end
 
 handle(w, "export_data") do args
