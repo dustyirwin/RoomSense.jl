@@ -1,5 +1,4 @@
 ui = Dict(
-    "face" => newface("./fonts/OpenSans-Bold.ttf"),
     "img_filename" => filepicker("Choose image"),
     "param_go" => button("GO", attributes=Dict(
         "onclick"=>"""Blink.msg("param_go", [])""", "id"=>"param_go")),
@@ -16,8 +15,7 @@ ui = Dict(
     "colorize" => checkbox("Colorize result?"),
     "var1" => spinbox(0.0:0.1:1000.0, value=0.0),
     "var2" => spinbox(0.0:0.1:1000.0, value=0.0),
-    "prune_toggle" => toggle("Prune Segment Image"),
-    "prune_segment" => spinbox(1:999999, value=1),
+    "min_segment_size" => spinbox(1:99999, value=500),
     "prune_go" => button("GO", attributes=Dict("onclick"=>"""Blink.msg("prune_go", [])""", "id"=>"param_go")),
     "segment_list" => (tagged_segs=OrderedDict()) -> dropdown(tagged_segs, label="Segments", multiple=true),
     "space_type" => dropdown(OrderedDict(
@@ -42,7 +40,7 @@ ui["param_toolset"] = vbox(
         hskip(0.75em), ui["param_algorithm"], hskip(0.5em),
         vbox(vskip(0.4em), hbox(hskip(0.25em), "var1", hskip(0.25em))), ui["var1"],
         vbox(vskip(0.4em), hbox(hskip(0.5em), "var2", hskip(0.25em))), ui["var2"], hskip(0.5em), ui["param_go"],
-        hskip(0.25em), ui["colorize"]),
+        hskip(0.25em), ui["colorize"], hskip(1em), node(:p, attributes=Dict("id"=>"seg_info"))),
     hbox(hskip(0.75em), node(:p, """Notes: $(ui["help_text"][ui["param_algorithm"][]])""", attributes=Dict(
         "id"=>"help_text")))
     );
@@ -51,9 +49,8 @@ ui["seeded_toolset"] = hbox(
     hskip(0.75em), "Coming soon!",
     );
 
-ui["mod_segs_toolset"] = hbox(hskip(0.75em),
-    vbox(ui["segment_list"](), button("Prune selection")), hskip(0.75em),
-    ui["prune_toggle"], hskip(1.5em), "prune segment #", hskip(0.5em), ui["prune_segment"], ui["prune_go"],
+ui["mod_segs_toolset"] = hbox(
+    hskip(0.75em), node(:p, "Minimum pixel group size"), ui["min_segment_size"], ui["prune_go"],
     );
 
 ui["data_export_toolset"] = hbox(
@@ -65,7 +62,7 @@ ui["display_img"] = vbox(
         "onclick"=>"""Blink.msg("img_tab_change", [])""", "id"=>"img_tabs", "hidden"=>true)),
     node(:img, attributes=Dict(
         "onclick"=>"""Blink.msg("img_click", [event.clientX, event.clientY]);""",
-        "id"=>"display_img", "src"=>"", "alt"=>"", )),
+        "id"=>"display_img", "src"=>"", "alt"=>"")),
     );
 
 ui["html"] = node(:div,

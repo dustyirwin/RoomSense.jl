@@ -1,25 +1,34 @@
-working_img_filename = ""
-working_segments = []
-working_history = Dict()
+working_history = []
 
 handle(w, "param_go") do args
     @js_ w document.getElementById("param_go").classList = ["button is-primary is-loading"];
-    global working_img_filename
     img = try
         load(ui["img_filename"][])
     catch
         @js_ w alert("Please select a valid image file.")
+        @js_ w document.getElementById("param_go").classList = ["button is-primary"];
         return
     end
-    seg_img, segments = param_segment_image(img)
-    working_img_filename = ui["img_filename"][][1:end-4] * replace("_$(now())", ":"=>".") * ui["img_filename"][][end-3:end]
+    seg_img, segments, seg_info = param_segment_image(img)
+    working_img_filename = ui["img_filename"][][1:end-4] * "_working" * ui["img_filename"][][end-3:end]
+    push!(working_history, (segments, seg_img, working_img_filename, now()))
     save(working_img_filename, seg_img)
-    seg_info = "Segments: $(length(segments.segment_labels))"
+    dummy_filename = working_img_filename * "?dummy=" * replace("$(now())", ":"=>".")
     ui["img_tabs"][] = "Segmented Image"
     @js_ w document.getElementById("img_tabs").hidden = false;
     @js_ w document.getElementById("seg_info").innerHTML = $seg_info;
-    @js_ w document.getElementById("display_img").src = $working_img_filename;
-    @js_ w document.getElementById("param_go").classList = ["button is-primary "];
+    @js_ w document.getElementById("display_img").src = $dummy_filename;
+    @js_ w document.getElementById("param_go").classList = ["button is-primary"];
+end
+
+handle(w, "prune_go") do args
+    working_seg = working_history[end][1]
+    seg_img, new_seg = min_pixel_group_size(working_seg, ui["min_segment_size"][])
+    working_img_filename = working_history[end][3]
+    push!(working_history, (segments, seg_img, working_img_filename, now()))
+    save(working_img_filename, seg_img)
+    dummy_filename = working_img_filename * "?dummy=" * replace("$(now())", ":"=>".")
+    @js_ w document.getElementById("display_img").src = $dummy_filename;
 end
 
 handle(w, "operations_tab_change") do args
