@@ -253,10 +253,10 @@ uuid = "bbac6d45-d8f3-5730-bfe4-7a449cd117ca"
 version = "0.3.0"
 
 [[ImageAxes]]
-deps = ["AxisArrays", "Colors", "FixedPointNumbers", "ImageCore", "MappedArrays", "Reexport", "SimpleTraits", "Test"]
-git-tree-sha1 = "5735ec90843acaa67a4624611921c686cdf4efbf"
+deps = ["AxisArrays", "Colors", "FixedPointNumbers", "ImageCore", "MappedArrays", "Reexport", "SimpleTraits"]
+git-tree-sha1 = "8109bb9a28deca29a5b938ebfa7d0a75319d8776"
 uuid = "2803e5a7-5153-5ecf-9a86-9b4c37f5f5ac"
-version = "0.5.0"
+version = "0.6.0"
 
 [[ImageCore]]
 deps = ["ColorTypes", "Colors", "FFTW", "FixedPointNumbers", "Graphics", "MappedArrays", "OffsetArrays", "PaddedViews", "Random", "Statistics", "Test"]
@@ -265,10 +265,10 @@ uuid = "a09fc81d-aa75-5fe9-8630-4744c3626534"
 version = "0.7.4"
 
 [[ImageDistances]]
-deps = ["Colors", "Distances", "LinearAlgebra", "ProgressMeter", "Test"]
-git-tree-sha1 = "a5de7b61f6fa98fb93c39857fa43cf40ca383b28"
+deps = ["Colors", "Distances", "ProgressMeter"]
+git-tree-sha1 = "ee7dcd893cefe622251691896a4650dcf1ee2133"
 uuid = "51556ac3-7006-55f5-8cb3-34580c88182d"
-version = "0.1.1"
+version = "0.2.0"
 
 [[ImageFiltering]]
 deps = ["CatIndices", "ColorVectorSpace", "Colors", "ComputationalResources", "DataStructures", "FFTViews", "FFTW", "FixedPointNumbers", "ImageCore", "LinearAlgebra", "Logging", "MappedArrays", "OffsetArrays", "Random", "Requires", "StaticArrays", "Statistics", "Test", "TiledIteration"]
@@ -283,22 +283,22 @@ uuid = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 version = "0.7.1"
 
 [[ImageMetadata]]
-deps = ["AxisArrays", "ColorVectorSpace", "Colors", "Dates", "FixedPointNumbers", "ImageAxes", "ImageCore", "IndirectArrays", "Statistics", "Test"]
-git-tree-sha1 = "b389b1eb7145ddd37ebd25f42a387213dc1a18f8"
+deps = ["AxisArrays", "ColorVectorSpace", "Colors", "FixedPointNumbers", "ImageAxes", "ImageCore", "IndirectArrays"]
+git-tree-sha1 = "631c3e1dc2b645ed3bdee14418f8bbfc38b9b7f0"
 uuid = "bc367c6b-8a6b-528e-b4bd-a4b897500b49"
-version = "0.6.1"
+version = "0.7.0"
 
 [[ImageMorphology]]
-deps = ["ImageCore", "Test"]
-git-tree-sha1 = "e94f43b9ff76f3a3810bfdd9b3d2fbcacbc26fd0"
+deps = ["ImageCore"]
+git-tree-sha1 = "f509d0c5215fbbf8fe5374e39e0ec1d10d319f46"
 uuid = "787d08f9-d448-5407-9aad-5290dd7ab264"
-version = "0.1.1"
+version = "0.2.0"
 
 [[ImageSegmentation]]
-deps = ["Clustering", "DataStructures", "Distances", "ImageFiltering", "Images", "LightGraphs", "LinearAlgebra", "RegionTrees", "SimpleWeightedGraphs", "StaticArrays", "Statistics", "Test"]
-git-tree-sha1 = "d78c7c1232b7bb31712940eae384dc55a17f82c1"
+deps = ["Clustering", "DataStructures", "Distances", "ImageFiltering", "Images", "LightGraphs", "LinearAlgebra", "RegionTrees", "SimpleWeightedGraphs", "StaticArrays", "Statistics"]
+git-tree-sha1 = "0daf7d5f0e913f60e16f15e5b9960374285d3038"
 uuid = "80713f31-8817-5129-9cf8-209ff8fb23e1"
-version = "1.1.0"
+version = "1.2.0"
 
 [[ImageShow]]
 deps = ["Base64", "ColorTypes", "Colors", "FileIO", "FixedPointNumbers", "ImageCore", "OffsetArrays", "Requires", "Test"]
@@ -313,10 +313,10 @@ uuid = "02fcd773-0e25-5acc-982a-7f6622650795"
 version = "0.7.2"
 
 [[Images]]
-deps = ["AxisArrays", "Base64", "ColorTypes", "ColorVectorSpace", "Colors", "FileIO", "FixedPointNumbers", "Graphics", "ImageAxes", "ImageCore", "ImageDistances", "ImageFiltering", "ImageMetadata", "ImageMorphology", "ImageShow", "ImageTransformations", "IndirectArrays", "LinearAlgebra", "MappedArrays", "OffsetArrays", "Random", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "Test", "TiledIteration"]
-git-tree-sha1 = "b3db301ac8d92ec3638145f05abb76bf8033d1f7"
+deps = ["AxisArrays", "Base64", "ColorTypes", "ColorVectorSpace", "Colors", "FileIO", "FixedPointNumbers", "Graphics", "ImageAxes", "ImageCore", "ImageDistances", "ImageFiltering", "ImageMetadata", "ImageMorphology", "ImageShow", "ImageTransformations", "IndirectArrays", "MappedArrays", "OffsetArrays", "Reexport", "SparseArrays", "StaticArrays", "Statistics", "StatsBase", "TiledIteration"]
+git-tree-sha1 = "1aae59fc0e34e47dfb111113bb6e9a65d7bafe81"
 uuid = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
-version = "0.17.3"
+version = "0.18.0"
 
 [[IndirectArrays]]
 deps = ["Compat", "Test"]
@@ -642,10 +642,10 @@ deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[StatsBase]]
-deps = ["DataStructures", "DelimitedFiles", "LinearAlgebra", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "Test"]
-git-tree-sha1 = "435707791dc85a67d98d671c1c3fcf1b20b00f94"
+deps = ["DataStructures", "LinearAlgebra", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics"]
+git-tree-sha1 = "8a0f4b09c7426478ab677245ab2b0b68552143c7"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.29.0"
+version = "0.30.0"
 
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions", "Test"]
@@ -655,9 +655,9 @@ version = "0.4.1"
 
 [[Tables]]
 deps = ["IteratorInterfaceExtensions", "LinearAlgebra", "Requires", "TableTraits", "Test"]
-git-tree-sha1 = "719d5be11e89ae29d79b469c4238b63b53544d38"
+git-tree-sha1 = "4129c340d3960a49c0c5dbe71df2b3784bdc11c0"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "0.1.18"
+version = "0.1.19"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
