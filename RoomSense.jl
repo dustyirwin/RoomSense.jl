@@ -3,14 +3,15 @@ Pkg.activate(".")
 
 using ImageSegmentation
 using ImageMagick
-using Images
-using Blink
 using Interact
-using Dates
+using Images
 using Random
-using Flux
+using Blink
+using Dates
+
 
 # Launch app into Blink window
+working_history = []
 w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "RoomSense v0.1"); size(w, 1200, 800)
 
@@ -20,4 +21,4 @@ end
 body!(w, ui["html"])
 
 # Electron Tools
-tools(w)
+#tools(w)

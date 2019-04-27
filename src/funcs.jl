@@ -1,47 +1,58 @@
-function diff_fn(rem_label, neigh_label)
-    segment_pixel_count(segments, rem_label) - segment_pixel_count(segments, neigh_label)
-end
-
 function get_random_color(seed)
     Random.seed!(seed)
     rand(RGB{N0f8})
 end
 
-function make_img_from_seg(segments)
-    if ui["colorize"][] == true
-        map(i->get_random_color(i), labels_map(segments))
-    else
-        map(i->segment_mean(segments, i), labels_map(segments))
-end end
+function seg_info(segs, pt)
+    "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=3))s."
+end
 
-function param_segment_img(img)
+function make_img_from_seg(segs)
+    if ui["colorize"][] == true; map(i->get_random_color(i), labels_map(segs))
+    else; map(i->segment_mean(segs, i), labels_map(segs)) end
+end
+
+function param_segment_img(img, input_1, alg)
     process_time = @elapsed begin
-        segments = ui["param_algorithm"][](img, ui["input_1"][])
-        seg_img = make_img_from_seg(segments)
-    end
-    seg_info = "Processed $(length(segments.segment_labels)) segments in $(round(process_time, digits=3))s."
-    return segments, seg_img, seg_info
+    segs = alg(img, input_1)
+    segs_img = make_img_from_seg(segs) end
+    return segs, segs_img, seg_info(segs, process_time)
 end
 
-function prune_min_size(segments, min_size)
+function prune_min_size(segs, min_size, prune_list=Vector{Int64}())
     process_time = @elapsed begin
-        prune_list = Vector{Int64}()
-        for (k, v) in segments.segment_pixel_count
-            if v < min_size
-                push!(prune_list, k)
-            end end
-        diff_fn(rem_label, neigh_label) = segment_pixel_count(segments, rem_label) - segment_pixel_count(segments, neigh_label)
-        new_seg = prune_segments(segments, prune_list, diff_fn)
-        seg_img = make_img_from_seg(new_seg)
-    end
-    seg_info = "Processed $(length(new_seg.segment_labels)) segments in $(round(process_time, digits=3))s."
-    return new_seg, seg_img, seg_info
+    for (k, v) in segs.segment_pixel_count
+        if v < min_size; push!(prune_list, k) end end
+    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
+    segs = prune_segments(segs, prune_list, diff_fn)
+    segs_img =  make_img_from_seg(segs) end
+    return segs, segs_img, seg_info(segs, process_time)
 end
 
-function remove_segments()
-    return ""
+function merge_segments(segs, labels, arr=Vector{Int64}())
+    process_time = @elapsed begin
+    for i in split(labels, ",")
+       push!(arr, parse(Int64, i)) end
+
+    for i in 1:size(segs.image_indexmap)[1]
+        for j in 1:size(segs.image_indexmap)[2]
+            if segs.image_indexmap[i, j] == arr[1]
+                segs.image_indexmap[i, j] = arr[2] end
+            for k in 1:length(segs.segment_labels)
+                if segs.segment_labels[k] == arr[1]
+                    splice!(segs.segment_labels, k) end
+    end end end
+    segs = prune_segments(segs, Vector{Int64}(), diff_fn)  # forces re-evaluation of the segments object
+    segs_img = make_img_from_seg(segs) end
+    return segs, segs_img, seg_info(segs, process_time)
 end
 
-function merge_segments()
-    return ""
+function remove_segments(segs, labels, arr=Vector{Int64}())
+    process_time = @elapsed begin
+    for i in split(labels, ",")
+       push!(arr, parse(Int64, i)) end
+    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
+    segs = prune_segments(segs, arr, diff_fn)
+    segs_img = make_img_from_seg(segs) end
+    return segs, segs_img, seg_info(segs, process_time)
 end
