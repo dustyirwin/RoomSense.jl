@@ -4,30 +4,42 @@ handle(w, "go") do args
 
     if ui["operations_tabs"][] == "Image Segmentation"
         img = try Gray.(load(ui["img_filename"][])) catch end
-        if typeof(img) == Matrix{Gray{Normed{UInt8,8}}}
+        if typeof(img) != Nothing
+            pt = @elapsed begin
             working_img_filename = ui["img_filename"][][1:end-4] * "_working" * ui["img_filename"][][end-3:end]
-            segs, segs_img, segs_info = param_segment_img(
-                img, parse(ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1])
+            working_labels_filename = ui["img_filename"][][1:end-4] * "_labels" * ui["img_filename"][][end-3:end]
+            segs = param_segment_img(img, parse(ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1])
+            segs_img = make_img_from_segs(segs, ui["colorize"][])
+            labels_img = make_labels_from_segs(segs, ui["draw_labels"][]) end
+            segs_info = seg_info(segs, pt)
         else @js_ w alert("Please select a valid image file."); end
 
     elseif ui["operations_tabs"][] == "Modify Segments"
-        working_img_filename = try working_history[end][3] catch end
+        working_img_filename = try working_history[end][4] catch end
+        working_labels_filename = working_history[end][5]
         if typeof(working_img_filename) == String
-            segs, segs_img, segs_info = ui["mod_segs_funcs"][][1](
-                working_history[end][1], try parse(ui["mod_segs_funcs"][][2], ui["input"][]) catch
+            pt = @elapsed begin
+            segs = ui["mod_segs_funcs"][][1](working_history[end][1], try parse(
+                ui["mod_segs_funcs"][][2], ui["input"][]) catch
                     ui["input"][] end)
+            segs_img = make_img_from_segs(segs, ui["colorize"][])
+            labels_img = make_labels_from_segs(segs, ui["draw_labels"][]) end
+            segs_info = seg_info(segs, pt)
         else @js_ w alert("No segments found to operate on."); end
 
     elseif ui["operations_tabs"][] == "Label Segments"
         labels = try label_seg() catch end end
 
     try
-        push!(working_history, (segs, segs_img, working_img_filename))
-        dummy_filename = working_img_filename * "?dummy=$(now())"
+        push!(working_history, (segs, segs_img, labels_img, working_img_filename, working_labels_filename))
         save(working_img_filename, segs_img)
+        save(working_labels_filename, labels_img)
         ui["img_tabs"][] = "Overlayed"; @js_ w Blink.msg("img_tab_change", "")
+        dummy_img_filename = working_img_filename * "?dummy=$(now())"
+        dummy_labels_filename = working_img_filename * "?dummy=$(now())"
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        @js_ w document.getElementById("display_img").src = $dummy_filename;
+        @js_ w document.getElementById("display_img").src = $dummy_img_filename;
+        @js_ w document.getElementById("overlay_labels").src = $dummy_labels_filename;
     catch err; println(err) end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
@@ -50,18 +62,24 @@ handle(w, "img_selected") do args
 handle(w, "img_tab_change") do args
     global working_history
     img_filename = ui["img_filename"][]
+    working_img_filename = working_history[end][4]
+    working_labels_filename = working_history[end][5]
+    dummy_img_filename = working_img_filename * "?dummy=$(now())"
+    dummy_labels_filename = working_labels_filename * "?dummy=$(now())"
     @js_ w document.getElementById("img_tabs").hidden = false;
-    @js_ w Blink.msg("labels", null);
-    if ui["img_tabs"][] == "Original"; @js_ w document.getElementById("display_img").src = $img_filename;
-    else
-        working_img_filename = working_history[end][3]
-        dummy_filename = working_img_filename * "?dummy=$(now())"
-        if ui["img_tabs"][] == "Segmented"
-            @js_ w document.getElementById("display_img").src = $dummy_filename;
-            @js_ w document.getElementById("overlay_img").src = "";
-        else
-            @js_ w document.getElementById("overlay_img").src = $img_filename;
-            @js_ w document.getElementById("display_img").src = $dummy_filename; end end end
+
+    if ui["img_tabs"][] == "Original"
+        @js_ w document.getElementById("display_img").src = $img_filename;
+        @js_ w document.getElementById("overlay_labels").src = "";
+        @js_ w document.getElementById("overlay_img").src = "";
+    elseif ui["img_tabs"][] == "Segmented"
+        @js_ w document.getElementById("display_img").src = $dummy_img_filename;
+        @js_ w document.getElementById("overlay_img").src = "";
+        @js_ w document.getElementById("overlay_labels").src = "";
+    elseif ui["img_tabs"][] == "Overlayed"
+        @js_ w document.getElementById("display_img").src = $dummy_img_filename;
+        @js_ w document.getElementById("overlay_img").src = $img_filename;
+        @js_ w document.getElementById("overlay_labels").src = $dummy_labels_filename; end end
 
 handle(w, "dropdown_selected") do args
     if ui["operations_tabs"][] == "Image Segmentation"

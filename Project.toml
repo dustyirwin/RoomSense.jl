@@ -5,8 +5,9 @@ version = "0.1.0"
 
 [deps]
 Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
-CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+FreeTypeAbstraction = "663a7486-cb36-511b-a19d-713bb74d65c9"
+GeometricalPredicates = "fd0ad045-b25c-564e-8f9c-8ef5c5f21267"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 ImageSegmentation = "80713f31-8817-5129-9cf8-209ff8fb23e1"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"

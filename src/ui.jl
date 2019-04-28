@@ -1,4 +1,5 @@
 ui = Dict(
+    "font"=>newface("./fonts/OpenSans-Regular.ttf"),
     "img_filename" => filepicker("Choose image"),
     "go" => button("GO", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
@@ -10,12 +11,10 @@ ui = Dict(
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Prune Segments (MPGS)"=>(prune_min_size, Int64),
         "Remove Segment(s)"=>(remove_segments, String),
-        "Merge Segments"=>(merge_segments, String),), attributes=Dict(
+        "Merge Segments"=>(merge_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_labels"=>checkbox("Show Segment Numbers?", default=true),
+    "draw_labels"=>checkbox("Draw labels?", default=true),
     "colorize" => checkbox("Colorize result?"),
-    "labels" => checkbox("Show labels?", default=true, attributes=Dict(
-        "onchange"=>"""Blink.msg("show_labels", null);""")),
     "input" => textbox("See notes below..."),
     "segment_type" => dropdown(OrderedDict(
         "Building Support"=>"BS",
@@ -35,7 +34,7 @@ ui = Dict(
     )
 
 ui["operations_tabs"] = tabs(Observable(ui["operations"]));
-ui["options"] = hbox(ui["colorize"], ui["labels"]);
+ui["options"] = hbox(ui["colorize"], ui["draw_labels"]);
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
@@ -64,7 +63,7 @@ ui["display_img"] = vbox(
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.5;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.75;")), attributes=Dict(
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.5;")), attributes=Dict(
         "style"=>"position: relative;")));
 
 ui["html"] = node(:div,

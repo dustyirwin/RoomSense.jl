@@ -1,6 +1,8 @@
 using Pkg
 Pkg.activate(".")
 
+using Statistics
+using GeometricalPredicates
 using FreeTypeAbstraction
 using ImageSegmentation
 using ImageMagick
