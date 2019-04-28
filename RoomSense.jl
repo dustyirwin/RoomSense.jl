@@ -1,8 +1,6 @@
 using Pkg
-Pkg.activate(".")
+Pkg.activate(".");
 
-using Statistics
-using GeometricalPredicates
 using FreeTypeAbstraction
 using ImageSegmentation
 using ImageMagick
@@ -11,18 +9,23 @@ using Images
 using Random
 using Blink
 using Dates
+using Flux
 
+# globals
+wi = 1;
+work_history = [];
+custom_labels = Dict();
 
-# Launch app into Blink window
-working_history = []
-custom_labels = Dict()
-w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)))
-title(w, "RoomSense v0.1"); size(w, 1200, 800)
+# Blink window
+w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
+title(w, "RoomSense v0.1"); size(w, 1200, 800);
+
+# Mux hosting
+# using Mux
 
 for f in readdir("./src")
-    include("./src/" * f);
-end
-body!(w, ui["html"])
+    include("./src/" * f)
+end; body!(w, ui["html"]);
 
-# Electron Tools
+# Electron diagnostic tools
 #tools(w)

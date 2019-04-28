@@ -9,11 +9,10 @@ ui = Dict(
         "Fast Scanning"=>(fast_scanning, Float64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
-        "Prune Segments (MPGS)"=>(prune_min_size, Int64),
-        "Remove Segment(s)"=>(remove_segments, String),
-        "Merge Segments"=>(merge_segments, String)), attributes=Dict(
+        "Prune Segments by MPGS"=>(prune_min_size, Int64),
+        "Prune Specified Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_labels"=>checkbox("Draw labels?", default=true),
+    "draw_labels"=>checkbox(value=false; label="Draw labels?"),
     "colorize" => checkbox("Colorize result?"),
     "input" => textbox("See notes below..."),
     "segment_type" => dropdown(OrderedDict(
@@ -30,10 +29,10 @@ ui = Dict(
         merge_segments=>"Merge two segments by label, separated by commas. e.g. 1, 3"
         ),
     "operations" => ["Image Segmentation", "Modify Segments", "Label Segments", "Export Data"],
-    "img_tabs" => tabs(Observable(["Original", "Segmented", "Overlayed"]))
-    )
+    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
 ui["operations_tabs"] = tabs(Observable(ui["operations"]));
+
 ui["options"] = hbox(ui["colorize"], ui["draw_labels"]);
 
 ui["toolset"] = vbox(
@@ -48,8 +47,11 @@ ui["toolset"] = vbox(
             attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
         ui["go"]),
     hbox(hskip(1em),
-        node(:p, """$(ui["help_text"][ui["segs_funcs"][][1]])""", attributes=Dict("id"=>"help_text")), hskip(1em),
-        node(:strong, node(:p, "", attributes=Dict("id"=>"segs_info")))));
+        node(:div, hbox(
+            node(:p, """$(ui["help_text"][ui["segs_funcs"][][1]])""", attributes=Dict("id"=>"help_text")), hskip(1em),
+            node(:strong, node(:p, "", attributes=Dict("id"=>"segs_info")))), attributes=Dict(
+                "style"=>"buffer: 5px;"
+            ))));
 
 ui["display_img"] = vbox(
     node(:div, ui["img_tabs"], attributes=Dict(
@@ -59,11 +61,11 @@ ui["display_img"] = vbox(
             "id"=>"display_img", "src"=>"", "alt"=>"",
             "onclick"=>"""Blink.msg("img_click", [event.clientX, event.clientY]);""")),
         node(:img, attributes=Dict(
-            "id"=>"overlay_img", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.5;")),
+            "id"=>"overlay_original", "src"=>"", "alt"=>"",
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.3;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.5;")), attributes=Dict(
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.3;")), attributes=Dict(
         "style"=>"position: relative;")));
 
 ui["html"] = node(:div,
