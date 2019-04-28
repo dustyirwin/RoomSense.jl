@@ -1,6 +1,7 @@
 using Pkg
 Pkg.activate(".")
 
+using FreeTypeAbstraction
 using ImageSegmentation
 using ImageMagick
 using Interact
@@ -12,6 +13,7 @@ using Dates
 
 # Launch app into Blink window
 working_history = []
+custom_labels = Dict()
 w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "RoomSense v0.1"); size(w, 1200, 800)
 
