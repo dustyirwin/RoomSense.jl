@@ -10,11 +10,11 @@ using Random
 using Blink
 using Dates
 using Flux
+using JLD2
+using XLSX
 
-# globals
-wi = 1;
-work_history = [];
-custom_labels = Dict();
+# user session
+work_history=[]; wi = 0; prev_img_tab = "Original"
 
 # Blink window
 w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
@@ -25,7 +25,7 @@ title(w, "RoomSense v0.1"); size(w, 1200, 800);
 
 for f in readdir("./src")
     include("./src/" * f)
-end; body!(w, ui["html"]);
+end; body!(w, ui["html"]());
 
 # Electron diagnostic tools
 #tools(w)
