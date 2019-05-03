@@ -63,24 +63,26 @@ handle(w, "go") do args
         save(segs_img_filename, segs_img)
         save(labels_filename, labels_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
     catch err; println(err) end
     @js_ w Blink.msg("img_tab_change", []);
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end;
 
 handle(w, "img_tab_change") do args
     global work_history, wi, prev_img_tab
+    img_filename = ui["user_img_filename"][]
+
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
         ui["img_tabs"][] = prev_img_tab
     elseif ui["img_tabs"][] == ">>"; wi>=length(work_history) ? length(work_history) : wi+=1
         ui["img_tabs"][] = prev_img_tab end
 
-    if wi > 0
-        save(work_history[wi][4], work_history[wi][2])
-        dummy_img = work_history[wi][4] * "?dummy=$(now())"
-        segs_info = work_history[wi][6]
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-    end
-    if ui["draw_labels"][] == true && wi > 0
+    if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
+        @js_ w document.getElementById("segs_img").src = $img_filename;
+        @js_ w document.getElementById("overlay_alpha").src = "";
+        return end
+
+    if wi > 0 && ui["draw_labels"][] == true
         labels_filename = work_history[wi][5]
         save(labels_filename, work_history[wi][3])
         dummy_labels = labels_filename * "?dummy=$(now())"
@@ -88,16 +90,20 @@ handle(w, "img_tab_change") do args
     else
         @js_ w document.getElementById("overlay_labels").src = ""; end
 
-    img_filename = ui["user_img_filename"][]
-    if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
-        @js_ w document.getElementById("segs_img").src = $img_filename;
-        @js_ w document.getElementById("overlay_alpha").src = "";
-    elseif ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
+    if wi > 0
+        save(work_history[wi][4], work_history[wi][2])
+        dummy_img = work_history[wi][4] * "?dummy=$(now())"
+        segs_info = work_history[wi][6]
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
+    end
+
+    if ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
+        dummy_img = wi > 0 ? dummy_img : ""
         @js_ w document.getElementById("segs_img").src = $dummy_img;
         @js_ w document.getElementById("overlay_alpha").src = "";
     elseif ui["img_tabs"][] == "Overlayed"; prev_img_tab = "Overlayed"
-        if wi > 0 dummy_alpha = work_history[wi][4][1:end-12] * "_alpha.png?dummy=$(now())"
-        else dummy_alpha = ui["user_img_filename"][] * "_alpha.png?dummy=$(now())" end
+        dummy_img = wi > 0 ? dummy_img : ""
+        dummy_alpha = wi > 0 ? work_history[wi][4][1:end-12] * "_alpha.png?dummy=$(now())" : ""
         @js_ w document.getElementById("segs_img").src = $dummy_img;
         @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha; end end
 

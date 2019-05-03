@@ -87,4 +87,4 @@ ui["html"] = node(:div,
                 "onchange"=>"""Blink.msg("img_selected", null)"""))),
         vskip(1em),
         ui["toolset"],
-        hbox(ui["display_imgs"]), hskip(0.75em), node(:p, "", attributes=Dict("id"=>"segs_details"))));
+        hbox(ui["display_imgs"], hskip(0.75em), node(:p, "", attributes=Dict("id"=>"segs_details")))));
