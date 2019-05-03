@@ -1,4 +1,6 @@
-seg_info = (segs::SegmentedImage, pt::Float64) -> "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=4))s."
+seg_info = (segs::SegmentedImage, pt::Float64) -> "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
+
+make_transparent(img) = [GrayA{Float64}(e.val, 1.0-e.val) for e in img]
 
 function param_segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Function)
     img = load(img_filename)
@@ -16,7 +18,8 @@ function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector
     for (k, v) in segs.segment_pixel_count
         if v < min_size; push!(prune_list, k) end end
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
-    segs = prune_segments(segs, prune_list, diff_fn) end
+    segs = prune_segments(segs, prune_list, diff_fn)
+    end
 
 function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
     for i in split(labels, ",")
@@ -51,19 +54,22 @@ function make_labels_from_segs(segs::SegmentedImage, draw_labels::Bool)
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             labels_img = renderstring!(
                 labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hleft) end end
-    return labels_img end
+    return make_transparent(labels_img) end
 
-function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.1; j=0.01)
+function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.075; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
+    if alg == fast_scanning k*=1.5 end
     img = load(img_filename)
     segs = alg(img, k)
     c = length(segs.segment_labels)
 
     while c > max_segs
-        segs = c / max_segs > 2 ? alg(img, k+=j*2) : alg(img, k+=j)
+        segs = c / max_segs > 2 ? alg(img, k+=j*3) : alg(img, k+=j)
         segs = prune_min_size(segs, mpgs)
         c = length(segs.segment_labels)
-        println("segs:$(length(segs.segment_labels)) k=$k mpgs:$mpgs")
+        update = "alg:" * "$(ui["segs_funcs"][][1])"[23:end] * "
+            segs:$(length(segs.segment_labels)) k=$(round(k, digits=2)) mpgs:$mpgs"
+        @js_ w document.getElementById("segs_info").innerHTML = $update;
     end
     return segs
 end

@@ -10,17 +10,17 @@ handle(w, "op_tab_change") do args
             @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;""")) end end end
 
 handle(w, "img_selected") do args
-    global work_history, wi
-    img_filename = ui["user_img_filename"][]
-    push!(work_history, (nothing, nothing, nothing, img_filename, nothing, nothing)); wi+=1
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
+    alpha_img = make_transparent(GrayA.(load(ui["user_img_filename"][])));
+    save(alpha_filename, alpha_img)
     ui["img_tabs"][] = "Original"
-    @js_ w Blink.msg("img_tab_change", "")
+    @js_ w Blink.msg("img_tab_change", "");
     @js_ w document.getElementById("img_tabs").hidden = false;
-    end
+    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "go") do args
-    global work_history, wi
-    if length(work_history) > 0; work_history = work_history[1:wi] end
+    global work_history, wi; if length(work_history) > 0 end
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
     if ui["operations_tabs"][] == "Image Segmentation"
@@ -30,8 +30,8 @@ handle(w, "go") do args
             @js_ w alert("Please enter an input value(s)."); return end
 
         pt = @elapsed begin
-        args = [parse(Int64, replace(arg," "=>"")) for arg in split(ui["input"][], ",")]
-        if length(args) > 1
+        if length(split(ui["input"][], ",")) > 1
+            args = [parse(Int64, replace(arg," "=>"")) for arg in split(ui["input"][], ",")]
             segs = recur_segs(ui["user_img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
         else
             segs = param_segment_img(ui["user_img_filename"][], parse(
@@ -47,7 +47,7 @@ handle(w, "go") do args
             segs = ui["mod_segs_funcs"][][1](work_history[wi][1], try parse(
                 ui["mod_segs_funcs"][][2], ui["input"][]) catch
                     ui["input"][] end)
-            img_filename = work_history[wi][4]
+            segs_img_filename = work_history[wi][4]
             labels_filename = work_history[wi][5]
             segs_img = make_img_from_segs(segs, ui["colorize"][])
             labels_img = make_labels_from_segs(segs, ui["draw_labels"][]) end
@@ -69,19 +69,18 @@ handle(w, "go") do args
 
 handle(w, "img_tab_change") do args
     global work_history, wi, prev_img_tab
-    if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1; ui["img_tabs"][] = prev_img_tab
+    if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
+        ui["img_tabs"][] = prev_img_tab
     elseif ui["img_tabs"][] == ">>"; wi>=length(work_history) ? length(work_history) : wi+=1
         ui["img_tabs"][] = prev_img_tab end
 
-    img_filename = ui["user_img_filename"][]; dummy_img = ""
-    if wi > 1
+    if wi > 0
         save(work_history[wi][4], work_history[wi][2])
         dummy_img = work_history[wi][4] * "?dummy=$(now())"
         segs_info = work_history[wi][6]
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
     end
-
-    if ui["draw_labels"][] == true && typeof(work_history[wi][5]) == String
+    if ui["draw_labels"][] == true && wi > 0
         labels_filename = work_history[wi][5]
         save(labels_filename, work_history[wi][3])
         dummy_labels = labels_filename * "?dummy=$(now())"
@@ -89,15 +88,18 @@ handle(w, "img_tab_change") do args
     else
         @js_ w document.getElementById("overlay_labels").src = ""; end
 
+    img_filename = ui["user_img_filename"][]
     if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
-        @js_ w document.getElementById("display_img").src = $img_filename;
-        @js_ w document.getElementById("overlay_original").src = "";
+        @js_ w document.getElementById("segs_img").src = $img_filename;
+        @js_ w document.getElementById("overlay_alpha").src = "";
     elseif ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
-        @js_ w document.getElementById("display_img").src = $dummy_img;
-        @js_ w document.getElementById("overlay_original").src = "";
+        @js_ w document.getElementById("segs_img").src = $dummy_img;
+        @js_ w document.getElementById("overlay_alpha").src = "";
     elseif ui["img_tabs"][] == "Overlayed"; prev_img_tab = "Overlayed"
-        @js_ w document.getElementById("display_img").src = $dummy_img;
-        @js_ w document.getElementById("overlay_original").src = $img_filename; end end
+        if wi > 0 dummy_alpha = work_history[wi][4][1:end-12] * "_alpha.png?dummy=$(now())"
+        else dummy_alpha = ui["user_img_filename"][] * "_alpha.png?dummy=$(now())" end
+        @js_ w document.getElementById("segs_img").src = $dummy_img;
+        @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha; end end
 
 handle(w, "dropdown_selected") do args
     if ui["operations_tabs"][] == "Image Segmentation"
