@@ -1,5 +1,5 @@
 ui = Dict(
-    "font"=>newface("./fonts/OpenSans-Regular.ttf"),
+    "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "user_img_filename" => filepicker("Choose image"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
@@ -67,7 +67,7 @@ ui["display_imgs"] = vbox(
         "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
-            "id"=>"segs_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.9;",
+            "id"=>"segs_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.8;",
             "onclick"=>"""Blink.msg("img_click", [event.clientX, event.clientY]);""")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
@@ -87,4 +87,10 @@ ui["html"] = node(:div,
                 "onchange"=>"""Blink.msg("img_selected", null)"""))),
         vskip(1em),
         ui["toolset"],
-        hbox(ui["display_imgs"], hskip(0.75em), node(:p, "", attributes=Dict("id"=>"segs_details")))));
+        hbox(
+            ui["display_imgs"], hskip(0.75em),
+            vbox(
+                node(:img, attributes=Dict("id"=>"plot", "src"=>"", "style"=>"vertical-align:top;")),
+                "Segment Label - Pixel Count",
+                node(:ul, attributes=Dict("id"=>"segs_details")))))
+    );

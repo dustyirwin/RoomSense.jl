@@ -12,7 +12,7 @@ handle(w, "op_tab_change") do args
 handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
-    alpha_img = make_transparent(GrayA.(load(ui["user_img_filename"][])));
+    alpha_img = make_transparent(load(ui["user_img_filename"][]));
     save(alpha_filename, alpha_img)
     ui["img_tabs"][] = "Original"
     @js_ w Blink.msg("img_tab_change", "");
@@ -20,7 +20,7 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "go") do args
-    global work_history, wi; if length(work_history) > 0 end
+    global work_history, wi
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
     if ui["operations_tabs"][] == "Image Segmentation"
@@ -34,37 +34,35 @@ handle(w, "go") do args
             args = [parse(Int64, replace(arg," "=>"")) for arg in split(ui["input"][], ",")]
             segs = recur_segs(ui["user_img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
         else
-            segs = param_segment_img(ui["user_img_filename"][], parse(
+            segs = segment_img(ui["user_img_filename"][], parse(
                 ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
-        segs_img_filename = ui["user_img_filename"][][1:end-4] * "_working.png"
-        labels_filename = ui["user_img_filename"][][1:end-4] * "_labels.png"
-        segs_img = make_img_from_segs(segs, ui["colorize"][])
-        labels_img = make_labels_from_segs(segs, ui["draw_labels"][]) end
-        segs_info = seg_info(segs, pt)
+        img_filename = ui["user_img_filename"][] end
 
     elseif ui["operations_tabs"][] == "Modify Segments"
         try pt = @elapsed begin
-            segs = ui["mod_segs_funcs"][][1](work_history[wi][1], try parse(
+            segs = ui["mod_segs_funcs"][][1](work_history[wi][2], try parse(
                 ui["mod_segs_funcs"][][2], ui["input"][]) catch
                     ui["input"][] end)
-            segs_img_filename = work_history[wi][4]
-            labels_filename = work_history[wi][5]
-            segs_img = make_img_from_segs(segs, ui["colorize"][])
-            labels_img = make_labels_from_segs(segs, ui["draw_labels"][]) end
-            segs_info = seg_info(segs, pt)
+            img_filename = work_history[wi][1] end
         catch err; println("ERROR: ", err)
             @js_ w alert("No segments found to operate on."); end
 
     elseif ui["operations_tabs"][] == "Label Segments"
-        labels = try label_seg() catch end end
+        labels = "" end
 
-    try push!(work_history, (segs, segs_img, labels_img, segs_img_filename, labels_filename, segs_info)); wi+=1
-        segs_details = sort!(["$label - $pixel_count pxs" for (label, pixel_count) in collect(segs.segment_pixel_count)])
-        save(segs_img_filename, segs_img)
-        save(labels_filename, labels_img)
+    try
+        show_segs_details(segs)
+        segs_info = seg_info(segs, pt)
+        segs_img = make_segs_img(segs, ui["colorize"][])
+        labels_img = make_labels_img(segs, ui["draw_labels"][])
+        pxplot_img = make_plot_img(segs)
+        save(img_filename[1:end-4] * "_working.png", segs_img)
+        save(img_filename[1:end-4] * "_labels.png", labels_img)
+        draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6Gadfly.inch, 4Gadfly.inch), pxplot_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
+        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info)); wi+=1
     catch err; println(err) end
+
     @js_ w Blink.msg("img_tab_change", []);
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end;
 
@@ -77,34 +75,37 @@ handle(w, "img_tab_change") do args
     elseif ui["img_tabs"][] == ">>"; wi>=length(work_history) ? length(work_history) : wi+=1
         ui["img_tabs"][] = prev_img_tab end
 
-    if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
-        @js_ w document.getElementById("segs_img").src = $img_filename;
-        @js_ w document.getElementById("overlay_alpha").src = "";
-        return end
+    if wi > 0
+        segs_info = work_history[wi][6]
+        show_segs_details(work_history[wi][2])
+        save(work_history[wi][1][1:end-4] * "_working.png", work_history[wi][3])
+        save(work_history[wi][1][1:end-4] * "_pxplot.svg", work_history[wi][5])
+        dummy_plot = work_history[wi][1][1:end-4] * "_pxplot.svg?dummy=$(now())"
+        dummy_working = work_history[wi][1][1:end-4] * "_working.png?dummy=$(now())"
+        @js_ w document.getElementById("plot").src = $dummy_plot;
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
 
     if wi > 0 && ui["draw_labels"][] == true
-        labels_filename = work_history[wi][5]
-        save(labels_filename, work_history[wi][3])
+        labels_filename = work_history[wi][1][1:end-4] * "_labels.png"
+        save(labels_filename, work_history[wi][4])
         dummy_labels = labels_filename * "?dummy=$(now())"
         @js_ w document.getElementById("overlay_labels").src = $dummy_labels;
     else
         @js_ w document.getElementById("overlay_labels").src = ""; end
 
-    if wi > 0
-        save(work_history[wi][4], work_history[wi][2])
-        dummy_img = work_history[wi][4] * "?dummy=$(now())"
-        segs_info = work_history[wi][6]
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-    end
+    if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
+        @js_ w document.getElementById("segs_img").src = $img_filename;
+        @js_ w document.getElementById("overlay_alpha").src = "";
+        return end
 
     if ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
-        dummy_img = wi > 0 ? dummy_img : ""
-        @js_ w document.getElementById("segs_img").src = $dummy_img;
+        dummy_working = wi > 0 ? dummy_working : ""
+        @js_ w document.getElementById("segs_img").src = $dummy_working;
         @js_ w document.getElementById("overlay_alpha").src = "";
     elseif ui["img_tabs"][] == "Overlayed"; prev_img_tab = "Overlayed"
-        dummy_img = wi > 0 ? dummy_img : ""
-        dummy_alpha = wi > 0 ? work_history[wi][4][1:end-12] * "_alpha.png?dummy=$(now())" : ""
-        @js_ w document.getElementById("segs_img").src = $dummy_img;
+        dummy_working = wi > 0 ? dummy_working : ""
+        dummy_alpha = wi > 0 ? work_history[wi][1][1:end-4] * "_alpha.png?dummy=$(now())" : ""
+        @js_ w document.getElementById("segs_img").src = $dummy_working;
         @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha; end end
 
 handle(w, "dropdown_selected") do args
@@ -117,12 +118,3 @@ handle(w, "dropdown_selected") do args
     elseif ui["operations_tabs"][] == "Export Data"
         help_text = "Coming soon!" end
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
-
-handle(w, "labels") do args
-    global s; work_history = s["work_history"]; wi = s["wi"]
-    if ui["labels"][] == true
-        segs = work_history[end][1]
-        dummy_filename = make_labels_img(segs)
-        @js_ w document.getElementById("labels_img").src = $dummy_filename;
-    else
-        @js_ w document.getElementById("labels_img").src = ""; end end

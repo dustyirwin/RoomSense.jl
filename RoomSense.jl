@@ -1,21 +1,23 @@
 using Pkg
 Pkg.activate(".");
 
-using FreeTypeAbstraction
-using ImageSegmentation
-using ImageMagick
-using Interact
-using Images
-using Random
 using Blink
+using Interact
+using Random
 using Dates
 using Flux
 using JLD2
 using XLSX
+#using Gadfly
+using Images
+using ImageMagick
+using ImageSegmentation
+using FreeTypeAbstraction
+
 
 # Blink window
 w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
-title(w, "RoomSense v0.1"); size(w, 1200, 800);
+Blink.title(w, "RoomSense v0.1"); size(w, 1200, 800);
 
 # Mux hosting
 # using Mux
@@ -29,3 +31,7 @@ end
 
 # Electron diagnostic tools
 #tools(w)
+
+
+Pkg.add("Gadfly");
+using Gadfly

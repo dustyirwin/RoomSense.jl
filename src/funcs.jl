@@ -1,25 +1,23 @@
 seg_info = (segs::SegmentedImage, pt::Float64) -> "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
 
-make_transparent(img) = [GrayA{Float64}(e.val, 1.0-e.val) for e in img]
+make_transparent(img, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
-function param_segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Function)
+function segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Function)
     img = load(img_filename)
-    segs = alg(img, input) end
+    segs = alg(img, input)
+    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
+    return prune_segments(segs, [0], diff_fn) end
 
 function get_random_color(seed::Int64)
     Random.seed!(seed)
     rand(RGB{N0f8}) end
-
-function make_img_from_segs(segs::SegmentedImage, colorize::Bool)
-    if colorize == true; map(i->get_random_color(i), labels_map(segs))
-    else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
 function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
         if v < min_size; push!(prune_list, k) end end
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
     segs = prune_segments(segs, prune_list, diff_fn)
-    end
+    return prune_segments(segs, [0], diff_fn) end
 
 function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
     for i in split(labels, ",")
@@ -39,37 +37,55 @@ function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}(
                     splice!(segs.segment_labels, k) end end end end
     return prune_min_size(segs, 1, diff_fn) end
 
-function make_labels_from_segs(segs::SegmentedImage, draw_labels::Bool)
-    labels_img = GrayA.(ones(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
+function make_segs_img(segs::SegmentedImage, colorize::Bool)
+    if colorize == true; map(i->get_random_color(i), labels_map(segs))
+    else; map(i->segment_mean(segs, i), labels_map(segs)) end end
+
+function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
+    labels_img = zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2])
     if draw_labels == true
-        for label in segs.segment_labels
-            oneoverpxs = 1/segs.segment_pixel_count[label]
+        for (label, count) in collect(segs.segment_pixel_count)
+            oneoverpxs = 1 / count
             label_pts = []
-            for i in 1:size(segs.image_indexmap)[1]
-                for j in 1:size(segs.image_indexmap)[2]
-                    if segs.image_indexmap[i, j] == label
-                        push!(label_pts, (i, j))
+            for x in 1:size(segs.image_indexmap)[1]
+                for y in 1:size(segs.image_indexmap)[2]
+                    if segs.image_indexmap[x, y] == label
+                        push!(label_pts, (x, y))
             end end end
             x_centroid = trunc(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
-            labels_img = renderstring!(
-                labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hleft) end end
-    return make_transparent(labels_img) end
+            renderstring!(
+                labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
+    return make_transparent(labels_img, 1.0, 0.0) end
 
-function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.075; j=0.01)
+function make_plot_img(segs::SegmentedImage)
+    return Gadfly.plot(
+        x=[i[1] for i in collect(segs.segment_pixel_count)],
+        y=[i[2] for i in collect(segs.segment_pixel_count)],
+        Guide.xlabel("Segment Label"),
+        Guide.ylabel("Pixel Group Count"),
+        Geom.bar,
+        Scale.y_log10) end
+
+function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
     if alg == fast_scanning k*=1.5 end
-    img = load(img_filename)
-    segs = alg(img, k)
+    segs = segment_img(img_filename, k, alg)
     c = length(segs.segment_labels)
 
     while c > max_segs
-        segs = c / max_segs > 2 ? alg(img, k+=j*3) : alg(img, k+=j)
+        segs = c / max_segs > 2 ? segment_img(img_filename, k+=j*3, alg) : segment_img(img_filename, k+=j, alg)
         segs = prune_min_size(segs, mpgs)
         c = length(segs.segment_labels)
-        update = "alg:" * "$(ui["segs_funcs"][][1])"[23:end] * "
+        update = "alg:" * "$(ui["segs_funcs"][][1])"[19:end] * "
             segs:$(length(segs.segment_labels)) k=$(round(k, digits=2)) mpgs:$mpgs"
-        @js_ w document.getElementById("segs_info").innerHTML = $update;
-    end
-    return segs
-end
+        @js_ w document.getElementById("segs_info").innerHTML = $update; end
+    return segs end
+
+function show_segs_details(segs::SegmentedImage)
+    segs_details =
+        ["$label - $pixel_count" for (label, pixel_count) in sort!(
+            collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
+    lis = ["<li>$i</li>" for i in segs_details]
+    segs_details_html = "<ul>$([li for li in lis]...)</ul>"
+    @js_ w document.getElementById("segs_details").innerHTML = $segs_details_html end
