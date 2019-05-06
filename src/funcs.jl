@@ -1,12 +1,14 @@
-seg_info = (segs::SegmentedImage, pt::Float64) -> "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
+_segs_info = (segs::SegmentedImage, pt::Float64) -> "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
 
-make_transparent(img, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+
+function diff_fn_wrapper(segs)
+    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
 function segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Function)
     img = load(img_filename)
     segs = alg(img, input)
-    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
-    return prune_segments(segs, [0], diff_fn) end
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function get_random_color(seed::Int64)
     Random.seed!(seed)
@@ -15,27 +17,14 @@ function get_random_color(seed::Int64)
 function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
         if v < min_size; push!(prune_list, k) end end
-    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
-    segs = prune_segments(segs, prune_list, diff_fn)
-    return prune_segments(segs, [0], diff_fn) end
+    segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs))
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
     for i in split(labels, ",")
        push!(arr, parse(Int64, i)) end
-    diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label)
-    segs = prune_segments(segs, arr, diff_fn) end
-
-function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
-    for i in split(labels, ",")
-       push!(arr, parse(Int64, i)) end
-    for i in 1:size(segs.image_indexmap)[1]
-        for j in 1:size(segs.image_indexmap)[2]
-            if segs.image_indexmap[i, j] == arr[1]
-                segs.image_indexmap[i, j] = arr[2] end
-            for k in 1:length(segs.segment_labels)
-                if segs.segment_labels[k] == arr[1]
-                    splice!(segs.segment_labels, k) end end end end
-    return prune_min_size(segs, 1, diff_fn) end
+    segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
@@ -67,7 +56,7 @@ function make_plot_img(segs::SegmentedImage)
         Geom.bar,
         Scale.y_log10) end
 
-function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
+function recursive_segmentation(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
     if alg == fast_scanning k*=1.5 end
     segs = segment_img(img_filename, k, alg)
@@ -78,7 +67,7 @@ function recur_segs(img_filename::String, alg::Function, max_segs::Int64, mpgs::
         segs = prune_min_size(segs, mpgs)
         c = length(segs.segment_labels)
         update = "alg:" * "$(ui["segs_funcs"][][1])"[19:end] * "
-            segs:$(length(segs.segment_labels)) k=$(round(k, digits=2)) mpgs:$mpgs"
+            segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mpgs:$mpgs"
         @js_ w document.getElementById("segs_info").innerHTML = $update; end
     return segs end
 
@@ -89,3 +78,43 @@ function show_segs_details(segs::SegmentedImage)
     lis = ["<li>$i</li>" for i in segs_details]
     segs_details_html = "<ul>$([li for li in lis]...)</ul>"
     @js_ w document.getElementById("segs_details").innerHTML = $segs_details_html end
+
+function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
+    for i in split(labels, ",")
+       push!(arr, parse(Int64, i)) end
+    for i in 1:size(segs.image_indexmap)[1]
+        for j in 1:size(segs.image_indexmap)[2]
+            if segs.image_indexmap[i, j] == arr[1]
+                segs.image_indexmap[i, j] = arr[2] end
+            for k in 1:length(segs.segment_labels)
+                if segs.segment_labels[k] == arr[1]
+                    splice!(segs.segment_labels, k) end end end end
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+
+function split_segment(segs::SegmentedImage, label::Int64, pts::Tuple{Int64}, arr1=Vector{Int64}(), arr2=Vector{Int64}())
+    m = (pts[2][1] - pts[2][2]) / (pts[1][1] - pts[1][2])
+    b = pts[1][2] - slope * pts[1][1]
+    y = (x::Int64, slope, y_int) -> slope * x + y_int
+    new_label = length(segs.segment_labels) + 1
+    im = segs.image_indexmap
+    for i in 1:size(im)[1]
+        for j in 1:size(im)[2]
+            if im[i, j] == label
+                if j <= y(i, m, b)
+                    im[i, j] = new_label
+    end end end end
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+
+function make_splitline_img(segs::SegmentedImage, pts::Tuple)
+    m = (pts[2][1] - pts[2][2]) / (pts[1][1] - pts[1][2])
+    b = pts[1][2] - m * pts[1][1]
+    y = (x::Int64, m, b) -> m * x + b
+    imap = segs.image_indexmap
+    splitline = GrayA.(ones(size(imap)[1], size(imap)[2]))
+    for i in 1:size(segline)[1]
+        for j in 1:size(segline)[2]
+            if y(i, m, b) - j < 2 && j - y(i, m, b) < 2
+                segline[i,j] = GrayA{Float64}(0.0, 1.0)
+            else
+                segline[i,j] = GrayA{Float64}(0.0, 0.0) end end end
+    return splitline end

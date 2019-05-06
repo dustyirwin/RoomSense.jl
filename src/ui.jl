@@ -9,9 +9,10 @@ ui = Dict(
         "Unseeded Region Growing"=>(unseeded_region_growing, Float64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
-        "Merge Segments"=>(merge_segments, String),
+        "Remove Segments by MPGS"=>(prune_min_size, Int64),
         "Remove Segment(s)"=>(remove_segments, String),
-        "Remove Segments by MPGS"=>(prune_min_size, Int64),), attributes=Dict(
+        "Merge Segments"=>(merge_segments, String),
+        "Split Segment"=>(split_segment, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
     "colorize" => checkbox("Colorize result?"),
@@ -34,6 +35,7 @@ ui = Dict(
         prune_min_size=>"Removes any segment below the input minimum pixel segment size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge two segments by label, separated by commas. e.g. 1, 3",
+        split_segment=>"Enter segment to split by label, and select two points on the image below to bisect the segment.",
         "recur_seg"=>" Recursive input: max_segs, mpgs. e.g. '50, 2000'"
         ),
     "operations" => ["Image Segmentation", "Modify Segments", "Label Segments", "Export Data"],
@@ -47,7 +49,7 @@ ui["toolset"] = vbox(
     hbox(hskip(0.7em),
         node(:div, hbox(ui["segs_funcs"], hskip(0.6em), ui["input"], ui["options"]),
             attributes=Dict("id"=>"Image Segmentation toolset")),
-    node(:div, hbox(ui["mod_segs_funcs"], hskip(0.6em), Widgets.tooltip!(ui["input"], "tooltip!"), ui["options"]),
+        node(:div, hbox(ui["mod_segs_funcs"], hskip(0.6em), ui["input"], ui["options"]),
             attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, hbox(ui["segment_labels"], hskip(0.6em), ui["input"]),
             attributes=Dict("id"=>"Label Segments toolset", "hidden"=>true)), hskip(0.6em),
@@ -71,9 +73,12 @@ ui["display_imgs"] = vbox(
             "onclick"=>"""Blink.msg("img_click", [event.clientX, event.clientY]);""")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+        node(:img, attributes=Dict(
+            "id"=>"overlay_splitline", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")), attributes=Dict(
         "style"=>"position: relative;")));
 
@@ -89,8 +94,8 @@ ui["html"] = node(:div,
         ui["toolset"],
         hbox(
             ui["display_imgs"], hskip(0.75em),
-            vbox(
+            vbox(vskip(2em),
                 node(:img, attributes=Dict("id"=>"plot", "src"=>"", "style"=>"vertical-align:top;")),
-                "Segment Label - Pixel Count",
+                "Label - Pixel Count",
                 node(:ul, attributes=Dict("id"=>"segs_details")))))
     );

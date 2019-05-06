@@ -8,7 +8,7 @@ using Dates
 using Flux
 using JLD2
 using XLSX
-#using Gadfly
+using Gadfly
 using Images
 using ImageMagick
 using ImageSegmentation
@@ -25,13 +25,9 @@ Blink.title(w, "RoomSense v0.1"); size(w, 1200, 800);
 begin
     for f in readdir("./src")
         include("./src/" * f) end;
-    work_history=[]; wi = 0; prev_img_tab = "Original"
+    work_history = clicks = []; wi = 0; prev_img_tab = "Original"
     body!(w, ui["html"]());
 end
 
 # Electron diagnostic tools
 #tools(w)
-
-
-Pkg.add("Gadfly");
-using Gadfly

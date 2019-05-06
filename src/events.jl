@@ -52,7 +52,7 @@ handle(w, "go") do args
 
     try
         show_segs_details(segs)
-        segs_info = seg_info(segs, pt)
+        segs_info = _segs_info(segs, pt)
         segs_img = make_segs_img(segs, ui["colorize"][])
         labels_img = make_labels_img(segs, ui["draw_labels"][])
         pxplot_img = make_plot_img(segs)
@@ -118,3 +118,15 @@ handle(w, "dropdown_selected") do args
     elseif ui["operations_tabs"][] == "Export Data"
         help_text = "Coming soon!" end
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
+
+handle(w, "img_click") do args
+    @show args
+    if ui["dropdown_selected"][] == split_segment
+        push!(clicks, args)
+        pts = clicks[end-2:end]
+        splitline_img = make_segline_img(segs, pts)
+        splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
+        save(splitline_filename * "_split.png", splitline_img)
+        dummy_split = splitline_filename * "?dummy=$(now())"
+        @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
+end end
