@@ -6,7 +6,7 @@ function diff_fn_wrapper(segs)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
 function segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Function)
-    img = load(img_filename)
+    img = Gray.(load(img_filename))
     segs = alg(img, input)
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 

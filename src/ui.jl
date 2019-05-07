@@ -47,15 +47,11 @@ ui["options"] = hbox(ui["colorize"], ui["draw_labels"]);
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
-        node(:div, hbox(ui["segs_funcs"], hskip(0.6em), ui["input"], ui["options"]),
-            attributes=Dict("id"=>"Image Segmentation toolset")),
-        node(:div, hbox(ui["mod_segs_funcs"], hskip(0.6em), ui["input"], ui["options"]),
-            attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
-        node(:div, hbox(ui["segment_labels"], hskip(0.6em), ui["input"]),
-            attributes=Dict("id"=>"Label Segments toolset", "hidden"=>true)), hskip(0.6em),
-        node(:div, hbox(),
-            attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
-        ui["go"]),
+        node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Image Segmentation toolset")),
+        node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
+        node(:div, ui["segment_labels"], attributes=Dict("id"=>"Label Segments toolset", "hidden"=>true)), hskip(0.6em),
+        node(:div, hbox(), attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
+        ui["input"], ui["options"], ui["go"]),
     hbox(hskip(1em),
         node(:div, hbox(
             node(:p, ui["help_text"][ui["segs_funcs"][][1]] * ui["help_text"]["recur_seg"], attributes=Dict("id"=>"help_text")), hskip(1em),
@@ -69,17 +65,22 @@ ui["display_imgs"] = vbox(
         "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
-            "id"=>"segs_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.8;",
-            "onclick"=>"""Blink.msg("img_click", [event.clientX, event.clientY]);""")),
+            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:1.0; max-width:100%; height:auto")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_splitline", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")), attributes=Dict(
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")), attributes=Dict(
+        "onclick"=>"""Blink.msg("img_click", [
+            event.clientY - 169, event.clientX + 1,
+            document.getElementById("display_img").height,
+            document.getElementById("display_img").width,
+            document.getElementById("display_img").naturalHeight,
+            document.getElementById("display_img").naturalWidth]);""",
         "style"=>"position: relative;")));
 
 ui["html"] = node(:div,

@@ -32,7 +32,7 @@ handle(w, "go") do args
         pt = @elapsed begin
         if length(split(ui["input"][], ",")) > 1
             args = [parse(Int64, replace(arg," "=>"")) for arg in split(ui["input"][], ",")]
-            segs = recur_segs(ui["user_img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
+            segs = recursive_segmentation(ui["user_img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
         else
             segs = segment_img(ui["user_img_filename"][], parse(
                 ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
@@ -94,19 +94,17 @@ handle(w, "img_tab_change") do args
         @js_ w document.getElementById("overlay_labels").src = ""; end
 
     if ui["img_tabs"][] == "Original"; prev_img_tab = "Original"
-        @js_ w document.getElementById("segs_img").src = $img_filename;
         @js_ w document.getElementById("overlay_alpha").src = "";
-        return end
-
-    if ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
+        @js_ w document.getElementById("display_img").src = $img_filename;
+    elseif ui["img_tabs"][] == "Segmented"; prev_img_tab = "Segmented"
         dummy_working = wi > 0 ? dummy_working : ""
-        @js_ w document.getElementById("segs_img").src = $dummy_working;
         @js_ w document.getElementById("overlay_alpha").src = "";
+        @js_ w document.getElementById("display_img").src = $dummy_working;
     elseif ui["img_tabs"][] == "Overlayed"; prev_img_tab = "Overlayed"
         dummy_working = wi > 0 ? dummy_working : ""
         dummy_alpha = wi > 0 ? work_history[wi][1][1:end-4] * "_alpha.png?dummy=$(now())" : ""
-        @js_ w document.getElementById("segs_img").src = $dummy_working;
-        @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha; end end
+        @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha;
+        @js_ w document.getElementById("display_img").src = $dummy_working; end end
 
 handle(w, "dropdown_selected") do args
     if ui["operations_tabs"][] == "Image Segmentation"
@@ -120,13 +118,20 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
-    @show args
-    if ui["dropdown_selected"][] == split_segment
-        push!(clicks, args)
-        pts = clicks[end-2:end]
-        splitline_img = make_segline_img(segs, pts)
-        splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
-        save(splitline_filename * "_split.png", splitline_img)
-        dummy_split = splitline_filename * "?dummy=$(now())"
-        @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
-end end
+    if ui["operations_tabs"][] == "Modify Segments"
+        if ui["mod_segs_funcs"][] == split_segment
+            push!(clicks, args)
+            pts = clicks[end-2:end]
+            splitline_img = make_segline_img(segs, pts)
+            splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
+            save(splitline_filename * "_split.png", splitline_img)
+            dummy_split = splitline_filename * "?dummy=$(now())"
+            @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
+        else
+            @show args
+            height_ratio = args[3] / args[5]; width_ratio = args[4] / args[6]
+            args[1] = Int64(floor(args[1] * height_ratio)); args[2] = Int64(floor(args[2] * width_ratio))
+            label = work_history[wi][2].image_indexmap[args[1], args[2]]
+            println("label: $label @ $(args[1]), $(args[2])")
+            ui["input"][] = ui["input"][] * "$label, "
+end end end
