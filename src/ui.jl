@@ -65,7 +65,7 @@ ui["display_imgs"] = vbox(
         "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
-            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:1.0; max-width:100%; height:auto")),
+            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
@@ -81,7 +81,7 @@ ui["display_imgs"] = vbox(
             document.getElementById("display_img").width,
             document.getElementById("display_img").naturalHeight,
             document.getElementById("display_img").naturalWidth]);""",
-        "style"=>"position: relative;")));
+        "style"=>"position: relative; padding:0px; border:0px; margin:0px; max-width:100%; height:auto")));
 
 ui["html"] = node(:div,
     vbox(
@@ -90,13 +90,11 @@ ui["html"] = node(:div,
                 "id"=>"operation_tabs",
                 "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
             node(:div, ui["user_img_filename"], attributes=Dict(
-                "onchange"=>"""Blink.msg("img_selected", null)"""))),
+                "onchange"=>"""Blink.msg("img_selected", []);"""))),
         vskip(1em),
         ui["toolset"],
-        hbox(
-            ui["display_imgs"], hskip(0.75em),
-            vbox(vskip(2em),
-                node(:img, attributes=Dict("id"=>"plot", "src"=>"", "style"=>"vertical-align:top;")),
-                "Label - Pixel Count",
-                node(:ul, attributes=Dict("id"=>"segs_details")))))
-    );
+        ui["display_imgs"],
+        node(:img, attributes=Dict("id"=>"plot", "src"=>"")),
+        vbox(
+            "Label - Pixel Count",
+            node(:ul, attributes=Dict("id"=>"segs_details")))));

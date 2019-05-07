@@ -10,13 +10,18 @@ handle(w, "op_tab_change") do args
             @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;""")) end end end
 
 handle(w, "img_selected") do args
+    @show args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
-    alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
-    alpha_img = make_transparent(load(ui["user_img_filename"][]));
-    save(alpha_filename, alpha_img)
-    ui["img_tabs"][] = "Original"
-    @js_ w Blink.msg("img_tab_change", "");
-    @js_ w document.getElementById("img_tabs").hidden = false;
+    try
+        user_img = load(ui["user_img_filename"][])
+        Blink.size(w, Images.width(user_img) > 800 ? Images.width(user_img) : 800, Images.height(user_img) + 170)
+        alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
+        alpha_img = make_transparent(user_img);
+        save(alpha_filename, alpha_img)
+        ui["img_tabs"][] = "Original"
+        @js_ w Blink.msg("img_tab_change", "");
+        @js_ w document.getElementById("img_tabs").hidden = false;
+    catch @js_ alert("Error loading image file.") end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "go") do args
@@ -129,8 +134,9 @@ handle(w, "img_click") do args
             @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
         else
             @show args
-            height_ratio = args[3] / args[5]; width_ratio = args[4] / args[6]
-            args[1] = Int64(floor(args[1] * height_ratio)); args[2] = Int64(floor(args[2] * width_ratio))
+            args[1] = Int64(floor(args[1] * (args[3] / args[5])))
+            args[2] = Int64(floor(args[2] * (args[4] / args[6])))
+            @show args
             label = work_history[wi][2].image_indexmap[args[1], args[2]]
             println("label: $label @ $(args[1]), $(args[2])")
             ui["input"][] = ui["input"][] * "$label, "
