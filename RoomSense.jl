@@ -1,15 +1,16 @@
 using Pkg
 Pkg.activate(".");
 
+using BSON
 using Blink
 using Interact
 using Random
 using Dates
-using Flux
-using JLD2
 using XLSX
-using Gadfly
+using Flux
 using Images
+using Gadfly
+using CuArrays
 using ImageMagick
 using ImageSegmentation
 using FreeTypeAbstraction

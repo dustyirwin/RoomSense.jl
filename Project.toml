@@ -4,7 +4,9 @@ authors = ["dusty irwin <dusty.irwin@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
 Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
+CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 FreeTypeAbstraction = "663a7486-cb36-511b-a19d-713bb74d65c9"
 Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
@@ -12,6 +14,6 @@ ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 ImageSegmentation = "80713f31-8817-5129-9cf8-209ff8fb23e1"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 Interact = "c601a237-2ae4-5e1e-952c-7a85b0c7eef1"
-JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+Metalhead = "dbeba491-748d-5e0e-a39e-b530a07fa0cc"
 Mux = "a975b10e-0019-58db-a62f-e48ff68538c9"
 XLSX = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"

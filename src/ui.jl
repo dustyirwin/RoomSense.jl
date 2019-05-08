@@ -16,7 +16,7 @@ ui = Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
     "colorize" => checkbox("Colorize result?"),
-    "input" => textbox("See notes below..."),
+    "input" => textbox("See notes below...", attributes=Dict("size"=>"30")),
     "segment_labels" => dropdown(OrderedDict(
         "Office"=>"OF",
         "Common Areas"=>"CA",
@@ -65,7 +65,7 @@ ui["display_imgs"] = vbox(
         "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
-            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:1.0;")),
+            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
@@ -74,14 +74,15 @@ ui["display_imgs"] = vbox(
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_splitline", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")), attributes=Dict(
-        "onclick"=>"""Blink.msg("img_click", [
-            event.clientY - 169, event.clientX + 1,
-            document.getElementById("display_img").height,
-            document.getElementById("display_img").width,
-            document.getElementById("display_img").naturalHeight,
-            document.getElementById("display_img").naturalWidth]);""",
-        "style"=>"position: relative; padding:0px; border:0px; margin:0px; max-width:100%; height:auto")));
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+        attributes=Dict(
+            "onclick"=>"""Blink.msg("img_click", [
+                event.clientY - 169, event.clientX + 1,
+                document.getElementById("display_img").height,
+                document.getElementById("display_img").width,
+                document.getElementById("display_img").naturalHeight,
+                document.getElementById("display_img").naturalWidth]);""",
+            "style"=>"position: relative; padding:0px; border:0px; margin:0px; max-width:100%; height:auto")));
 
 ui["html"] = node(:div,
     vbox(
@@ -94,7 +95,8 @@ ui["html"] = node(:div,
         vskip(1em),
         ui["toolset"],
         ui["display_imgs"],
-        node(:img, attributes=Dict("id"=>"plot", "src"=>"")),
+        hbox(node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>""))),
         vbox(
-            "Label - Pixel Count",
-            node(:ul, attributes=Dict("id"=>"segs_details")))));
+            hbox(hskip(1em), "Label - Pixel Count")),
+            hbox(hskip(1em), node(:ul, attributes=Dict("id"=>"segs_details"))))
+            );

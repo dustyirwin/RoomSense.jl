@@ -21,7 +21,8 @@ handle(w, "img_selected") do args
         ui["img_tabs"][] = "Original"
         @js_ w Blink.msg("img_tab_change", "");
         @js_ w document.getElementById("img_tabs").hidden = false;
-    catch @js_ alert("Error loading image file.") end
+    catch
+        @js_ w alert("Error loading image file.") end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "go") do args
@@ -53,7 +54,10 @@ handle(w, "go") do args
             @js_ w alert("No segments found to operate on."); end
 
     elseif ui["operations_tabs"][] == "Label Segments"
-        labels = "" end
+        try
+            for label in split(replace(ui["input"][], " "=>""), ",")
+                labels[parse(Int64, label)] = ui["segment_labels"][] end
+            catch end end
 
     try
         show_segs_details(segs)
@@ -123,21 +127,19 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
-    if ui["operations_tabs"][] == "Modify Segments"
-        if ui["mod_segs_funcs"][] == split_segment
-            push!(clicks, args)
-            pts = clicks[end-2:end]
-            splitline_img = make_segline_img(segs, pts)
-            splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
-            save(splitline_filename * "_split.png", splitline_img)
-            dummy_split = splitline_filename * "?dummy=$(now())"
-            @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
-        else
-            @show args
-            args[1] = Int64(floor(args[1] * (args[3] / args[5])))
-            args[2] = Int64(floor(args[2] * (args[4] / args[6])))
-            @show args
-            label = work_history[wi][2].image_indexmap[args[1], args[2]]
-            println("label: $label @ $(args[1]), $(args[2])")
-            ui["input"][] = ui["input"][] * "$label, "
-end end end
+    if ui["operations_tabs"][] == "Modify Segments" && ui["mod_segs_funcs"][] == split_segment
+        push!(clicks, args)
+        pts = clicks[end-2:end]
+        splitline_img = make_segline_img(segs, pts)
+        splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
+        save(splitline_filename * "_split.png", splitline_img)
+        dummy_split = splitline_filename * "?dummy=$(now())"
+        @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
+    elseif ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
+        @show args
+        #args[1] = Int64(floor(args[1] * (args[3] / args[5])))
+        #args[2] = Int64(floor(args[2] * (args[4] / args[6])))
+        label = work_history[wi][2].image_indexmap[args[1], args[2]]
+        println("label: $label @ $(args[1]), $(args[2])")
+        ui["input"][] = ui["input"][] * "$label, "
+end end

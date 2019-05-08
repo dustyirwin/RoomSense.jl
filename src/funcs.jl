@@ -43,6 +43,7 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
             end end end
             x_centroid = trunc(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
+            try label = label * labels[label] catch end
             renderstring!(
                 labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
     return make_transparent(labels_img, 1.0, 0.0) end
