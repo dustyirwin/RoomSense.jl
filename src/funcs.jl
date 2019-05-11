@@ -11,7 +11,7 @@ function segment_img(img_filename::String, input::Union{Int64,Float64}, alg::Fun
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function get_random_color(seed::Int64)
-    Random.seed!(seed)
+    seed!(seed)
     rand(RGB{N0f8}) end
 
 function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector{Int64}())
@@ -49,13 +49,13 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
     return make_transparent(labels_img, 1.0, 0.0) end
 
 function make_plot_img(segs::SegmentedImage)
-    return Gadfly.plot(
+    return plot(
         x=[i[1] for i in collect(segs.segment_pixel_count)],
         y=[i[2] for i in collect(segs.segment_pixel_count)],
-        Guide.xlabel("Segment Label"),
-        Guide.ylabel("Pixel Group Count"),
-        Geom.bar,
-        Scale.y_log10) end
+        xlabel("Segment Label"),
+        ylabel("Pixel Group Count"),
+        bar,
+        y_log10) end
 
 function recursive_segmentation(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end

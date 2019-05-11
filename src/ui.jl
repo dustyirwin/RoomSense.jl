@@ -5,8 +5,7 @@ ui = Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "segs_funcs" => dropdown(OrderedDict(
         "Fast Scanning"=>(fast_scanning, Float64),
-        "Felzenszwalb"=>(felzenszwalb, Int64),
-        "Unseeded Region Growing"=>(unseeded_region_growing, Float64)), attributes=Dict(
+        "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Remove Segments by MPGS"=>(prune_min_size, Int64),
@@ -31,7 +30,6 @@ ui = Dict(
     "help_text" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}.",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}.",
-        unseeded_region_growing=>"Input is the threshold value, range {0, 1}.",
         prune_min_size=>"Removes any segment below the input minimum pixel segment size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge two segments by label, separated by commas. e.g. 1, 3",
