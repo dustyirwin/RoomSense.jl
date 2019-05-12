@@ -48,14 +48,17 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
                 labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
     return make_transparent(labels_img, 1.0, 0.0) end
 
-function make_plot_img(segs::SegmentedImage)
-    return plot(
-        x=[i[1] for i in collect(segs.segment_pixel_count)],
-        y=[i[2] for i in collect(segs.segment_pixel_count)],
-        xlabel("Segment Label"),
-        ylabel("Pixel Group Count"),
-        bar,
-        y_log10) end
+function make_plot_img(segs::SegmentedImage, create_plot::Bool)
+    if create_plot == true
+        return plot(
+            x=[i[1] for i in collect(segs.segment_pixel_count)],
+            y=[i[2] for i in collect(segs.segment_pixel_count)],
+            xlabel("Segment Label"),
+            ylabel("Pixel Group Count"),
+            bar,
+            y_log10)
+    else
+     return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
 
 function recursive_segmentation(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
@@ -67,7 +70,7 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
         segs = c / max_segs > 2 ? segment_img(img_filename, k+=j*3, alg) : segment_img(img_filename, k+=j, alg)
         segs = prune_min_size(segs, mpgs)
         c = length(segs.segment_labels)
-        update = "alg:" * "$(ui["segs_funcs"][][1])"[19:end] * "
+        update = "alg:" * "$alg"[19:end] * "
             segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mpgs:$mpgs"
         @js_ w document.getElementById("segs_info").innerHTML = $update; end
     return segs end
@@ -91,31 +94,3 @@ function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}(
                 if segs.segment_labels[k] == arr[1]
                     splice!(segs.segment_labels, k) end end end end
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
-
-function split_segment(segs::SegmentedImage, label::Int64, pts::Tuple{Int64}, arr1=Vector{Int64}(), arr2=Vector{Int64}())
-    m = (pts[2][1] - pts[2][2]) / (pts[1][1] - pts[1][2])
-    b = pts[1][2] - slope * pts[1][1]
-    y = (x::Int64, slope, y_int) -> slope * x + y_int
-    new_label = length(segs.segment_labels) + 1
-    im = segs.image_indexmap
-    for i in 1:size(im)[1]
-        for j in 1:size(im)[2]
-            if im[i, j] == label
-                if j <= y(i, m, b)
-                    im[i, j] = new_label
-    end end end end
-    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
-
-function make_splitline_img(segs::SegmentedImage, pts::Tuple)
-    m = (pts[2][1] - pts[2][2]) / (pts[1][1] - pts[1][2])
-    b = pts[1][2] - m * pts[1][1]
-    y = (x::Int64, m, b) -> m * x + b
-    imap = segs.image_indexmap
-    splitline = GrayA.(ones(size(imap)[1], size(imap)[2]))
-    for i in 1:size(segline)[1]
-        for j in 1:size(segline)[2]
-            if y(i, m, b) - j < 2 && j - y(i, m, b) < 2
-                segline[i,j] = GrayA{Float64}(0.0, 1.0)
-            else
-                segline[i,j] = GrayA{Float64}(0.0, 0.0) end end end
-    return splitline end

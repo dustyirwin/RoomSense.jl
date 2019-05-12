@@ -63,10 +63,10 @@ handle(w, "go") do args
         segs_info = _segs_info(segs, pt)
         segs_img = make_segs_img(segs, ui["colorize"][])
         labels_img = make_labels_img(segs, ui["draw_labels"][])
-        pxplot_img = make_plot_img(segs)
+        pxplot_img = make_plot_img(segs, ui["create_plot"][])
         save(img_filename[1:end-4] * "_working.png", segs_img)
         save(img_filename[1:end-4] * "_labels.png", labels_img)
-        draw(SVGJS(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
+        draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
         push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info)); wi+=1
     catch err; println(err) end

@@ -10,10 +10,10 @@ ui = Dict(
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Remove Segments by MPGS"=>(prune_min_size, Int64),
         "Remove Segment(s)"=>(remove_segments, String),
-        "Merge Segments"=>(merge_segments, String),
-        "Split Segment"=>(split_segment, String)), attributes=Dict(
+        "Merge Segments"=>(merge_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
+    "create_plot"=>checkbox(value=true; label="Create plot?"),
     "colorize" => checkbox("Colorize result?"),
     "input" => textbox("See notes below...", attributes=Dict("size"=>"30")),
     "segment_labels" => dropdown(OrderedDict(
@@ -41,7 +41,7 @@ ui = Dict(
 
 ui["operations_tabs"] = tabs(Observable(ui["operations"]));
 
-ui["options"] = hbox(ui["colorize"], ui["draw_labels"]);
+ui["options"] = hbox(ui["colorize"], ui["draw_labels"], ui["create_plot"]);
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
@@ -69,9 +69,6 @@ ui["display_imgs"] = vbox(
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
-        node(:img, attributes=Dict(
-            "id"=>"overlay_splitline", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         attributes=Dict(
             "onclick"=>"""Blink.msg("img_click", [

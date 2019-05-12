@@ -1,38 +1,49 @@
 using Pkg
 @pkg_str "activate ."
-@pkg_str "precompile"
+#@pkg_str "precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
-#using Flux
-#using CuArrays
-#using Metalhead
-#using ImageMagick
+using Flux
+using CuArrays
 using Interact
+using Metalhead
 using Dates: now
 using Random: seed!
-using BSON: @save, @load
+using JLD2: @save, @load
 using FreeTypeAbstraction: renderstring!, newface
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
 using Blink: Window, title, size, handle, msg, js, body!, @js, @js_
-using Gadfly: plot, inch, draw, SVGJS, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
-using ImageSegmentation: fast_scanning, felzenszwalb, prune_segments, segment_pixel_count, labels_map, SegmentedImage
+using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
+using ImageSegmentation: fast_scanning, felzenszwalb, prune_segments, segment_pixel_count,
+    labels_map, segment_mean, SegmentedImage
 
 # Blink window
-w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(async=true, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "RoomSense v0.1"); size(w, 1200, 800);
-
-# Mux hosting
-# using Mux
-
-begin
-    for f in readdir("./src")
-        include("./src/" * f) end;
-    work_history = clicks = []; wi = 0; prev_img_tab = "Original"
-    body!(w, ui["html"]());
-end
 
 # Electron diagnostic tools
 #tools(w)
 
-println("...complete! Coded with <3  by Dustin Irwin 2019.")
+begin
+    for f in readdir("./src")
+        include("./src/" * f) end;
+    work_history=clicks=[]; wi=0; prev_img_tab="Original";
+    body!(w, ui["html"]);
+end
+
+"""
+# web hosting via Mux
+using Mux
+@app RoomSense = (
+  Mux.defaults,
+  page(respond(body!(Window(Dict("webPreferences"=>Dict("webSecurity"=>false))), ui["html"]))),
+  page("/about",
+       probabilty(0.1, respond("<h1>Boo!</h1>")),
+       respond("<h1>About Me</h1>")),
+  page("/user/:user", respond(w)),
+  Mux.notfound());
+serve(RoomSense)
+"""
+
+println("...complete! coded with ♡ by dustin irwin 2019.")
