@@ -13,7 +13,6 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     try
         user_img = load(ui["user_img_filename"][])
-        size(w, width(user_img) > 800 ? width(user_img) : 800, height(user_img) + 170)
         alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
         alpha_img = make_transparent(user_img);
         save(alpha_filename, alpha_img)
@@ -50,7 +49,7 @@ handle(w, "go") do args
                     ui["input"][] end)
             img_filename = work_history[wi][1] end
         catch err; println("ERROR: ", err)
-            @js_ w alert("No segments found to operate on."); end
+            @js_ w alert("Could not complete request; check inputs."); end
 
     elseif ui["operations_tabs"][] == "Label Segments"
         try
@@ -68,7 +67,8 @@ handle(w, "go") do args
         save(img_filename[1:end-4] * "_labels.png", labels_img)
         draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info)); wi+=1
+        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info))
+        wi=length(work_history); ui["input"][] = ""
     catch err; println(err) end
 
     @js_ w msg("img_tab_change", []);
@@ -90,6 +90,7 @@ handle(w, "img_tab_change") do args
         save(work_history[wi][1][1:end-4] * "_pxplot.svg", work_history[wi][5])
         dummy_plot = work_history[wi][1][1:end-4] * "_pxplot.svg?dummy=$(now())"
         dummy_working = work_history[wi][1][1:end-4] * "_working.png?dummy=$(now())"
+        @js_ w document.getElementById("segs_details").hidden = false;
         @js_ w document.getElementById("plot").src = $dummy_plot;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
 
@@ -126,15 +127,7 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
-    if ui["operations_tabs"][] == "Modify Segments" && ui["mod_segs_funcs"][] == split_segment
-        push!(clicks, args)
-        pts = clicks[end-2:end]
-        splitline_img = make_segline_img(segs, pts)
-        splitline_filename = work_history[wi][1][1:end-4] * "_split.png"
-        save(splitline_filename * "_split.png", splitline_img)
-        dummy_split = splitline_filename * "?dummy=$(now())"
-        @js_ w document.getElementById("overlay_splitline").src = $dummy_split;
-    elseif ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
+    if ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
         #args[1] = Int64(floor(args[1] * (args[3] / args[5])))
         #args[2] = Int64(floor(args[2] * (args[4] / args[6])))
         label = work_history[wi][2].image_indexmap[args[1], args[2]]

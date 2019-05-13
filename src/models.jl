@@ -1,4 +1,4 @@
-@load "./models/GoogleNet20.jld2" m; m;
+@load "./models/GoogleNet20.jld2" m;
 
 # Construct model from GoogleNet
 function make_model(classes::Int64)

@@ -20,12 +20,6 @@ function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector
     segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
-function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
-    for i in split(labels, ",")
-       push!(arr, parse(Int64, i)) end
-    segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
-    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
-
 function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
@@ -80,17 +74,23 @@ function show_segs_details(segs::SegmentedImage)
         ["$label - $pixel_count" for (label, pixel_count) in sort!(
             collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     lis = ["<li>$i</li>" for i in segs_details]
-    segs_details_html = "<ul>$([li for li in lis]...)</ul>"
+    lis = lis[1:(length(lis) > 100 ? 100 : end)]
+    segs_details_html = "<strong>Label - Pixel Count</strong>" * "<ul>$([li for li in lis]...)</ul>"
     @js_ w document.getElementById("segs_details").innerHTML = $segs_details_html end
 
 function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
-    for i in split(labels, ",")
+    labels = replace(labels," "=>""); labels = labels[end]==',' ? labels[1:end-1] : labels
+    for i in unique!(split(labels, ','))
        push!(arr, parse(Int64, i)) end
-    for i in 1:size(segs.image_indexmap)[1]
-        for j in 1:size(segs.image_indexmap)[2]
-            if segs.image_indexmap[i, j] == arr[1]
-                segs.image_indexmap[i, j] = arr[2] end
-            for k in 1:length(segs.segment_labels)
-                if segs.segment_labels[k] == arr[1]
-                    splice!(segs.segment_labels, k) end end end end
+    for i in 1:height(segs.image_indexmap)
+        for j in 1:width(segs.image_indexmap)
+            if segs.image_indexmap[i, j] in arr
+                segs.image_indexmap[i, j] = arr[end] end end end
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+
+function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
+    labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
+    for i in split(labels, ",")
+        push!(arr, parse(Int64, i)) end
+    segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end

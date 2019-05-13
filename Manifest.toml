@@ -59,7 +59,7 @@ git-tree-sha1 = "6453cef4f9cb8ded8e28e4d6d12e11e20eb692ea"
 repo-rev = "master"
 repo-url = "https://github.com/MikeInnes/BSON.jl.git"
 uuid = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
-version = "0.2.3"
+version = "0.2.3+"
 
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"

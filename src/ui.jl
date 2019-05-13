@@ -13,7 +13,7 @@ ui = Dict(
         "Merge Segments"=>(merge_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
-    "create_plot"=>checkbox(value=true; label="Create plot?"),
+    "create_plot"=>checkbox(value=true; label="Draw plot?"),
     "colorize" => checkbox("Colorize result?"),
     "input" => textbox("See notes below...", attributes=Dict("size"=>"30")),
     "segment_labels" => dropdown(OrderedDict(
@@ -32,8 +32,7 @@ ui = Dict(
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}.",
         prune_min_size=>"Removes any segment below the input minimum pixel segment size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
-        merge_segments=>"Merge two segments by label, separated by commas. e.g. 1, 3",
-        split_segment=>"Enter segment to split by label, and select two points on the image below to bisect the segment.",
+        merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
         "recur_seg"=>" Recursive input: max_segs, mpgs. e.g. '50, 2000'"
         ),
     "operations" => ["Image Segmentation", "Modify Segments", "Label Segments", "Export Data"],
@@ -49,7 +48,7 @@ ui["toolset"] = vbox(
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, ui["segment_labels"], attributes=Dict("id"=>"Label Segments toolset", "hidden"=>true)), hskip(0.6em),
         node(:div, hbox(), attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
-        ui["input"], ui["options"], ui["go"]),
+        ui["input"], ui["go"], ui["options"]),
     hbox(hskip(1em),
         node(:div, hbox(
             node(:p, ui["help_text"][ui["segs_funcs"][][1]] * ui["help_text"]["recur_seg"], attributes=Dict("id"=>"help_text")), hskip(1em),
@@ -66,18 +65,22 @@ ui["display_imgs"] = vbox(
             "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 1px; left: 1px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 1px; left: 1px; opacity: 1.0;")),
         attributes=Dict(
             "onclick"=>"""Blink.msg("img_click", [
-                event.clientY - 169, event.clientX + 1,
+                event.clientY - 170, event.clientX,
                 document.getElementById("display_img").height,
                 document.getElementById("display_img").width,
                 document.getElementById("display_img").naturalHeight,
                 document.getElementById("display_img").naturalWidth]);""",
-            "style"=>"position: relative; padding:0px; border:0px; margin:0px; max-width:100%; height:auto")));
+            "style"=>"position: relative; padding:0px; border:0px; margin:0px;")));
+
+ui["segs_details"] = hbox(hskip(1em),
+    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), hskip(1em),
+    node(:ul, attributes=Dict("id"=>"segs_details")));
 
 ui["html"] = node(:div,
     vbox(
@@ -90,8 +93,5 @@ ui["html"] = node(:div,
         vskip(1em),
         ui["toolset"],
         ui["display_imgs"],
-        hbox(node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>""))),
-        vbox(
-            hbox(hskip(1em), "Label - Pixel Count")),
-            hbox(hskip(1em), node(:ul, attributes=Dict("id"=>"segs_details"))))
-            );
+        ui["segs_details"])
+    );

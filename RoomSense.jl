@@ -13,7 +13,7 @@ using Random: seed!
 using JLD2: @save, @load
 using FreeTypeAbstraction: renderstring!, newface
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
-using Blink: Window, title, size, handle, msg, js, body!, @js, @js_
+using Blink: Window, title, size, handle, msg, js, tools, body!, @js, @js_
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
 using ImageSegmentation: fast_scanning, felzenszwalb, prune_segments, segment_pixel_count,
     labels_map, segment_mean, SegmentedImage
