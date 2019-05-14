@@ -15,7 +15,7 @@ ui = Dict(
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
     "create_plot"=>checkbox(value=false; label="Draw plot?"),
     "colorize" => checkbox("Colorize result?"),
-    "input" => textbox("See notes below...", attributes=Dict("size"=>"30")),
+    "input" => textbox("See instructions below...", attributes=Dict("size"=>"30")),
     "segment_labels" => dropdown(OrderedDict(
         "Office"=>"OF",
         "Common Areas"=>"CA",
@@ -30,7 +30,7 @@ ui = Dict(
     "help_text" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}.",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}.",
-        prune_min_size=>"Removes any segment below the input minimum pixel segment size (MPGS) in pixels.",
+        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
         "recur_seg"=>" Recursive input: max_segs, mpgs. e.g. '50, 2000'"
@@ -89,9 +89,9 @@ ui["html"] = node(:div,
                 "id"=>"operation_tabs",
                 "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
             node(:div, ui["user_img_filename"], attributes=Dict(
-                "onchange"=>"""Blink.msg("img_selected", []);""")),
+                "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
             node(:div, "", attributes=Dict("id"=>"img_info"))),
-        vskip(1em),
+        vskip(0.75em),
         ui["toolset"],
         ui["display_imgs"],
         ui["segs_details"])

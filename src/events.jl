@@ -13,12 +13,14 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     try
         user_img = load(ui["user_img_filename"][])
+        img_info = "height: $(height(user_img))  width: $(width(user_img))"
         alpha_filename = ui["user_img_filename"][][1:end-4] * "_alpha.png"
         alpha_img = make_transparent(user_img);
         save(alpha_filename, alpha_img)
         ui["img_tabs"][] = "Original"
         @js_ w msg("img_tab_change", "");
         @js_ w document.getElementById("img_tabs").hidden = false;
+        @js_ w document.getElementById("img_info").innerHTML = $img_info;
     catch err
         println(err); @js_ w alert("Error loading image file."); end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
@@ -67,7 +69,7 @@ handle(w, "go") do args
         save(img_filename[1:end-4] * "_labels.png", labels_img)
         draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info))
+        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info, OrderedDict()))
         wi=length(work_history); ui["input"][] = ""
     catch err; println(err) end
 
@@ -128,8 +130,10 @@ handle(w, "dropdown_selected") do args
 
 handle(w, "img_click") do args
     if ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
-        #args[1] = Int64(floor(args[1] * (args[3] / args[5])))
-        #args[2] = Int64(floor(args[2] * (args[4] / args[6])))
-        label = work_history[wi][2].image_indexmap[args[1], args[2]]
-        println("label: $label @ $(args[1]), $(args[2])")
-        ui["input"][] = ui["input"][] * "$label, " end end
+        args[1] = Int64(floor(args[1] * (args[5] / args[3])))
+        args[2] = Int64(floor(args[2] * (args[6] / args[4])))
+        if length(work_history) > 0
+            label = work_history[wi][2].image_indexmap[args[1], args[2]]
+            ui["input"][] = ui["input"][] * "$label, "
+        else label = 0 end
+        println("label: $label @ $(args[1]), $(args[2])") end end

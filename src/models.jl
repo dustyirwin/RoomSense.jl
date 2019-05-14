@@ -17,6 +17,8 @@ model = Chain(
 @time model(rand(128,128,1,1)|>gpu)
 """
 
+#try using CuArrays catch err; println(err) end
+
 function update_model(model, data, epochs::Int64)
     model = model|>gpu
     loss(x, y) = Flux.crossentropy(model(x), y)
@@ -25,4 +27,4 @@ function update_model(model, data, epochs::Int64)
     @save "./models/space_type_classifier.jld2" model
 end
 
-@load "./models/space_type_classifier.jld2" model
+#try @load "./models/space_type_classifier.jld2" model catch err; println(err) end
