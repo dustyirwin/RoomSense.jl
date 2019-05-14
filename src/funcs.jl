@@ -98,23 +98,6 @@ function tag_segments(segs::SegmentedImage, input::String)
         if label in args
             work_history[wi][7][label] = ui["segment_labels"][] end  end end
 
-function parse_input(input::String, args=Vector{Union{String,Int64,Float64}}())
-    #parse inputs for Ints and Floats within strings and tuples of strings
-    labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
-    for i in unique!(split(labels, ','))
-        push!(arr, parse(Int64, i)) end
-    segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
-    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
-
-function label_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
-    global work_history
-    labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
-    for i in unique!(split(labels, ','))
-        push!(arr, parse(Int64, i)) end
-    for label in segs.segment_labels
-        if label in arr
-            work_history[wi][7][label] = ui["segment_labels"][] end  end end
-
 function parse_input(input::String, args=Vector{Union{String,Int64,Float64}})
     #parse inputs for Ints and Floats within strings and tuples of strings
     labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels

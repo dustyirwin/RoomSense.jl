@@ -66,13 +66,15 @@ ui["display_imgs"] = vbox(
             "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 1px; left: 1px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 1px; left: 1px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         attributes=Dict(
+            "id"=>"img_container",
             "onclick"=>"""Blink.msg("img_click", [
-                event.clientY - 170, event.clientX,
+                event.pageY - document.getElementById("img_container").offsetTop,
+                event.pageX,
                 document.getElementById("display_img").height,
                 document.getElementById("display_img").width,
                 document.getElementById("display_img").naturalHeight,

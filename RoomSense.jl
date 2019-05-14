@@ -45,8 +45,4 @@ using Mux
 serve(RoomSense)
 """
 
-<<<<<<< HEAD
 println("...complete! Coded with ♡ by dusty.irwin@gmail.com for Cadmus Group 2019.")
-=======
-println("...complete! Coded with ♡ by Dustin Irwin for Cadmus Group 2019.")
->>>>>>> a19e0e84b8be3836f4385229ccb8b8c1ad2da158

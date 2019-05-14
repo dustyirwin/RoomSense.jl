@@ -129,6 +129,7 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
+    @show args
     if ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
         args[1] = Int64(floor(args[1] * (args[5] / args[3])))
         args[2] = Int64(floor(args[2] * (args[6] / args[4])))
@@ -136,4 +137,4 @@ handle(w, "img_click") do args
             label = work_history[wi][2].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, "
         else label = 0 end
-        println("label: $label @ $(args[1]), $(args[2])") end end
+        println("label: $label @ y:$(args[1]), x:$(args[2])") end end
