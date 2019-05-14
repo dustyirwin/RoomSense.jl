@@ -90,7 +90,7 @@ function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}(
 
 function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
     labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
-    for i in split(labels, ",")
+    for i in unique!(split(labels, ','))
         push!(arr, parse(Int64, i)) end
     segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end

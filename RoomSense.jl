@@ -1,13 +1,12 @@
 using Pkg
 @pkg_str "activate ."
-#@pkg_str "precompile"
+@pkg_str "precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
 using Flux
 using CuArrays
 using Interact
-using Metalhead
 using Dates: now
 using Random: seed!
 using JLD2: @save, @load

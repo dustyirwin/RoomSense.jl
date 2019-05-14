@@ -13,7 +13,7 @@ ui = Dict(
         "Merge Segments"=>(merge_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Draw labels?"),
-    "create_plot"=>checkbox(value=true; label="Draw plot?"),
+    "create_plot"=>checkbox(value=false; label="Draw plot?"),
     "colorize" => checkbox("Colorize result?"),
     "input" => textbox("See notes below...", attributes=Dict("size"=>"30")),
     "segment_labels" => dropdown(OrderedDict(
@@ -35,7 +35,7 @@ ui = Dict(
         merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
         "recur_seg"=>" Recursive input: max_segs, mpgs. e.g. '50, 2000'"
         ),
-    "operations" => ["Image Segmentation", "Modify Segments", "Label Segments", "Export Data"],
+    "operations" => ["Segment Image", "Modify Segments", "Label Segments", "Export Data"],
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
 ui["operations_tabs"] = tabs(Observable(ui["operations"]));
@@ -44,7 +44,7 @@ ui["options"] = hbox(ui["colorize"], ui["draw_labels"], ui["create_plot"]);
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
-        node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Image Segmentation toolset")),
+        node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset")),
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, ui["segment_labels"], attributes=Dict("id"=>"Label Segments toolset", "hidden"=>true)), hskip(0.6em),
         node(:div, hbox(), attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
@@ -89,7 +89,8 @@ ui["html"] = node(:div,
                 "id"=>"operation_tabs",
                 "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
             node(:div, ui["user_img_filename"], attributes=Dict(
-                "onchange"=>"""Blink.msg("img_selected", []);"""))),
+                "onchange"=>"""Blink.msg("img_selected", []);""")),
+            node(:div, "", attributes=Dict("id"=>"img_info"))),
         vskip(1em),
         ui["toolset"],
         ui["display_imgs"],

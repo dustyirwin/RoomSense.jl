@@ -27,7 +27,7 @@ handle(w, "go") do args
     global work_history, wi
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
-    if ui["operations_tabs"][] == "Image Segmentation"
+    if ui["operations_tabs"][] == "Segment Image"
         try load(ui["user_img_filename"][]) catch
             @js_ w alert("Please select a valid image file."); return end
         if ui["input"][] == ""
@@ -116,7 +116,7 @@ handle(w, "img_tab_change") do args
         @js_ w document.getElementById("display_img").src = $dummy_working; end end
 
 handle(w, "dropdown_selected") do args
-    if ui["operations_tabs"][] == "Image Segmentation"
+    if ui["operations_tabs"][] == "Segment Image"
         help_text = ui["help_text"][ui["segs_funcs"][][1]] * ui["help_text"]["recur_seg"]
     elseif ui["operations_tabs"][] == "Modify Segments"
         help_text = ui["help_text"][ui["mod_segs_funcs"][][1]]

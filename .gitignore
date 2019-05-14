@@ -3,3 +3,4 @@
 /tmp
 /models
 scratch.jl
+*.jld2
