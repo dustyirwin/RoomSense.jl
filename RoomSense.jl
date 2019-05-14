@@ -1,11 +1,10 @@
 using Pkg
 @pkg_str "activate ."
-@pkg_str "precompile"
+#@pkg_str "precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
 using Flux
-using CuArrays
 using Interact
 using Dates: now
 using Random: seed!
@@ -18,7 +17,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb, prune_segments, segment_pi
     labels_map, segment_mean, SegmentedImage
 
 # Blink window
-w = Window(async=true, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "RoomSense v0.1"); size(w, 1200, 800);
 
 # Electron diagnostic tools
@@ -27,12 +26,13 @@ title(w, "RoomSense v0.1"); size(w, 1200, 800);
 begin
     for f in readdir("./src")
         include("./src/" * f) end;
-    work_history=clicks=[]; wi=0; prev_img_tab="Original";
+    work_history=[]; wi=0; prev_img_tab="Original";
     body!(w, ui["html"]);
 end
 
+
 """
-# web hosting via Mux
+# Mux web hosting
 using Mux
 @app RoomSense = (
   Mux.defaults,
@@ -45,4 +45,4 @@ using Mux
 serve(RoomSense)
 """
 
-println("...complete! coded with ♡ by dustin irwin 2019.")
+println("...complete! Coded with ♡ by dusty.irwin@gmail.com for Cadmus Group 2019.")

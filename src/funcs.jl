@@ -71,26 +71,54 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
 
 function show_segs_details(segs::SegmentedImage)
     segs_details =
-        ["$label - $pixel_count" for (label, pixel_count) in sort!(
+        ["$label$(try work_history[wi][7][label] catch; "" end) - $pixel_count" for (label, pixel_count) in sort!(
             collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     lis = ["<li>$i</li>" for i in segs_details]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     segs_details_html = "<strong>Label - Pixel Count</strong>" * "<ul>$([li for li in lis]...)</ul>"
     @js_ w document.getElementById("segs_details").innerHTML = $segs_details_html end
 
-function merge_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
-    labels = replace(labels," "=>""); labels = labels[end]==',' ? labels[1:end-1] : labels
-    for i in unique!(split(labels, ','))
-       push!(arr, parse(Int64, i)) end
+function merge_segments(segs::SegmentedImage, input::String)
+    args = parse_input(input)
     for i in 1:height(segs.image_indexmap)
         for j in 1:width(segs.image_indexmap)
-            if segs.image_indexmap[i, j] in arr
-                segs.image_indexmap[i, j] = arr[end] end end end
+            if segs.image_indexmap[i, j] in args
+                segs.image_indexmap[i, j] = args[end] end end end
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
-function remove_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
+function remove_segments(segs::SegmentedImage, input::String)
+    args = parse_input(input)
+    segs = prune_segments(segs, args, diff_fn_wrapper(segs))
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+
+function tag_segments(segs::SegmentedImage, input::String)
+    global work_history
+    args = parse_input(input)
+    for label in segs.segment_labels
+        if label in args
+            work_history[wi][7][label] = ui["segment_labels"][] end  end end
+
+function parse_input(input::String, args=Vector{Union{String,Int64,Float64}}())
+    #parse inputs for Ints and Floats within strings and tuples of strings
     labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
     for i in unique!(split(labels, ','))
         push!(arr, parse(Int64, i)) end
     segs = prune_segments(segs, arr, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+
+function label_segments(segs::SegmentedImage, labels::String, arr=Vector{Int64}())
+    global work_history
+    labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
+    for i in unique!(split(labels, ','))
+        push!(arr, parse(Int64, i)) end
+    for label in segs.segment_labels
+        if label in arr
+            work_history[wi][7][label] = ui["segment_labels"][] end  end end
+
+function parse_input(input::String, args=Vector{Union{String,Int64,Float64}})
+    #parse inputs for Ints and Floats within strings and tuples of strings
+    labels = replace(labels, " "=>""); labels = labels[end] == ',' ? labels[1:end-1] : labels
+    for i in unique!(split(labels, ','))
+        push!(args, parse(Int64, i)) end
+    return args
+end
