@@ -5,7 +5,8 @@ ui = Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "segs_funcs" => dropdown(OrderedDict(
         "Fast Scanning"=>(fast_scanning, Float64),
-        "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
+        "Felzenszwalb"=>(felzenszwalb, Int64),
+        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Remove Segments by MPGS"=>(prune_min_size, Int64),
@@ -29,13 +30,12 @@ ui = Dict(
         "Custom"=>""), multiple=false, attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "help_text" => Dict(
-        fast_scanning=>"Input is the threshold value, range in {0, 1}.",
-        felzenszwalb=>"Input is the k-value, typical range in {5, 500}.",
+        fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
+        felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
-        "recur_seg"=>" Recursive input: max_segs, mpgs. e.g. '50, 2000'"
-        ),
+        seeded_region_growing=>"Click on the image to create a segment seed at that location."),
     "operations" => ["Segment Image", "Modify Segments", "Label Segments", "Export Data"],
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
@@ -52,8 +52,8 @@ ui["toolset"] = vbox(
         ui["input"], ui["go"], ui["options"]),
     hbox(hskip(1em),
         node(:div, hbox(
-            node(:p, ui["help_text"][ui["segs_funcs"][][1]] * ui["help_text"]["recur_seg"], attributes=Dict("id"=>"help_text")), hskip(1em),
-            node(:strong, node(:p, "", attributes=Dict("id"=>"segs_info")))), attributes=Dict(
+            node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text")), hskip(1em),
+            node(:strong, "", attributes=Dict("id"=>"segs_info"))), attributes=Dict(
                 "style"=>"buffer: 5px;"
             ))));
 

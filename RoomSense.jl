@@ -13,7 +13,7 @@ using FreeTypeAbstraction: renderstring!, newface
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
 using Blink: Window, title, size, handle, msg, js, tools, body!, @js, @js_
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
-using ImageSegmentation: fast_scanning, felzenszwalb, prune_segments, segment_pixel_count,
+using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments, segment_pixel_count,
     labels_map, segment_mean, SegmentedImage
 
 # Blink window
@@ -45,4 +45,4 @@ using Mux
 serve(RoomSense)
 """
 
-println("...complete! Coded with ♡ by dusty.irwin@gmail.com for Cadmus Group 2019.")
+println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")

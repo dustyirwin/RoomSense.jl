@@ -36,8 +36,10 @@ handle(w, "go") do args
             @js_ w alert("Please enter an input value(s)."); return end
 
         pt = @elapsed begin
-        if length(split(ui["input"][], ",")) > 1
-            args = [parse(Int64, replace(arg," "=>"")) for arg in split(ui["input"][], ",")]
+        args = parse_input(ui["input"][])
+        if length(split(ui["input"][], ";")) > 1
+            segs = seeded_region_growing(Gray.(load(ui["user_img_filename"][])), args)
+        elseif length(split(ui["input"][], ",")) > 1
             segs = recursive_segmentation(ui["user_img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
         else
             segs = segment_img(ui["user_img_filename"][], parse(
@@ -60,8 +62,8 @@ handle(w, "go") do args
             catch end end
 
     try
-        show_segs_details(segs)
-        segs_info = _segs_info(segs, pt)
+        segs_info = make_segs_info(segs, pt)
+        segs_details = make_segs_details(segs)
         segs_img = make_segs_img(segs, ui["colorize"][])
         labels_img = make_labels_img(segs, ui["draw_labels"][])
         pxplot_img = make_plot_img(segs, ui["create_plot"][])
@@ -69,7 +71,8 @@ handle(w, "go") do args
         save(img_filename[1:end-4] * "_labels.png", labels_img)
         draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info, OrderedDict()))
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
+        push!(work_history, (img_filename, segs, segs_img, labels_img, pxplot_img, segs_info, ui["input"][], OrderedDict()))
         wi=length(work_history); ui["input"][] = ""
     catch err; println(err) end
 
@@ -81,19 +84,20 @@ handle(w, "img_tab_change") do args
     img_filename = ui["user_img_filename"][]
 
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
-        ui["img_tabs"][] = prev_img_tab
+        ui["img_tabs"][] = prev_img_tab; ui["input"][] = work_history[wi][7]
     elseif ui["img_tabs"][] == ">>"; wi>=length(work_history) ? length(work_history) : wi+=1
-        ui["img_tabs"][] = prev_img_tab end
+        ui["img_tabs"][] = prev_img_tab; ; ui["input"][] = work_history[wi][7] end
 
     if wi > 0
         segs_info = work_history[wi][6]
-        show_segs_details(work_history[wi][2])
+        segs_details = make_segs_details(work_history[wi][2])
         save(work_history[wi][1][1:end-4] * "_working.png", work_history[wi][3])
         save(work_history[wi][1][1:end-4] * "_pxplot.svg", work_history[wi][5])
         dummy_plot = work_history[wi][1][1:end-4] * "_pxplot.svg?dummy=$(now())"
         dummy_working = work_history[wi][1][1:end-4] * "_working.png?dummy=$(now())"
         @js_ w document.getElementById("segs_details").hidden = false;
         @js_ w document.getElementById("plot").src = $dummy_plot;
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
 
     if wi > 0 && ui["draw_labels"][] == true
@@ -119,7 +123,7 @@ handle(w, "img_tab_change") do args
 
 handle(w, "dropdown_selected") do args
     if ui["operations_tabs"][] == "Segment Image"
-        help_text = ui["help_text"][ui["segs_funcs"][][1]] * ui["help_text"]["recur_seg"]
+        help_text = ui["help_text"][ui["segs_funcs"][][1]]
     elseif ui["operations_tabs"][] == "Modify Segments"
         help_text = ui["help_text"][ui["mod_segs_funcs"][][1]]
     elseif ui["operations_tabs"][] == "Label Segments"
@@ -129,12 +133,14 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
-    @show args
+    args[1] = Int64(floor(args[1] * (args[5] / args[3])))
+    args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     if ui["operations_tabs"][] == "Modify Segments" || ui["operations_tabs"][] == "Label Segments"
-        args[1] = Int64(floor(args[1] * (args[5] / args[3])))
-        args[2] = Int64(floor(args[2] * (args[6] / args[4])))
         if length(work_history) > 0
             label = work_history[wi][2].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, "
         else label = 0 end
-        println("label: $label @ y:$(args[1]), x:$(args[2])") end end
+        println("label: $label @ y:$(args[1]), x:$(args[2])")
+    elseif ui["operations_tabs"][] == "Segment Image"
+        ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]); "
+        println("seed placed @ y:$(args[1]), x:$(args[2])") end end
