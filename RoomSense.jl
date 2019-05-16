@@ -26,7 +26,7 @@ title(w, "RoomSense v0.1"); size(w, 1200, 800);
 begin
     for f in readdir("./src")
         include("./src/" * f) end;
-    work_history=[]; wi=0; prev_img_tab="Original";
+    s=[Dict{String,Any}("prev_img_tab"=>"Original")]; wi=1;
     body!(w, ui["html"]);
 end
 

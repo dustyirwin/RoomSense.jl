@@ -25,10 +25,10 @@ uuid = "ec485272-7323-5ecc-a04f-4719b315124d"
 version = "0.0.4"
 
 [[Arpack]]
-deps = ["BinaryProvider", "Libdl", "LinearAlgebra", "Random", "SparseArrays", "Test"]
-git-tree-sha1 = "1ce1ce9984683f0b6a587d5bdbc688ecb480096f"
+deps = ["BinaryProvider", "Libdl", "LinearAlgebra"]
+git-tree-sha1 = "07a2c077bdd4b6d23a40342a8a108e2ee5e58ab6"
 uuid = "7d9fca2a-8960-54d3-9f78-7d1dccf2cb97"
-version = "0.3.0"
+version = "0.3.1"
 
 [[AssetRegistry]]
 deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
@@ -889,9 +889,9 @@ version = "1.0.0"
 
 [[Tables]]
 deps = ["IteratorInterfaceExtensions", "LinearAlgebra", "Requires", "TableTraits", "Test"]
-git-tree-sha1 = "9e748316f5aa7b7753c90de612ef98fe8b0ea297"
+git-tree-sha1 = "5ab16d650736b21449731fa712bbdae60b3a7ab1"
 uuid = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
-version = "0.2.1"
+version = "0.2.2"
 
 [[Test]]
 deps = ["Distributed", "InteractiveUtils", "Logging", "Random"]
@@ -974,7 +974,7 @@ version = "0.4.1"
 
 [[XLSX]]
 deps = ["Dates", "EzXML", "Printf", "ZipFile"]
-git-tree-sha1 = "8907ba4bc42613af33fb88bd975ea6a3b32e162b"
+git-tree-sha1 = "014013b33eade5a2954b6d4db4805566a52ed15f"
 repo-rev = "master"
 repo-url = "https://github.com/felipenoris/XLSX.jl.git"
 uuid = "fdbf4ff8-1666-58a4-91e7-1b58723a45e0"

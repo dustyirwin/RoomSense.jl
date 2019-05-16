@@ -25,7 +25,7 @@ function make_segs_img(segs::SegmentedImage, colorize::Bool)
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
 function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
-    labels_img = zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2])
+    overlay_img = zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2])
     if draw_labels == true
         for (label, count) in collect(segs.segment_pixel_count)
             oneoverpxs = 1 / count
@@ -39,8 +39,19 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             try label = label * labels[label] catch end
             renderstring!(
-                labels_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
-    return make_transparent(labels_img, 1.0, 0.0) end
+                    overlay_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid,
+                    halign=:hcenter, valign=:vcenter) end end
+    return make_transparent(overlay_img, 1.0, 0.0) end
+
+function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
+    overlay_img = zeros(height(s[wi]["user_img"]), width(s[wi]["user_img"]))
+    if seeds != nothing
+        for seed in seeds
+            renderstring!(
+                overlay_img, "$(seed[2])", ui["font"], (30, 30), seed[1][1], seed[1][2],
+                halign=:hcenter, valign=:vcenter)
+    end end
+    return make_transparent(overlay_img, 1.0, 0.0) end
 
 function make_plot_img(segs::SegmentedImage, create_plot::Bool)
     if create_plot == true
@@ -52,7 +63,7 @@ function make_plot_img(segs::SegmentedImage, create_plot::Bool)
             bar,
             y_log10)
     else
-     return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
+        return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
 
 function recursive_segmentation(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
@@ -71,7 +82,7 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
 
 function make_segs_details(segs::SegmentedImage)
     segs_details =
-        ["$label$(try work_history[wi][7][label] catch; "" end) - $pixel_count" for (label, pixel_count) in sort!(
+        ["$label$(try s[wi]["input"][label] catch; "" end) - $pixel_count" for (label, pixel_count) in sort!(
             collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     lis = ["<li>$i</li>" for i in segs_details]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
@@ -92,11 +103,11 @@ function remove_segments(segs::SegmentedImage, input::String)
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function tag_segments(segs::SegmentedImage, input::String)
-    global work_history
+    global s
     args = parse_input(input)
     for label in segs.segment_labels
         if label in args
-            work_history[wi][7][label] = ui["segment_labels"][] end end end
+            s[wi]["input"][label] = ui["segment_labels"][] end end end
 
 function parse_input(input::String)
     input = replace(input, " "=>""); input = input[end] == ',' || input[end] == ';' ? input[1:end-1] : input
