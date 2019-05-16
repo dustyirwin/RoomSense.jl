@@ -112,8 +112,13 @@ function tag_segments(segs::SegmentedImage, input::String)
 function parse_input(input::String)
     input = replace(input, " "=>""); input = input[end] == ',' || input[end] == ';' ? input[1:end-1] : input
     if ';' in input; args=Vector{Tuple{CartesianIndex{2},Int64}}()
-        for (i, j) in enumerate(split(input, ';'))
-            push!(args, (CartesianIndex(parse(Int64, split(j, ',')[1]), parse(Int64, split(j, ',')[2])), i)) end
+        for (i, seed) in enumerate(split(input, ';'))
+            seed = [parse(Int64, seed) for seed in split(seed, ',')]
+            if length(seed) == 3
+                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3]))
+            elseif length(seed) == 2
+                push!(args, (CartesianIndex(seed[1], seed[2]), i))
+            end end
     else
         for i in unique!(split(input, ','))
             if '.' in i; args = Vector{Float64}()

@@ -120,7 +120,6 @@ handle(w, "img_tab_change") do args
 
     if wi > 1 && ui["draw_seeds"][] == true
         seeds_filename = s[wi]["img_filename"][1:end-4] * "_seeds.png"
-        save(seeds_filename, s[wi]["seeds_img"])
         dummy_seeds = seeds_filename * "?dummy=$(now())"
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
     else
@@ -162,7 +161,11 @@ handle(w, "img_click") do args
             label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
     elseif ui["operations_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
-        ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]); "
+        seed_num = parse(Int64, split(ui["input"][], ';')[end-1][end])
+        if args[7] == true
+            ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; "
+        else
+            ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); " end
         seeds = parse_input(ui["input"][])
         seeds_img = make_seeds_img(seeds)
         s[wi]["seeds_img"] = seeds_img

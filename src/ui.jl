@@ -4,7 +4,7 @@ ui = Dict(
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "segs_funcs" => dropdown(OrderedDict(
-        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})
+        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}}),
         "Fast Scanning"=>(fast_scanning, Float64),
         "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
@@ -82,7 +82,8 @@ ui["display_imgs"] = vbox(
                 document.getElementById("display_img").height,
                 document.getElementById("display_img").width,
                 document.getElementById("display_img").naturalHeight,
-                document.getElementById("display_img").naturalWidth]);""",
+                document.getElementById("display_img").naturalWidth,
+                event.ctrlKey]);""",
             "style"=>"position: relative; padding:0px; border:0px; margin:0px;")));
 
 ui["segs_details"] = vbox(hskip(1em),
