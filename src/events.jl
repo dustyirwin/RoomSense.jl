@@ -158,8 +158,13 @@ handle(w, "img_click") do args
             label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
     elseif ui["operations_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
+<<<<<<< HEAD
         seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
         if args[7] == false
+=======
+        seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 0 end
+        if args[7] == true
+>>>>>>> b743391704942938455ab9ed78e6e37def5486ad
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; "
         else
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); " end
