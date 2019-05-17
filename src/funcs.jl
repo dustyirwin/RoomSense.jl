@@ -109,20 +109,22 @@ function tag_segments(segs::SegmentedImage, input::String)
         if label in args
             s[wi]["input"][label] = ui["segment_labels"][] end end end
 
-function parse_input(input::String)
-    input = replace(input, " "=>""); input = input[end] == ',' || input[end] == ';' ? input[1:end-1] : input
-    if ';' in input; args=Vector{Tuple{CartesianIndex{2},Int64}}()
-        for (i, seed) in enumerate(split(input, ';'))
-            seed = [parse(Int64, seed) for seed in split(seed, ',')]
-            if length(seed) == 3
-                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3]))
-            elseif length(seed) == 2
-                push!(args, (CartesianIndex(seed[1], seed[2]), i))
-            end end
+function parse_input(input::String, args=Vector{Tuple{CartesianIndex{2},Int64}}())
+    if ';' in input;
+        input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
+        if length(split(input, ';')) > 1
+            for (i, seed) in enumerate(split(input, ';'))
+                seed = [parse(Int64, seed) for seed in split(seed, ',')]
+                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
+        else
+            seed = [parse(Int64, seed) for seed in split(input, ',')]
+            push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
     else
+        input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
         for i in unique!(split(input, ','))
             if '.' in i; args = Vector{Float64}()
                 push!(args, parse(Float64, i))
             else; args = Vector{Int64}()
-                push!(args, parse(Int64, i)) end end end
+                push!(args, parse(Int64, i))
+    end end end
     return args end
