@@ -27,7 +27,7 @@ handle(w, "img_selected") do args
 
 handle(w, "go") do args
     global s, wi
-    img_filename=ui["img_filename"][]
+    img_filename=ui["img_filename"][]; s[wi]["input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
     if ui["operations_tabs"][] == "Segment Image"
@@ -146,7 +146,7 @@ handle(w, "dropdown_selected") do args
     elseif ui["operations_tabs"][] == "Tag Segments"
         help_text = "Add a tag to a segment(s) by label. To use a custom tag enter the tag name, followed by labels. eg Loft, 1, 2,..."
     elseif ui["operations_tabs"][] == "Export Data"
-        help_text = "Coming soon!" end
+        help_text = "Click two points on the image and enter the numerical distance between them. eg 120" end
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args

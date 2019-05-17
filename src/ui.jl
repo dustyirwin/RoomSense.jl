@@ -13,8 +13,12 @@ ui = Dict(
         "Remove Segment(s)"=>(remove_segments, String),
         "Merge Segments"=>(merge_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_labels"=>checkbox(value=false; label="Draw labels"),
-    "draw_seeds"=>checkbox(value=true; label="Draw seeds"),
+    "export_data_funcs" => dropdown(OrderedDict(
+        "Calculate areas"=>(calculate_areas, Float64),
+        "Export to Excel"=>(export_xlsx, String)), attributes=Dict(
+            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
+    "draw_labels"=>checkbox(value=true; label="Draw labels"),
+    "draw_seeds"=>checkbox(value=false; label="Draw seeds"),
     "draw_plot"=>checkbox(value=false; label="Draw plots"),
     "colorize" => checkbox("Colorize result"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"40")),
@@ -36,7 +40,7 @@ ui = Dict(
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
-        seeded_region_growing=>"Click on the image to create a segment seed at that location."),
+        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number."),
     "operations" => ["Segment Image", "Modify Segments", "Tag Segments", "Export Data"],
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
@@ -54,8 +58,8 @@ ui["toolset"] = vbox(
     hbox(hskip(0.7em),
         node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset")),
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
+        node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
         node(:div, ui["segment_labels"], attributes=Dict("id"=>"Tag Segments toolset", "hidden"=>true)), hskip(0.6em),
-        node(:div, "Coming soon! ", attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
         ui["input"], hskip(0.6em), ui["go"], vbox(vskip(0.35em), hbox(hskip(0.25em), ui["colorize"], ui["draw_plot"]))),
     hbox(hskip(1em),
         node(:div, hbox(
@@ -64,12 +68,13 @@ ui["toolset"] = vbox(
                 "style"=>"buffer: 5px;"
             ))));
 
-ui["display_options"] = hbox(ui["draw_labels"], ui["draw_seeds"]);
+ui["display_options"] = node(:div,
+    hbox(
+        ui["img_tabs"], hskip(1.5em), vbox(vskip(0.6em), hbox(ui["draw_labels"], ui["draw_seeds"]))), attributes=Dict(
+        "onclick"=>"""Blink.msg("img_tab_click", null)""",
+        "id"=>"img_tabs", "hidden"=>true));
 
 ui["display_imgs"] = vbox(
-    node(:div, hbox(ui["img_tabs"], hskip(1em), vbox(vskip(0.75em),ui["display_options"])), attributes=Dict(
-        "onclick"=>"""Blink.msg("img_tab_click", null)""",
-        "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
             "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:0.9;")),
@@ -94,12 +99,14 @@ ui["display_imgs"] = vbox(
                 event.ctrlKey]);""",
             "style"=>"position: relative; padding:0px; border:0px; margin:0px;")));
 
-ui["segs_details"] = vbox(hskip(1em),
-    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), hskip(1em),
+ui["segs_details"] = vbox(vskip(1em),
+    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), vskip(1em),
     node(:ul, attributes=Dict("id"=>"segs_details")));
 
 ui["html"] = vbox(
     ui["toolbox"],
     vskip(0.75em),
     ui["toolset"],
-    hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]));
+    ui["display_options"],
+    hbox(
+        ui["display_imgs"], hskip(1em), ui["segs_details"]));

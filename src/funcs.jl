@@ -102,13 +102,6 @@ function remove_segments(segs::SegmentedImage, input::String)
     segs = prune_segments(segs, args, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
-function tag_segments(segs::SegmentedImage, input::String)
-    global s
-    args = parse_input(input)
-    for label in segs.segment_labels
-        if label in args
-            s[wi]["input"][label] = ui["segment_labels"][] end end end
-
 function parse_input(input::String, args=Vector{Tuple{CartesianIndex{2},Int64}}())
     if ';' in input;
         input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
@@ -116,15 +109,34 @@ function parse_input(input::String, args=Vector{Tuple{CartesianIndex{2},Int64}}(
             for (i, seed) in enumerate(split(input, ';'))
                 seed = [parse(Int64, seed) for seed in split(seed, ',')]
                 push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
-        else
-            seed = [parse(Int64, seed) for seed in split(input, ',')]
-            push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
-    else
-        input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
-        for i in unique!(split(input, ','))
-            if '.' in i; args = Vector{Float64}()
-                push!(args, parse(Float64, i))
-            else; args = Vector{Int64}()
-                push!(args, parse(Int64, i))
-    end end end
-    return args end
+            else
+                seed = [parse(Int64, seed) for seed in split(input, ',')]
+                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
+            else
+                input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
+                for i in unique!(split(input, ','))
+                    if '.' in i; args = Vector{Float64}()
+                        push!(args, parse(Float64, i))
+                    else; args = Vector{Int64}()
+                        push!(args, parse(Int64, i))
+                    end end end
+                    return args end
+
+function tag_segments(segs::SegmentedImage, input::String)
+    global s
+    args = parse_input(input)
+    for label in segs.segment_labels
+        if label in args
+            s[wi]["input"][label] = ui["custom_labels"][] end end end
+
+function calculate_areas(segs::SegmentedImage, length::Float64)
+    global s
+    c1 = s[wi]["clicks"][end-1]; c2 = s[wi]["clicks"][end]
+    px_dist = ((c2[1]-c1[1])^2 + (c2[2]-c1[2])^2)^(1/2)
+    scaling_factor = length / px_dist
+    areas = Dict(label=>area*scaling_factor for (label,pixel_count) in collect(segs.segment_pixel_count))
+end
+
+function export_xlsx()
+    return ""
+end
