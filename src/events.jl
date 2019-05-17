@@ -97,19 +97,20 @@ handle(w, "img_tab_click") do args
     elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1
         ui["img_tabs"][] = s[wi]["prev_img_tab"]; ; ui["input"][] = s[wi]["input"] end
 
-    ui["img_filename"][] = s[wi]["img_filename"]
-    segs_info = s[wi]["segs_info"]
-    segs_details = make_segs_details(s[wi]["segs"])
-    save(s[wi]["img_filename"][1:end-4] * "_segs.png", s[wi]["segs_img"])
-    save(s[wi]["img_filename"][1:end-4] * "_pxplot.svg", s[wi]["pxplot_img"])
-    dummy_plot = s[wi]["img_filename"][1:end-4] * "_pxplot.svg?dummy=$(now())"
-    dummy_segs = s[wi]["img_filename"][1:end-4] * "_segs.png?dummy=$(now())"
-    @js_ w document.getElementById("plot").src = $dummy_plot;
-    @js_ w document.getElementById("segs_details").hidden = false;
-    @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
-    @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
+    if wi > 1
+        ui["img_filename"][] = s[wi]["img_filename"]
+        segs_info = s[wi]["segs_info"]
+        segs_details = make_segs_details(s[wi]["segs"])
+        save(s[wi]["img_filename"][1:end-4] * "_segs.png", s[wi]["segs_img"])
+        save(s[wi]["img_filename"][1:end-4] * "_pxplot.svg", s[wi]["pxplot_img"])
+        dummy_plot = s[wi]["img_filename"][1:end-4] * "_pxplot.svg?dummy=$(now())"
+        dummy_segs = s[wi]["img_filename"][1:end-4] * "_segs.png?dummy=$(now())"
+        @js_ w document.getElementById("plot").src = $dummy_plot;
+        @js_ w document.getElementById("segs_details").hidden = false;
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
 
-    if ui["draw_labels"][] == true
+    if wi > 1 && ui["draw_labels"][] == true
         labels_filename = s[wi]["img_filename"][1:end-4] * "_labels.png"
         save(labels_filename, s[wi]["labels_img"])
         dummy_labels = labels_filename * "?dummy=$(now())"
@@ -117,7 +118,7 @@ handle(w, "img_tab_click") do args
     else
         @js_ w document.getElementById("overlay_labels").src = ""; end
 
-    if ui["draw_seeds"][] == true
+    if wi > 1 && ui["draw_seeds"][] == true
         seeds_filename = s[wi]["img_filename"][1:end-4] * "_seeds.png"
         dummy_seeds = seeds_filename * "?dummy=$(now())"
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
@@ -128,10 +129,12 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("overlay_alpha").src = "";
         @js_ w document.getElementById("display_img").src = $img_filename;
     elseif ui["img_tabs"][] == "Segmented"; s[wi]["prev_img_tab"] = "Segmented"
+        dummy_segs = wi > 1 ? dummy_segs : ""
         @js_ w document.getElementById("overlay_alpha").src = "";
         @js_ w document.getElementById("display_img").src = $dummy_segs;
     elseif ui["img_tabs"][] == "Overlayed"; s[wi]["prev_img_tab"] = "Overlayed"
-        s[wi]["img_filename"][1:end-4] * "_alpha.png?dummy=$(now())"
+        dummy_segs = wi > 1 ? dummy_segs : ""
+        dummy_alpha = wi > 1 ? s[wi]["img_filename"][1:end-4] * "_alpha.png?dummy=$(now())" : ""
         @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha;
         @js_ w document.getElementById("display_img").src = $dummy_segs; end end
 
@@ -158,13 +161,8 @@ handle(w, "img_click") do args
             label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
     elseif ui["operations_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
-<<<<<<< HEAD
         seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
         if args[7] == false
-=======
-        seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 0 end
-        if args[7] == true
->>>>>>> b743391704942938455ab9ed78e6e37def5486ad
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; "
         else
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); " end
