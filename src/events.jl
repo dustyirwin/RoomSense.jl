@@ -18,9 +18,9 @@ handle(w, "img_selected") do args
         save(s[wi]["img_filename"][1:end-4] * "_alpha.png", s[wi]["alpha_img"])
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
         ui["img_tabs"][] = "Original"
-        @js_ w msg("img_tab_change", "");
-        @js_ w document.getElementById("img_tabs").hidden = false;
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
+        @js_ w document.getElementById("img_tabs").hidden = false;
+        @js_ w msg("img_tab_click", "");
     catch err
         println(err); @js_ w alert("Error loading image file."); end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
@@ -82,13 +82,13 @@ handle(w, "go") do args
             "pxplot_img"=>pxplot_img,
             "segs_info"=>segs_info,
             "tags"=>OrderedDict()))
-        wi=length(collect(s)); ui["input"][] = ""
+        wi=length(collect(s)); s[wi]["input"] = ui["input"][]; ui["input"][] = ""
     catch err; println(err) end
 
-    @js_ w msg("img_tab_change", []);
+    @js_ w msg("img_tab_click", []);
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end;
 
-handle(w, "img_tab_change") do args
+handle(w, "img_tab_click") do args
     global s, wi
     img_filename = ui["img_filename"][]
 
@@ -161,8 +161,8 @@ handle(w, "img_click") do args
             label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
     elseif ui["operations_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
-        seed_num = parse(Int64, split(ui["input"][], ';')[end-1][end])
-        if args[7] == true
+        seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
+        if args[7] == false
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; "
         else
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); " end

@@ -42,7 +42,13 @@ ui = Dict(
 
 ui["operations_tabs"] = tabs(Observable(ui["operations"]));
 
-ui["display_options"] = hbox(ui["draw_labels"], ui["draw_seeds"]);
+ui["toolbox"] = hbox(
+    node(:div, ui["operations_tabs"], attributes=Dict(
+        "id"=>"operation_tabs",
+        "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
+    node(:div, ui["img_filename"], attributes=Dict(
+        "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
+    node(:div, "", attributes=Dict("id"=>"img_info")))
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
@@ -50,7 +56,7 @@ ui["toolset"] = vbox(
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, ui["segment_labels"], attributes=Dict("id"=>"Tag Segments toolset", "hidden"=>true)), hskip(0.6em),
         node(:div, "Coming soon! ", attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
-        ui["input"], ui["go"], vbox(vskip(0.35em), hbox(ui["colorize"],ui["draw_plot"]))),
+        ui["input"], hskip(0.6em), ui["go"], vbox(vskip(0.35em), hbox(hskip(0.25em), ui["colorize"], ui["draw_plot"]))),
     hbox(hskip(1em),
         node(:div, hbox(
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text")), hskip(1em),
@@ -58,9 +64,11 @@ ui["toolset"] = vbox(
                 "style"=>"buffer: 5px;"
             ))));
 
+ui["display_options"] = hbox(ui["draw_labels"], ui["draw_seeds"]);
+
 ui["display_imgs"] = vbox(
     node(:div, hbox(ui["img_tabs"], hskip(1em), vbox(vskip(0.75em),ui["display_options"])), attributes=Dict(
-        "onclick"=>"""Blink.msg("img_tab_change", null)""",
+        "onclick"=>"""Blink.msg("img_tab_click", null)""",
         "id"=>"img_tabs", "hidden"=>true)),
     node(:div,
         node(:img, attributes=Dict(
@@ -90,16 +98,8 @@ ui["segs_details"] = vbox(hskip(1em),
     node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), hskip(1em),
     node(:ul, attributes=Dict("id"=>"segs_details")));
 
-ui["html"] = node(:div,
-    vbox(
-        hbox(
-            node(:div, ui["operations_tabs"], attributes=Dict(
-                "id"=>"operation_tabs",
-                "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
-            node(:div, ui["img_filename"], attributes=Dict(
-                "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
-            node(:div, "", attributes=Dict("id"=>"img_info"))),
-        vskip(0.75em),
-        ui["toolset"],
-        hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]))
-    );
+ui["html"] = vbox(
+    ui["toolbox"],
+    vskip(0.75em),
+    ui["toolset"],
+    hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]));

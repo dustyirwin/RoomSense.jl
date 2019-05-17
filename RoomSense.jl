@@ -26,10 +26,9 @@ title(w, "RoomSense v0.1"); size(w, 1200, 800);
 begin
     for f in readdir("./src")
         include("./src/" * f) end;
-    s=[Dict{String,Any}("prev_img_tab"=>"Original")]; wi=1;
+    s=[Dict{Any,Any}("prev_img_tab"=>"Original")]; wi=1;
     body!(w, ui["html"]);
 end
-
 
 """
 # Mux web hosting
