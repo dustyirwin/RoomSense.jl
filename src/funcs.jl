@@ -39,8 +39,8 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             try label = label * labels[label] catch end
             renderstring!(
-                    overlay_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid,
-                    halign=:hcenter, valign=:vcenter) end end
+                overlay_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid,
+                halign=:hcenter, valign=:vcenter) end end
     return make_transparent(overlay_img, 1.0, 0.0) end
 
 function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
@@ -62,15 +62,13 @@ function make_plot_img(segs::SegmentedImage, create_plot::Bool)
             ylabel("Pixel Group Count"),
             bar,
             y_log10)
-    else
-        return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
+    else; return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
 
 function recursive_segmentation(img_filename::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
     if alg == fast_scanning k*=1.5 end
     segs = segment_img(img_filename, k, alg)
     c = length(segs.segment_labels)
-
     while c > max_segs
         segs = c / max_segs > 2 ? segment_img(img_filename, k+=j*3, alg) : segment_img(img_filename, k+=j, alg)
         segs = prune_min_size(segs, mpgs)
@@ -81,12 +79,13 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
     return segs end
 
 function make_segs_details(segs::SegmentedImage)
-    segs_details =
-        ["$label$(try s[wi]["input"][label] catch; "" end) - $pixel_count" for (label, pixel_count) in sort!(
-            collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
-    lis = ["<li>$i</li>" for i in segs_details]
+    lis = [haskey(s[wi]["tags"], label) ?
+            "<li>$(s[wi]["tags"][label])$label - $pixel_count</li>" :
+            "<li>$label - $pixel_count</li>" for (label, pixel_count) in sort!(
+                collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
+    s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
-    return "<strong>Label - Pixel Count</strong>" * "<ul>$([li for li in lis]...)</ul>" end
+    return "<strong>Label - Pixel Count</strong>" * "<ul>$(lis...)</ul>" end
 
 function merge_segments(segs::SegmentedImage, input::String)
     args = parse_input(input)
@@ -102,41 +101,41 @@ function remove_segments(segs::SegmentedImage, input::String)
     segs = prune_segments(segs, args, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
-function parse_input(input::String, args=Vector{Tuple{CartesianIndex{2},Int64}}())
-    if ';' in input;
+function parse_input(input::String)
+    if ';' in input
+        args = Vector{Tuple{CartesianIndex{2},Int64}}()
         input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
         if length(split(input, ';')) > 1
             for (i, seed) in enumerate(split(input, ';'))
                 seed = [parse(Int64, seed) for seed in split(seed, ',')]
                 push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
-            else
-                seed = [parse(Int64, seed) for seed in split(input, ',')]
-                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
-            else
-                input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
-                for i in unique!(split(input, ','))
-                    if '.' in i; args = Vector{Float64}()
-                        push!(args, parse(Float64, i))
-                    else; args = Vector{Int64}()
-                        push!(args, parse(Int64, i))
-                    end end end
-                    return args end
+        else
+            seed = [parse(Int64, seed) for seed in split(input, ',')]
+            push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
+    else
+        args = Vector{Int64}()
+        input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
+        for i in unique!(split(input, ','))
+            push!(args, parse(Int64, i))
+    end end
+    return args end
 
-function tag_segments(segs::SegmentedImage, input::String)
-    global s
-    args = parse_input(input)
-    for label in segs.segment_labels
-        if label in args
-            s[wi]["input"][label] = ui["custom_labels"][] end end end
+function tag_segments(input::String)
+    global s; args = parse_input(input)
+    for label in args
+        s[wi]["tags"][label] = ui["segment_tags"][]
+end end
 
-function calculate_areas(segs::SegmentedImage, length::Float64)
-    global s
-    c1 = s[wi]["clicks"][end-1]; c2 = s[wi]["clicks"][end]
-    px_dist = ((c2[1]-c1[1])^2 + (c2[2]-c1[2])^2)^(1/2)
-    scaling_factor = length / px_dist
-    areas = Dict(label=>area*scaling_factor for (label,pixel_count) in collect(segs.segment_pixel_count))
-end
+function get_dummy(img_type::String)
+    save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])
+    dummy_name = s[wi]["img_filename"][1:end-4] * "$img_type?dummy=$(now())" end
+
+function calculate_areas(segs::SegmentedImage, input::String)
+    global s; args = parse_input(input)
+    px_dist = ((args[2][1]-args[1][1])^2 + (args[2][2]-args[1][2])^2)^(1/2)
+    scaling_factor = (length / px_dist)^2
+    areas = OrderedDict(
+        label=>pixel_count * scaling_factor for (label, pixel_count) in collect(segs.segment_pixel_count)) end
 
 function export_xlsx()
-    return ""
-end
+    return "" end

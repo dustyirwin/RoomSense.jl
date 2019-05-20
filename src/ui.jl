@@ -22,7 +22,7 @@ ui = Dict(
     "draw_plot"=>checkbox(value=false; label="Draw plots"),
     "colorize" => checkbox("Colorize result"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"40")),
-    "segment_labels" => dropdown(OrderedDict(
+    "segment_tags" => dropdown(OrderedDict(
         "Office"=>"OF",
         "Common Areas"=>"CA",
         "Building Support"=>"BS",
@@ -40,7 +40,8 @@ ui = Dict(
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
-        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number."),
+        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
+        calculate_areas=>"Click on two points within the image and enter the numerical distance between them. eg 100, 175; 350, 550; 100"),
     "operations" => ["Segment Image", "Modify Segments", "Tag Segments", "Export Data"],
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
@@ -59,14 +60,14 @@ ui["toolset"] = vbox(
         node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset")),
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
-        node(:div, ui["segment_labels"], attributes=Dict("id"=>"Tag Segments toolset", "hidden"=>true)), hskip(0.6em),
+        node(:div, ui["segment_tags"], attributes=Dict("id"=>"Tag Segments toolset", "hidden"=>true)), hskip(0.6em),
         ui["input"], hskip(0.6em), ui["go"], vbox(vskip(0.35em), hbox(hskip(0.25em), ui["colorize"], ui["draw_plot"]))),
     hbox(hskip(1em),
         node(:div, hbox(
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text")), hskip(1em),
             node(:strong, "", attributes=Dict("id"=>"segs_info"))), attributes=Dict(
                 "style"=>"buffer: 5px;"
-            ))));
+    ))));
 
 ui["display_options"] = node(:div,
     hbox(

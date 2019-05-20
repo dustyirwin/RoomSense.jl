@@ -24,10 +24,13 @@ title(w, "RoomSense v0.1"); size(w, 1200, 800);
 #tools(w)
 
 begin
+    wi=1; clicks=[];
     for f in readdir("./src")
         include("./src/" * f) end;
-    s=[Dict{Any,Any}("prev_img_tab"=>"Original","clicks"=>[])]; wi=1;
-    body!(w, ui["html"]);
+    s=[Dict{Any,Any}(
+        "prev_img_tab"=>"Original",
+        "tags"=>OrderedDict())];
+        body!(w, ui["html"]);
 end
 
 """
