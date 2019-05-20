@@ -5,18 +5,18 @@ make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.va
 function diff_fn_wrapper(segs)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
-function segment_img(img_filename::String, input::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
+function segment_img(img_filename::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
     img = Gray.(load(img_filename))
-    segs = alg(img, input)
+    segs = alg(img, args)
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function get_random_color(seed::Int64)
     seed!(seed)
     rand(RGB{N0f8}) end
 
-function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector{Int64}())
+function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
-        if v < min_size; push!(prune_list, k) end end
+        if v < min_size[1]; push!(prune_list, k) end end
     segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
@@ -39,8 +39,8 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             try label = label * labels[label] catch end
             renderstring!(
-                overlay_img, "$label", ui["font"], (30, 30), x_centroid, y_centroid,
-                halign=:hcenter, valign=:vcenter) end end
+                overlay_img, haskey(s[wi]["tags"], label) ? "$(s[wi]["tags"][label])$label" : "$label",
+                ui["font"], (28, 28), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
     return make_transparent(overlay_img, 1.0, 0.0) end
 
 function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
@@ -79,16 +79,16 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
     return segs end
 
 function make_segs_details(segs::SegmentedImage)
-    lis = [haskey(s[wi]["tags"], label) ?
-            """<li>$(s[wi]["tags"][label])$label - $(length(s[wi]["areas"]) > 0 ? trunc(s[wi]["areas"][label]) : pixel_count)</li>""" :
-            "<li>$label - $pixel_count</li>" for (label, pixel_count) in sort!(
-                collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
+    lis = [
+        """<li>$(haskey(s[wi]["tags"], label) ? s[wi]["tags"][label] * "$label" : label) - $(
+        haskey(s[wi]["areas"], label) ? trunc(s[wi]["areas"][label]) : pixel_count)</li>"""
+        for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
-    return "<strong>Label - $(length(s[wi]["areas"]) > 0 ? "Area" : "Pixel Count")</strong>" * "<ul>$(lis...)</ul>" end
+    return "<strong>Label - $(haskey(s[wi], "areas") && length(s[wi]["areas"]) > 1 ?
+        "Area" : "Pixel Count")</strong>" * "<ul>$(lis...)</ul>" end
 
-function merge_segments(segs::SegmentedImage, input::String)
-    args = parse_input(input)
+function merge_segments(segs::SegmentedImage, args::Vector{Int64})
     for i in 1:height(segs.image_indexmap)
         for j in 1:width(segs.image_indexmap)
             if segs.image_indexmap[i, j] in args
@@ -96,8 +96,7 @@ function merge_segments(segs::SegmentedImage, input::String)
     end end end
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
-function remove_segments(segs::SegmentedImage, input::String)
-    args = parse_input(input)
+function remove_segments(segs::SegmentedImage, args::Vector{Int64})
     segs = prune_segments(segs, args, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
@@ -116,15 +115,14 @@ function parse_input(input::String)
         args = Vector{Int64}()
         input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
         for i in unique!(split(input, ','))
-            push!(args, parse(Int64, i))
+            '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i))
     end end
     return args end
 
 function tag_segments(input::String)
     global s; args = parse_input(input)
     for label in args
-        s[wi]["tags"][label] = ui["segment_tags"][]
-end end
+        s[wi]["tags"][label] = ui["segment_tags"][] end end
 
 function get_dummy(img_type::String)
     save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])

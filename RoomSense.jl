@@ -29,7 +29,8 @@ begin
         include("./src/" * f) end;
     s=[Dict{Any,Any}(
         "prev_img_tab"=>"Original",
-        "tags"=>OrderedDict())];
+        "tags"=>OrderedDict(),
+        "areas"=>OrderedDict())];
         body!(w, ui["html"]);
 end
 

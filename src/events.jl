@@ -47,10 +47,7 @@ handle(w, "go") do args
 
     elseif ui["operations_tabs"][] == "Modify Segments"
         try pt = @elapsed begin
-            segs = ui["mod_segs_funcs"][][1](
-                s[wi]["segs"],
-                try parse(ui["mod_segs_funcs"][][2], ui["input"][])
-                catch; ui["input"][] end)
+            segs = ui["mod_segs_funcs"][][1](s[wi]["segs"], parse_input(ui["input"][]))
             img_filename = s[wi]["img_filename"] end
         catch err; println("MOD-SEG ERROR: ", err)
             @js_ w alert("Could not complete request; check inputs."); end
@@ -58,10 +55,12 @@ handle(w, "go") do args
     elseif ui["operations_tabs"][] == "Tag Segments"
         tag_segments(ui["input"][]); ui["input"][] = ""
         segs_details = make_segs_details(s[wi]["segs"])
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details; end
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
 
     elseif ui["operations_tabs"][] == "Export Data" && ui["export_data_funcs"][] == calculate_areas
-        calculate_areas(s[wi]["segs"], ui["input"][]) end
+        calculate_areas(s[wi]["segs"], ui["input"][]); ui["input"][] = ""
+        segs_details = make_segs_details(s[wi]["segs"])
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details; end
 
     try segs_info = make_segs_info(segs, pt)
         segs_details = make_segs_details(segs)
@@ -74,7 +73,7 @@ handle(w, "go") do args
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
         if ui["operations_tabs"][] == "Tag Segments"
-            tags = tag_segments(s[wi]["segs"], ui["input"][]) end
+            s[wi]["tags"] = tag_segments(s[wi]["segs"], ui["input"][]) end
         push!(s, Dict(
             "img_filename"=>img_filename,
             "input"=>ui["input"][],
@@ -84,7 +83,8 @@ handle(w, "go") do args
             "_labels.png"=>labels_img,
             "_pxplot.svg"=>pxplot_img,
             "segs_info"=>segs_info,
-            "tags"=>try tags catch; OrderedDict() end))
+            "tags"=>haskey(s[wi], "tags") ? s[wi]["tags"] : OrderedDict(),
+            "areas"=>haskey(s[wi], "areas") ? s[wi]["areas"] : OrderedDict()))
         wi=length(s); s[wi]["input"] = ui["input"][]; ui["input"][] = ""
     catch err; println(err) end
     @js_ w msg("img_tab_click", []);
@@ -150,7 +150,6 @@ handle(w, "dropdown_selected") do args
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
 
 handle(w, "img_click") do args
-    @show args;
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     if ui["operations_tabs"][] == "Modify Segments"
