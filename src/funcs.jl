@@ -80,12 +80,12 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
 
 function make_segs_details(segs::SegmentedImage)
     lis = [haskey(s[wi]["tags"], label) ?
-            "<li>$(s[wi]["tags"][label])$label - $pixel_count</li>" :
+            """<li>$(s[wi]["tags"][label])$label - $(length(s[wi]["areas"]) > 0 ? trunc(s[wi]["areas"][label]) : pixel_count)</li>""" :
             "<li>$label - $pixel_count</li>" for (label, pixel_count) in sort!(
                 collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
-    return "<strong>Label - Pixel Count</strong>" * "<ul>$(lis...)</ul>" end
+    return "<strong>Label - $(length(s[wi]["areas"]) > 0 ? "Area" : "Pixel Count")</strong>" * "<ul>$(lis...)</ul>" end
 
 function merge_segments(segs::SegmentedImage, input::String)
     args = parse_input(input)
@@ -130,11 +130,14 @@ function get_dummy(img_type::String)
     save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])
     dummy_name = s[wi]["img_filename"][1:end-4] * "$img_type?dummy=$(now())" end
 
-function calculate_areas(segs::SegmentedImage, input::String)
-    global s; args = parse_input(input)
+function calculate_areas(segs::SegmentedImage, input::String, args=Vector{Any}())
+    global s; input = split(ui["input"][], ';')
+    push!(args, [parse(Int64, arg) for arg in split(input[1], ',')])
+    push!(args, [parse(Int64, arg) for arg in split(input[2], ',')])
+    push!(args, parse(Int64, input[3]))
     px_dist = ((args[2][1]-args[1][1])^2 + (args[2][2]-args[1][2])^2)^(1/2)
-    scaling_factor = (length / px_dist)^2
-    areas = OrderedDict(
+    scaling_factor = (args[3] / px_dist)^2
+    s[wi]["areas"] = OrderedDict(
         label=>pixel_count * scaling_factor for (label, pixel_count) in collect(segs.segment_pixel_count)) end
 
 function export_xlsx()

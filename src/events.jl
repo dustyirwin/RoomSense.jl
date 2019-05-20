@@ -60,6 +60,9 @@ handle(w, "go") do args
         segs_details = make_segs_details(s[wi]["segs"])
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details; end
 
+    elseif ui["operations_tabs"][] == "Export Data" && ui["export_data_funcs"][] == calculate_areas
+        calculate_areas(s[wi]["segs"], ui["input"][]) end
+
     try segs_info = make_segs_info(segs, pt)
         segs_details = make_segs_details(segs)
         segs_img = make_segs_img(segs, ui["colorize"][])
