@@ -32,9 +32,9 @@ handle(w, "go") do args
 
     if ui["operations_tabs"][] == "Segment Image"
         try load(ui["img_filename"][])
-        catch err; println("SEG ERROR: "); @js_ w alert("Please select a valid image file."); return end
+        catch err; println("SEG ERROR: $err"); @js_ w alert("Please select a valid image file."); return end
         if ui["input"][] == ""
-            @js_ w alert("Please enter an input value(s)."); return end
+            @js_ w alert("Please enter an input value(s)."); end
 
         pt = @elapsed begin
         if length(split(ui["input"][], ";")) > 1
@@ -42,8 +42,9 @@ handle(w, "go") do args
             segs = seeded_region_growing(Gray.(load(ui["img_filename"][])), seeds)
         elseif length(split(ui["input"][], ",")) > 1
             segs = recursive_segmentation(ui["img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
-        else; segs = segment_img(ui["img_filename"][], parse(
-            ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end end
+        else; try segs = segment_img(ui["img_filename"][], parse(
+            ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1])
+        catch; @js_ w alert("Error processing result. Check inputs."); end end end
 
     elseif ui["operations_tabs"][] == "Modify Segments"
         try pt = @elapsed begin
