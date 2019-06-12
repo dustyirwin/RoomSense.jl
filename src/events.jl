@@ -120,7 +120,7 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("overlay_labels").src = $dummy_labels;
     else; @js_ w document.getElementById("overlay_labels").src = ""; end
 
-    if wi > 1 && ui["draw_seeds"][] == true
+     if wi > 1 && ui["draw_seeds"][] == true
         dummy_seeds = get_dummy("_seeds.png")
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
     else; @js_ w document.getElementById("overlay_seeds").src = ""; end
