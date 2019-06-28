@@ -4,3 +4,6 @@
 /models
 scratch.jl
 *.jld2
+*.png
+*.svg
+*.pdf

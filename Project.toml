@@ -5,7 +5,6 @@ version = "0.1.0"
 
 [deps]
 Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
-CuArrays = "3a865a2d-5b23-5a0f-bc46-62713ec82fae"
 Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
 FreeTypeAbstraction = "663a7486-cb36-511b-a19d-713bb74d65c9"
 Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
