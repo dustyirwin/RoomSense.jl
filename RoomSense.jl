@@ -4,7 +4,6 @@ using Pkg
 
 println("Loading RoomSense v0.1, please wait...")
 
-
 using Interact
 using Dates: now
 using Random: seed!
@@ -16,9 +15,11 @@ using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale
 using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments, segment_pixel_count,
     labels_map, segment_mean, SegmentedImage
 
+
 # Blink window
 w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "RoomSense v0.1"); size(w, 1200, 800);
+
 
 # Electron diagnostic tools
 #tools(w)
@@ -37,6 +38,7 @@ begin
 
     body!(w, ui["html"])
 end
+
 
 """
 # Mux web hosting

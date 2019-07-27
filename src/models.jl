@@ -15,7 +15,6 @@ model = Chain(
     softmax) |> gpu
 
 @time model(rand(128,128,1,1)|>gpu)
-"""
 
 #try using CuArrays catch err; println(err) end
 
@@ -28,3 +27,4 @@ function update_model(model, data, epochs::Int64)
 end
 
 #try @load "./models/space_type_classifier.jld2" model catch err; println(err) end
+"""

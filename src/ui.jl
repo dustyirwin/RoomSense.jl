@@ -78,7 +78,7 @@ ui["display_options"] = node(:div,
 ui["display_imgs"] = vbox(
     node(:div,
         node(:img, attributes=Dict(
-            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity:0.9;")),
+            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
@@ -98,7 +98,7 @@ ui["display_imgs"] = vbox(
                 document.getElementById("display_img").naturalHeight,
                 document.getElementById("display_img").naturalWidth,
                 event.ctrlKey]);""",
-            "style"=>"position: relative; padding:0px; border:0px; margin:0px;")));
+            "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
 ui["segs_details"] = vbox(vskip(1em),
     node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), vskip(1em),
@@ -110,4 +110,5 @@ ui["html"] = vbox(
     ui["toolset"],
     ui["display_options"],
     hbox(
-        ui["display_imgs"], hskip(1em), ui["segs_details"]));
+        ui["display_imgs"], hskip(1em), ui["segs_details"]),
+    );
