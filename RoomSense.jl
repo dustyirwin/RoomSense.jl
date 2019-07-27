@@ -1,6 +1,6 @@
 using Pkg
-@pkg_str "activate ."
-#@pkg_str "precompile"
+pkg"activate ."
+pkg"precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 

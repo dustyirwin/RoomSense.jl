@@ -41,7 +41,9 @@ handle(w, "go") do args
             seeds = parse_input(ui["input"][])
             segs = seeded_region_growing(Gray.(load(ui["img_filename"][])), seeds)
         elseif length(split(ui["input"][], ",")) > 1
-            segs = recursive_segmentation(ui["img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
+            args = parse_input(ui["input"][])
+            segs = recursive_segmentation(
+                ui["img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
         else; try segs = segment_img(ui["img_filename"][], parse(
             ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1])
         catch; @js_ w alert("Error processing result. Check inputs."); end end end
