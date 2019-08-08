@@ -53,7 +53,7 @@ ui["toolbox"] = hbox(
         "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
     node(:div, ui["img_filename"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
-    node(:div, "", attributes=Dict("id"=>"img_info")))
+    vbox(vskip(0.4em), node(:div, "", attributes=Dict("id"=>"img_info"))));
 
 ui["toolset"] = vbox(
     hbox(hskip(0.7em),
@@ -61,7 +61,7 @@ ui["toolset"] = vbox(
         node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
         node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)),
         node(:div, ui["segment_tags"], attributes=Dict("id"=>"Tag Segments toolset", "hidden"=>true)), hskip(0.6em),
-        ui["input"], hskip(0.6em), ui["go"], vbox(vskip(0.35em), hbox(hskip(0.25em), ui["colorize"], ui["draw_plot"]))),
+        ui["input"], hskip(0.6em), ui["go"]),
     hbox(hskip(1em),
         node(:div, hbox(
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text")), hskip(1em),
@@ -70,8 +70,9 @@ ui["toolset"] = vbox(
     ))));
 
 ui["display_options"] = node(:div,
-    hbox(
-        ui["img_tabs"], hskip(1.5em), vbox(vskip(0.6em), hbox(ui["draw_labels"], ui["draw_seeds"]))), attributes=Dict(
+    hbox(ui["img_tabs"], hskip(1.5em), vbox(
+        vskip(0.4em), hbox(ui["draw_labels"], ui["draw_seeds"], ui["colorize"], ui["draw_plot"]))),
+    attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", null)""",
         "id"=>"img_tabs", "hidden"=>true));
 

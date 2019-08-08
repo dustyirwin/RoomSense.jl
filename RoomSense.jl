@@ -1,6 +1,6 @@
 using Pkg
-@pkg_str "activate ."
-#@pkg_str "precompile"
+pkg"activate ."
+pkg"precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
@@ -18,7 +18,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
 
 # Blink window
 w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
-title(w, "RoomSense v0.1"); size(w, 1200, 800);
+title(w, "RoomSense v0.1"); size(w, 1100, 700);
 
 
 # Electron diagnostic tools
@@ -28,8 +28,8 @@ begin
     wi = 1
     clicks = []
 
-    for f in readdir("./src")
-        include("./src/" * f) end
+    for file in readdir("./src")
+        include("./src/$file") end
 
     s = [Dict{Any,Any}(
         "prev_img_tab"=>"Original",
@@ -40,18 +40,8 @@ begin
 end
 
 
-"""
 # Mux web hosting
 using Mux
-@app RoomSense = (
-  Mux.defaults,
-  page(respond(body!(Window(Dict("webPreferences"=>Dict("webSecurity"=>false))), ui["html"]))),
-  page("/about",
-       probabilty(0.1, respond("<h1>Boo!</h1>")),
-       respond("<h1>About Me</h1>")),
-  page("/user/:user", respond(w)),
-  Mux.notfound());
-serve(RoomSense)
-"""
+WebIO.webio_serve(page("/", req -> ui["html"], 8000))
 
 println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")

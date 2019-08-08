@@ -71,7 +71,7 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
     c = length(segs.segment_labels)
     while c > max_segs
         segs = c / max_segs > 2 ? segment_img(img_filename, k+=j*3, alg) : segment_img(img_filename, k+=j, alg)
-        segs = prune_min_size(segs, mpgs)
+        segs = prune_min_size(segs, [mpgs])
         c = length(segs.segment_labels)
         update = "alg:" * "$alg"[19:end] * "
             segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mpgs:$mpgs"
