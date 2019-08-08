@@ -41,7 +41,13 @@ handle(w, "go") do args
             seeds = parse_input(ui["input"][])
             segs = seeded_region_growing(Gray.(load(ui["img_filename"][])), seeds)
         elseif length(split(ui["input"][], ",")) > 1
+            args = parse_input(ui["input"][])
+<<<<<<< HEAD
             segs = recursive_segmentation(ui["img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
+=======
+            segs = recursive_segmentation(
+                ui["img_filename"][], ui["segs_funcs"][][1], args[1], args[2])
+>>>>>>> dddaf5075eabe9fbed4aca1453eef816e3867cd0
         else; try segs = segment_img(ui["img_filename"][], parse(
             ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1])
         catch; @js_ w alert("Error processing result. Check inputs."); end end end
@@ -88,6 +94,7 @@ handle(w, "go") do args
             "areas"=>haskey(s[wi], "areas") ? s[wi]["areas"] : OrderedDict()))
         wi=length(s); s[wi]["input"] = ui["input"][]; ui["input"][] = ""
     catch err; println(err) end
+
     @js_ w msg("img_tab_click", []);
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end;
 
