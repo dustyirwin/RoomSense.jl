@@ -88,14 +88,6 @@ function make_segs_details(segs::SegmentedImage)
     return "<strong>Label - $(haskey(s[wi], "areas") && length(s[wi]["areas"]) > 1 ?
         "Area" : "Pixel Count")</strong>" * "<ul>$(lis...)</ul>" end
 
-function merge_segments(segs::SegmentedImage, args::Vector{Int64})
-    for i in 1:height(segs.image_indexmap)
-        for j in 1:width(segs.image_indexmap)
-            if segs.image_indexmap[i, j] in args
-                segs.image_indexmap[i, j] = args[end]
-    end end end
-    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
-
 function remove_segments(segs::SegmentedImage, args::Vector{Int64})
     segs = prune_segments(segs, args, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
@@ -119,24 +111,9 @@ function parse_input(input::String)
     end end
     return args end
 
-function tag_segments(input::String)
-    global s; args = parse_input(input)
-    for label in args
-        s[wi]["tags"][label] = ui["segment_tags"][] end end
-
 function get_dummy(img_type::String)
     save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])
     dummy_name = s[wi]["img_filename"][1:end-4] * "$img_type?dummy=$(now())" end
-
-function calculate_areas(segs::SegmentedImage, input::String, args=Vector{Any}())
-    global s; input = split(ui["input"][], ';')
-    push!(args, [parse(Int64, arg) for arg in split(input[1], ',')])
-    push!(args, [parse(Int64, arg) for arg in split(input[2], ',')])
-    push!(args, parse(Int64, input[3]))
-    px_dist = ((args[2][1]-args[1][1])^2 + (args[2][2]-args[1][2])^2)^(1/2)
-    scaling_factor = (args[3] / px_dist)^2
-    s[wi]["areas"] = OrderedDict(
-        label=>pixel_count * scaling_factor for (label, pixel_count) in collect(segs.segment_pixel_count)) end
 
 function export_xlsx()
     return "" end

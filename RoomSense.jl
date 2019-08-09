@@ -1,6 +1,5 @@
 using Pkg
 pkg"activate ."
-pkg"precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
@@ -33,15 +32,14 @@ begin
 
     s = [Dict{Any,Any}(
         "prev_img_tab"=>"Original",
-        "tags"=>OrderedDict(),
-        "areas"=>OrderedDict())]
+        "scale"=>1.0)]
 
     body!(w, ui["html"])
 end
 
 
 # Mux web hosting
-using Mux
-WebIO.webio_serve(page("/", req -> ui["html"], 8000))
+# using Mux
+# WebIO.webio_serve(page("/", req -> ui["html"], 8000))
 
 println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")

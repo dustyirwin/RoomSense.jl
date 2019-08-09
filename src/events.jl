@@ -19,7 +19,9 @@ handle(w, "img_selected") do args
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
         ui["img_tabs"][] = "Original"
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
-        @js_ w document.getElementById("img_tabs").hidden = false;
+        @js_ w document.getElementById("toolset").hidden = false;
+        @js_ w document.getElementById("display_options").hidden = false;
+        @js_ w msg("op_tab_change", "");
         @js_ w msg("img_tab_click", "");
     catch err
         println(err); @js_ w alert("Error loading image file."); end
@@ -101,7 +103,7 @@ handle(w, "img_tab_click") do args
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
         ui["img_tabs"][] = s[wi]["prev_img_tab"]; ui["input"][] = s[wi]["input"]
     elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1
-        ui["img_tabs"][] = s[wi]["prev_img_tab"]; ; ui["input"][] = s[wi]["input"] end
+        ui["img_tabs"][] = s[wi]["prev_img_tab"]; ui["input"][] = s[wi]["input"] end
 
     if wi > 1
         ui["img_filename"][] = s[wi]["img_filename"]
@@ -147,8 +149,8 @@ handle(w, "dropdown_selected") do args
         help_text = ui["help_text"][ui["segs_funcs"][][1]]
     elseif ui["operations_tabs"][] == "Modify Segments"
         help_text = ui["help_text"][ui["mod_segs_funcs"][][1]]
-    elseif ui["operations_tabs"][] == "Tag Segments"
-        help_text = "Add a tag to a segment(s) by label. To use a custom tag enter the tag name, followed by labels. eg Loft, 1, 2,..."
+    elseif ui["operations_tabs"][] == "Set Scale"
+        help_text = "Click on two points on the floorplan and then enter the representative length in feet above. input: (x1,y1),(x2,y2),l1, ..."
     elseif ui["operations_tabs"][] == "Export Data"
         help_text = ui["help_text"][ui["export_data_funcs"][][1]] end
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
@@ -156,12 +158,14 @@ handle(w, "dropdown_selected") do args
 handle(w, "img_click") do args
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
+
     if ui["operations_tabs"][] == "Modify Segments"
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, "
         else; label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
+
     elseif ui["operations_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
         seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
         if args[7] == false
@@ -172,8 +176,8 @@ handle(w, "img_click") do args
         s[wi]["_seeds.png"] = seeds_img
         dummy_seeds = get_dummy("_seeds.png")
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
-    elseif ui["operations_tabs"][] == "Export Data" && ui["export_data_funcs"][][1] == calculate_areas
-        ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]); "
-    elseif ui["operations_tabs"][] == "Tag Segments"
-        ui["input"][] = ui["input"][] * "$(s[wi]["segs"].image_indexmap[args[1],args[2]]), "
+
+    elseif ui["operations_tabs"][] == "Set Scale"
+        ui["input"][] = ui["input"][] * "$(args[1]),$(args[2])"
+        #s["scale"] = parse_input(ui["input"][])
     end end
