@@ -20,7 +20,7 @@ handle(w, "img_selected") do args
         ui["img_tabs"][] = "Original"
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
         @js_ w document.getElementById("toolset").hidden = false;
-        @js_ w document.getElementById("display_options").hidden = false;
+        @js_ w document.getElementById("img_tabs").hidden = false;
         @js_ w msg("op_tab_change", "");
         @js_ w msg("img_tab_click", "");
     catch err
@@ -31,6 +31,11 @@ handle(w, "go") do args
     global s, wi
     img_filename=ui["img_filename"][]; s[wi]["input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+
+    if ui["operations_tabs"][] == "Set Scale"
+        scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][], ui["input"][])
+        scale_info = "$(s[wi]["scale"][1]) pixels per $(s[wi]["scale"][2])^2"
+        @js_ w document.getElementById("scale_info").innerHTML = $scale_info; end
 
     if ui["operations_tabs"][] == "Segment Image"
         try load(ui["img_filename"][])
@@ -77,19 +82,17 @@ handle(w, "go") do args
         draw(SVG(img_filename[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-        if ui["operations_tabs"][] == "Tag Segments"
-            s[wi]["tags"] = tag_segments(s[wi]["segs"], ui["input"][]) end
+
         push!(s, Dict(
             "img_filename"=>img_filename,
+            "scale"=>scale,
             "input"=>ui["input"][],
             "segs"=>segs,
             "user_img"=>load(ui["img_filename"][]),
             "_segs.png"=>segs_img,
             "_labels.png"=>labels_img,
             "_pxplot.svg"=>pxplot_img,
-            "segs_info"=>segs_info,
-            "tags"=>haskey(s[wi], "tags") ? s[wi]["tags"] : OrderedDict(),
-            "areas"=>haskey(s[wi], "areas") ? s[wi]["areas"] : OrderedDict()))
+            "segs_info"=>segs_info))
         wi=length(s); s[wi]["input"] = ui["input"][]; ui["input"][] = ""
     catch err; println(err) end
 
@@ -178,6 +181,6 @@ handle(w, "img_click") do args
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
 
     elseif ui["operations_tabs"][] == "Set Scale"
-        ui["input"][] = ui["input"][] * "$(args[1]),$(args[2])"
+        ui["input"][] = ui["input"][] * "$(args[7] == true ? args[1] : args[2]),"
         #s["scale"] = parse_input(ui["input"][])
     end end

@@ -3,6 +3,10 @@ ui = Dict(
     "img_filename" => filepicker("Load Image"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
+    "set_scale_funcs" => dropdown(OrderedDict(
+        "feet"=>"ft",
+        "meters"=>"m"), attributes=Dict(
+            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "segs_funcs" => dropdown(OrderedDict(
         "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}}),
         "Fast Scanning"=>(fast_scanning, Float64),
@@ -10,24 +14,21 @@ ui = Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Remove Segments by MPGS"=>(prune_min_size, Int64),
-        "Remove Segment(s)"=>(remove_segments, String),
-        "Merge Segments"=>(merge_segments, String)), attributes=Dict(
+        "Remove Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs" => dropdown(OrderedDict(
-        "Calculate areas"=>(calculate_areas, Float64),
         "Export to Excel"=>(export_xlsx, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_labels"=>checkbox(value=false; label="Draw labels"),
-    "draw_seeds"=>checkbox(value=false; label="Draw seeds"),
-    "draw_plot"=>checkbox(value=false; label="Draw plots"),
-    "colorize" => checkbox("Colorize result"),
+    "draw_labels"=>checkbox(value=false; label="Labels"),
+    "draw_seeds"=>checkbox(value=false; label="Seeds"),
+    "draw_plot"=>checkbox(value=false; label="Plots"),
+    "colorize" => checkbox(value=false, label="Colorize"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_text" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
-        merge_segments=>"Merge segments by label, separated by commas. e.g. 1, 3, 4",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number."),
     "operations" => ["Set Scale", "Segment Image", "Modify Segments", "Export Data"],
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
@@ -40,12 +41,15 @@ ui["toolbox"] = hbox(
         "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
     node(:div, ui["img_filename"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
-    vbox(vskip(0.4em), node(:div, "", attributes=Dict("id"=>"img_info"))));
+    vbox(
+        node(:div, "", attributes=Dict("id"=>"img_info"))),
+        node(:div, "", attributes=Dict("id"=>"scale_info")));
 
 ui["toolset"] = node(:div,
     vbox(
         hbox(hskip(0.7em),
-            node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset")),
+            node(:div, ui["set_scale_funcs"], attributes=Dict("id"=>"Set Scale toolset")),
+            node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset", "hidden"=>true)),
             node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
             node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)), hskip(0.6em),
             ui["input"], hskip(0.6em), ui["go"]),

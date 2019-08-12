@@ -39,8 +39,8 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool)
             y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             try label = label * labels[label] catch end
             renderstring!(
-                overlay_img, haskey(s[wi]["tags"], label) ? "$(s[wi]["tags"][label])$label" : "$label",
-                ui["font"], (28, 28), x_centroid, y_centroid, halign=:hcenter, valign=:vcenter) end end
+                overlay_img, "$label", ui["font"], (28, 28), x_centroid, y_centroid,
+                halign=:hcenter, valign=:vcenter) end end
     return make_transparent(overlay_img, 1.0, 0.0) end
 
 function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
@@ -80,40 +80,51 @@ function recursive_segmentation(img_filename::String, alg::Function, max_segs::I
 
 function make_segs_details(segs::SegmentedImage)
     lis = [
-        """<li>$(haskey(s[wi]["tags"], label) ? s[wi]["tags"][label] * "$label" : label) - $(
-        haskey(s[wi]["areas"], label) ? trunc(s[wi]["areas"][label]) : pixel_count)</li>"""
+        """<li>$label - $(haskey(s[wi], "scale") == true ? trunc(pixel_count / s[wi]["scale"][1]) : pixel_count)</li>"""
         for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
-    return "<strong>Label - $(haskey(s[wi], "areas") && length(s[wi]["areas"]) > 1 ?
-        "Area" : "Pixel Count")</strong>" * "<ul>$(lis...)</ul>" end
+    area_sum = sum([pixel_count / s[wi]["scale"][1] for (label, pixel_count) in segs.segment_pixel_count])
+    return "<p><strong>Total Area: $(trunc(area_sum))</strong></p>" *
+        """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count")</strong></p>""" *
+        "<ul>$(lis...)</ul>" end
 
 function remove_segments(segs::SegmentedImage, args::Vector{Int64})
     segs = prune_segments(segs, args, diff_fn_wrapper(segs))
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function parse_input(input::String)
-    if ';' in input
+    input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
+    if ';' in input || ui["operations_tabs"][] == "Set Scale"
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
-        input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
-        if length(split(input, ';')) > 1
-            for (i, seed) in enumerate(split(input, ';'))
-                seed = [parse(Int64, seed) for seed in split(seed, ',')]
-                push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
-        else
-            seed = [parse(Int64, seed) for seed in split(input, ',')]
-            push!(args, (CartesianIndex(seed[1], seed[2]), seed[3])) end
+
+        for vars in split(input, ';')
+            var = [parse(Int64, var) for var in split(vars, ',')]
+            push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
     else
-        args = Vector{Int64}()
-        input = replace(input, " "=>""); input = input[end] == ',' ? input[1:end-1] : input
+        args = Vector{Any}()
         for i in unique!(split(input, ','))
-            '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i))
-    end end
+            '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i)) end end
     return args end
+
+function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
+    pxs_per_unit_lens = Vector{Float64}()
+
+    for args in scales
+        d = (args[1][2] - args[1][1]) / args[2]
+        println(d)
+        push!(pxs_per_unit_lens, d) end
+
+    avg_pxs_per_unit_len = sum(pxs_per_unit_lens) / length(pxs_per_unit_lens)
+    return avg_pxs_per_unit_len^2 end
 
 function get_dummy(img_type::String)
     save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])
     dummy_name = s[wi]["img_filename"][1:end-4] * "$img_type?dummy=$(now())" end
+
+    function feet() return "ft" end
+
+function meters() return "m" end
 
 function export_xlsx()
     return "" end
