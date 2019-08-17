@@ -34,7 +34,8 @@ handle(w, "go") do args
 
     if ui["operations_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][], ui["input"][])
-        scale_info = "$(s[wi]["scale"][1]) pixels per $(s[wi]["scale"][2])^2"
+        s[wi]["scale"] = scale
+        scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info; end
 
     if ui["operations_tabs"][] == "Segment Image"
@@ -62,13 +63,7 @@ handle(w, "go") do args
         catch err; println("MOD-SEG ERROR: ", err)
             @js_ w alert("Could not complete request; check inputs."); end
 
-    elseif ui["operations_tabs"][] == "Tag Segments"
-        tag_segments(ui["input"][]); ui["input"][] = ""
-        segs_details = make_segs_details(s[wi]["segs"])
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
-
-    elseif ui["operations_tabs"][] == "Export Data" && ui["export_data_funcs"][] == calculate_areas
-        calculate_areas(s[wi]["segs"], ui["input"][]); ui["input"][] = ""
+    elseif ui["operations_tabs"][] == "Export Data"
         segs_details = make_segs_details(s[wi]["segs"])
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details; end
 

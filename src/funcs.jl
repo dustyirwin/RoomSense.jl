@@ -111,9 +111,10 @@ function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
     pxs_per_unit_lens = Vector{Float64}()
 
     for args in scales
-        d = (args[1][2] - args[1][1]) / args[2]
+        d = abs(args[1][2] - args[1][1]) / args[2]
         println(d)
-        push!(pxs_per_unit_lens, d) end
+        push!(pxs_per_unit_lens, d)
+        print(pxs_per_unit_lens) end
 
     avg_pxs_per_unit_len = sum(pxs_per_unit_lens) / length(pxs_per_unit_lens)
     return avg_pxs_per_unit_len^2 end

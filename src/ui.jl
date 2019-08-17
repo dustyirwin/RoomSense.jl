@@ -1,4 +1,4 @@
-ui = Dict(
+cui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "img_filename" => filepicker("Load Image"),
     "go" => button("Go!", attributes=Dict(
@@ -42,8 +42,8 @@ ui["toolbox"] = hbox(
     node(:div, ui["img_filename"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
     vbox(
-        node(:div, "", attributes=Dict("id"=>"img_info"))),
-        node(:div, "", attributes=Dict("id"=>"scale_info")));
+        node(:div, "", attributes=Dict("id"=>"img_info")),
+        node(:div, "", attributes=Dict("id"=>"scale_info"))));
 
 ui["toolset"] = node(:div,
     vbox(
