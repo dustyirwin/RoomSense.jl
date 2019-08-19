@@ -94,36 +94,38 @@ function remove_segments(segs::SegmentedImage, args::Vector{Int64})
     return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function parse_input(input::String)
-    input = replace(input, " "=>""); input = input[end] == ';' ? input[1:end-1] : input
-    if ';' in input || ui["operations_tabs"][] == "Set Scale"
+    input = replace(input, " "=>"")
+    if ui["operations_tabs"][] in ["Set Scale", "Segment Image"]
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
-        for vars in split(input, ';')
-            var = [parse(Int64, var) for var in split(vars, ',')]
+        try for vars in split(input[end] == ';' ? input : input * ';', ';')
+            var = length(vars) > 2 ? [parse(Int64, var) for var in split(vars, ',')] : continue
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
+        catch err;
+            var = [parse(Int64, var) for var in split(vars, ',')]
+            push!(args, (CartesianIndex(var[1], var[2]), var[3]))
+         end
     else
-        args = Vector{Any}()
+        args = Vector{Union{Int64,Float64}}()
         for i in unique!(split(input, ','))
             '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i)) end end
     return args end
 
 function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
-    pxs_per_unit_lens = Vector{Float64}()
+    pxs_per_unit_lengths = Vector{Float64}()
 
     for args in scales
         d = abs(args[1][2] - args[1][1]) / args[2]
-        println(d)
-        push!(pxs_per_unit_lens, d)
-        print(pxs_per_unit_lens) end
+        push!(pxs_per_unit_lengths, d) end
 
-    avg_pxs_per_unit_len = sum(pxs_per_unit_lens) / length(pxs_per_unit_lens)
-    return avg_pxs_per_unit_len^2 end
+    avg_pxs_per_unit_length = sum(pxs_per_unit_lengths) / length(pxs_per_unit_lengths)
+    return avg_pxs_per_unit_length^2 end
 
 function get_dummy(img_type::String)
     save(s[wi]["img_filename"][1:end-4] * img_type, s[wi][img_type])
     dummy_name = s[wi]["img_filename"][1:end-4] * "$img_type?dummy=$(now())" end
 
-    function feet() return "ft" end
+function feet() return "ft" end
 
 function meters() return "m" end
 

@@ -11,8 +11,8 @@ using FreeTypeAbstraction: renderstring!, newface
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
 using Blink: Window, title, size, handle, msg, js, tools, body!, @js, @js_
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
-using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments, segment_pixel_count,
-    labels_map, segment_mean, SegmentedImage
+using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments,
+    segment_pixel_count, labels_map, segment_mean, SegmentedImage
 
 
 # Blink window
@@ -32,8 +32,10 @@ begin
 
     s = [Dict{Any,Any}(
         "prev_img_tab"=>"Original",
+        "prev_op_tab"=>"Set Scale",
         "scale"=>1.0)]
 
+    ui["img_tabs"][] = "Original"
     body!(w, ui["html"])
 end
 

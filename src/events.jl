@@ -1,10 +1,13 @@
 handle(w, "op_tab_change") do args
+    ui["input"][] = haskey(s[wi], "$(ui["operations_tabs"][])_input") ? s[wi]["$(ui["operations_tabs"][])_input"] : ""
     selected_op = ui["operations_tabs"][]
+
     @js_ w msg("dropdown_selected", []);
     @js_ w document.getElementById("help_text").innerHTML = "";
     @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
     @async js(w, WebIO.JSString("""document.getElementById("$selected_op toolset").hidden = false;"""))
-    for op in ui["operations"]
+
+    for op in ui["operations_tabs"][:options][]
         if op != selected_op
             @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
             @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;"""))
@@ -29,23 +32,21 @@ handle(w, "img_selected") do args
 
 handle(w, "go") do args
     global s, wi
-    img_filename=ui["img_filename"][]; s[wi]["input"] = ui["input"][]
+    img_filename=ui["img_filename"][]; s[wi]["$(ui["operations_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
+    try parse_input(ui["input"][]) catch
+        @js_ w alert("Please enter a valid input value(s)."); end
+
     if ui["operations_tabs"][] == "Set Scale"
-        scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][], ui["input"][])
+        scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info; end
 
     if ui["operations_tabs"][] == "Segment Image"
-        try load(ui["img_filename"][])
-        catch err; println("SEG ERROR: $err"); @js_ w alert("Please select a valid image file."); return end
-        if ui["input"][] == ""
-            @js_ w alert("Please enter an input value(s)."); end
-
         pt = @elapsed begin
-        if length(split(ui["input"][], ";")) > 1
+        if ui["segs_funcs"][][1] == seeded_region_growing
             seeds = parse_input(ui["input"][])
             segs = seeded_region_growing(Gray.(load(ui["img_filename"][])), seeds)
         elseif length(split(ui["input"][], ",")) > 1
@@ -80,7 +81,7 @@ handle(w, "go") do args
 
         push!(s, Dict(
             "img_filename"=>img_filename,
-            "scale"=>scale,
+            "scale"=>s[wi]["scale"],
             "input"=>ui["input"][],
             "segs"=>segs,
             "user_img"=>load(ui["img_filename"][]),
@@ -138,7 +139,7 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("display_img").src = $dummy_segs;
     elseif ui["img_tabs"][] == "Overlayed"; s[wi]["prev_img_tab"] = "Overlayed"
         dummy_segs = wi > 1 ? dummy_segs : ""
-        dummy_alpha = wi > 1 ? s[wi]["img_filename"][1:end-4] * "_alpha.png?dummy=$(now())" : ""
+        dummy_alpha = wi > 1 ? get_dummy("_alpha.png") : ""
         @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha;
         @js_ w document.getElementById("display_img").src = $dummy_segs; end end
 
@@ -148,7 +149,7 @@ handle(w, "dropdown_selected") do args
     elseif ui["operations_tabs"][] == "Modify Segments"
         help_text = ui["help_text"][ui["mod_segs_funcs"][][1]]
     elseif ui["operations_tabs"][] == "Set Scale"
-        help_text = "Click on two points on the floorplan and then enter the representative length in feet above. input: (x1,y1),(x2,y2),l1, ..."
+        help_text = ui["help_text"][ui["set_scale_funcs"][][1]]
     elseif ui["operations_tabs"][] == "Export Data"
         help_text = ui["help_text"][ui["export_data_funcs"][][1]] end
     @js_ w document.getElementById("help_text").innerHTML = $help_text; end
@@ -156,6 +157,7 @@ handle(w, "dropdown_selected") do args
 handle(w, "img_click") do args
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
+    println(args)
 
     if ui["operations_tabs"][] == "Modify Segments"
         if length(s) > 0
@@ -177,5 +179,4 @@ handle(w, "img_click") do args
 
     elseif ui["operations_tabs"][] == "Set Scale"
         ui["input"][] = ui["input"][] * "$(args[7] == true ? args[1] : args[2]),"
-        #s["scale"] = parse_input(ui["input"][])
     end end

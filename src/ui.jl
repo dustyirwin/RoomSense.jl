@@ -1,11 +1,11 @@
-cui = Dict(
+ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "img_filename" => filepicker("Load Image"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
-        "feet"=>"ft",
-        "meters"=>"m"), attributes=Dict(
+        "feet"=>(feet, "ft"),
+        "meters"=>(meters, "m")), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "segs_funcs" => dropdown(OrderedDict(
         "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}}),
@@ -29,11 +29,11 @@ cui = Dict(
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
-        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number."),
-    "operations" => ["Set Scale", "Segment Image", "Modify Segments", "Export Data"],
+        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
+        feet=>"Click on two points on the floorplan and enter the length in whole feet above. e.g. x1,x2,l1; ...",
+        meters=>"Click on two points on the floorplan and enter the length in whole meters above. e.g. x1,x2,l1; ..."),
+    "operations_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
-
-ui["operations_tabs"] = tabs(Observable(ui["operations"]));
 
 ui["toolbox"] = hbox(
     node(:div, ui["operations_tabs"], attributes=Dict(
@@ -98,7 +98,7 @@ ui["segs_details"] = vbox(vskip(1em),
 
 ui["html"] = vbox(
     ui["toolbox"],
-    vskip(0.75em),
+    vskip(0.5em),
     ui["toolset"],
     ui["display_options"],
     hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]),
