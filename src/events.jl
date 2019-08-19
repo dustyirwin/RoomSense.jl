@@ -22,7 +22,7 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     try s[wi]["img_filename"] = ui["img_filename"][]
         s[wi]["user_img"] = load(ui["img_filename"][])
-        s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
+        s[wi]["_alpha.png"] = s[wi]["_seeds.png"] = s[wi]["_labels.png"] = make_transparent(s[wi]["user_img"]);
         save(s[wi]["img_filename"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
         ui["img_tabs"][] = "Original"
@@ -84,17 +84,15 @@ handle(w, "go") do args
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
 
-        push!(s, Dict(
-            "img_filename"=>img_filename,
-            "scale"=>s[wi]["scale"],
-            "input"=>ui["input"][],
+
+        push!(s, merge(s[wi], Dict(
             "segs"=>segs,
-            "user_img"=>load(ui["img_filename"][]),
             "_segs.png"=>segs_img,
             "_labels.png"=>labels_img,
             "_pxplot.svg"=>pxplot_img,
-            "segs_info"=>segs_info))
-        wi=length(s); s[wi]["input"] = ui["input"][]; ui["input"][] = ""
+            "segs_info"=>segs_info)))
+        wi=length(s); s[wi]["input"] = ui["input"][]
+
     catch err; println(err) end
 
     @js_ w msg("img_tab_click", []);
