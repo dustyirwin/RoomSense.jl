@@ -20,7 +20,7 @@ ui = Dict(
         "Export to Excel"=>(export_xlsx, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Labels"),
-    "draw_seeds"=>checkbox(value=false; label="Seeds"),
+    "draw_seeds"=>checkbox(value=true; label="Seeds"),
     "draw_plot"=>checkbox(value=false; label="Plots"),
     "colorize" => checkbox(value=false, label="Colorize"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
@@ -31,7 +31,8 @@ ui = Dict(
         remove_segments=>"Remove any segment(s) by label and merge with the least difference neighbor, separated by commas. e.g. 1, 3, 10, ...",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. e.g. x1,x2,l1; ...",
-        meters=>"Click on two points on the floorplan and enter the length in whole meters above. e.g. x1,x2,l1; ..."),
+        meters=>"Click on two points on the floorplan and enter the length in whole meters above. e.g. x1,x2,l1; ...",
+        export_xlsx=>"Enter labels of segments to export to xlsx, separated of commas. Enter 'all' to export all segment data."),
     "operations_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
@@ -62,7 +63,7 @@ ui["toolset"] = node(:div,
 
 ui["display_options"] = node(:div,
     hbox(ui["img_tabs"], hskip(1.5em), vbox(
-        vskip(0.4em), hbox(ui["draw_labels"], ui["draw_seeds"], ui["colorize"], ui["draw_plot"]))),
+        vskip(0.4em), hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["draw_plot"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", null)""",
         "id"=>"img_tabs", "hidden"=>true));

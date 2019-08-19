@@ -102,7 +102,7 @@ function parse_input(input::String)
             var = length(vars) > 2 ? [parse(Int64, var) for var in split(vars, ',')] : continue
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
         catch err;
-            var = [parse(Int64, var) for var in split(vars, ',')]
+            var = [parse(Int64, var) for var in split(input, ',')]
             push!(args, (CartesianIndex(var[1], var[2]), var[3]))
          end
     else

@@ -1,5 +1,9 @@
+
 handle(w, "op_tab_change") do args
+    global s
+    s[wi]["$(s[wi]["prev_op_tab"])_input"] = ui["input"][]
     ui["input"][] = haskey(s[wi], "$(ui["operations_tabs"][])_input") ? s[wi]["$(ui["operations_tabs"][])_input"] : ""
+    s[wi]["prev_op_tab"] = ui["operations_tabs"][]
     selected_op = ui["operations_tabs"][]
 
     @js_ w msg("dropdown_selected", []);
@@ -14,11 +18,12 @@ handle(w, "op_tab_change") do args
     end end end
 
 handle(w, "img_selected") do args
+    global s
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     try s[wi]["img_filename"] = ui["img_filename"][]
         s[wi]["user_img"] = load(ui["img_filename"][])
-        s[wi]["alpha_img"] = make_transparent(s[wi]["user_img"]);
-        save(s[wi]["img_filename"][1:end-4] * "_alpha.png", s[wi]["alpha_img"])
+        s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
+        save(s[wi]["img_filename"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
         ui["img_tabs"][] = "Original"
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
@@ -98,11 +103,12 @@ handle(w, "go") do args
 handle(w, "img_tab_click") do args
     global s, wi
     img_filename = ui["img_filename"][]
+    println("img_tab_clicked!")
 
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
-        ui["img_tabs"][] = s[wi]["prev_img_tab"]; ui["input"][] = s[wi]["input"]
-    elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1
-        ui["img_tabs"][] = s[wi]["prev_img_tab"]; ui["input"][] = s[wi]["input"] end
+        ui["img_tabs"][] = s[wi]["prev_img_tab"]; @js_ w Blink.msg("img_tab_click", []);
+    elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1;
+        ui["img_tabs"][] = s[wi]["prev_img_tab"]; @js_ w Blink.msg("img_tab_click", []); end
 
     if wi > 1
         ui["img_filename"][] = s[wi]["img_filename"]

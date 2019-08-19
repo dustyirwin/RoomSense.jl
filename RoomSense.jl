@@ -23,21 +23,20 @@ title(w, "RoomSense v0.1"); size(w, 1100, 700);
 # Electron diagnostic tools
 #tools(w)
 
-begin
-    wi = 1
-    clicks = []
 
-    for file in readdir("./src")
-        include("./src/$file") end
+wi = 1
+clicks = []
 
-    s = [Dict{Any,Any}(
-        "prev_img_tab"=>"Original",
-        "prev_op_tab"=>"Set Scale",
-        "scale"=>1.0)]
+for file in readdir("./src")
+    include("./src/$file") end
 
-    ui["img_tabs"][] = "Original"
-    body!(w, ui["html"])
-end
+s = [Dict{Any,Any}(
+    "prev_img_tab"=>"Original",
+    "prev_op_tab"=>"Set Scale",
+    "scale"=>1.0)]
+
+ui["img_tabs"][] = "Original"
+body!(w, ui["html"])
 
 
 # Mux web hosting
