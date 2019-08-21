@@ -33,7 +33,7 @@ for file in readdir("./src")
 s = [Dict{Any,Any}(
     "prev_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
-    "scale"=>1.0)]
+    "scale"=>Nothing)]
 
 ui["img_tabs"][] = "Original"
 body!(w, ui["html"])
