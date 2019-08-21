@@ -106,7 +106,7 @@ function parse_input(input::String)
             push!(args, (CartesianIndex(var[1], var[2]), var[3]))
          end
     else
-        args = Vector{Union{Int64,Float64}}()
+        args = Vector{Any}()
         for i in unique!(split(input, ','))
             '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i)) end end
     return args end
@@ -129,5 +129,6 @@ function feet() return "ft" end
 
 function meters() return "m" end
 
-function export_xlsx()
+function export_CSV()
+
     return "" end

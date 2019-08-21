@@ -7,7 +7,6 @@ handle(w, "op_tab_change") do args
     s[wi]["prev_op_tab"] = ui["ops_tabs"][]
     selected_op = ui["ops_tabs"][]
 
-
     @js_ w msg("dropdown_selected", []);
     @js_ w document.getElementById("help_text").innerHTML = "";
     @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
@@ -31,8 +30,8 @@ handle(w, "img_selected") do args
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
         @js_ w document.getElementById("toolset").hidden = false;
         @js_ w document.getElementById("img_tabs").hidden = false;
-        @js_ w msg("op_tab_change", "");
-        @js_ w msg("img_tab_click", "");
+        @js_ w msg("op_tab_change", "Set Scale");
+        @js_ w msg("img_tab_click", "Original");
     catch err
         println(err); @js_ w alert("Error loading image file."); end
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
@@ -49,7 +48,9 @@ handle(w, "go") do args
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
-        @js_ w document.getElementById("scale_info").innerHTML = $scale_info; end
+        @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
+        @js_ w document.getElementById("go").classList = ["button is-primary"];
+        return end
 
     if ui["ops_tabs"][] == "Segment Image"
         pt = @elapsed begin

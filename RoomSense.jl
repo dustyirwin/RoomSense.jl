@@ -5,9 +5,11 @@ pkg"activate ."
 println("Loading RoomSense v0.1, please wait...")
 
 using Interact
+using CSV: write
 using Dates: now
 using Random: seed!
 using JLD2: @save, @load
+using DataFrames: DataFrame
 using FreeTypeAbstraction: renderstring!, newface
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
 using Blink: Window, title, size, handle, msg, js, tools, body!, @js, @js_

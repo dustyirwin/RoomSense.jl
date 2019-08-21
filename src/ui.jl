@@ -17,7 +17,7 @@ ui = Dict(
         "Remove Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs" => dropdown(OrderedDict(
-        "Export to Excel"=>(export_xlsx, String)), attributes=Dict(
+        "Export to CSV"=>(export_CSV, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Labels"),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
