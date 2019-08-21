@@ -1,6 +1,6 @@
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
-    "img_filename" => filepicker("Load Image"),
+    "img_fln" => filepicker("Load Image"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
@@ -32,15 +32,15 @@ ui = Dict(
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. e.g. x1,x2,l1; ...",
         meters=>"Click on two points on the floorplan and enter the length in whole meters above. e.g. x1,x2,l1; ...",
-        export_xlsx=>"Enter labels of segments to export to xlsx, separated of commas. Enter 'all' to export all segment data."),
-    "operations_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
+        export_xlsx=>"Enter labels of segments to export to xlsx, separated of commas. Leave blank to export all segment data."),
+    "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
 ui["toolbox"] = hbox(
-    node(:div, ui["operations_tabs"], attributes=Dict(
+    node(:div, ui["ops_tabs"], attributes=Dict(
         "id"=>"operation_tabs",
         "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
-    node(:div, ui["img_filename"], attributes=Dict(
+    node(:div, ui["img_fln"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
     vbox(
         node(:div, "", attributes=Dict("id"=>"img_info")),

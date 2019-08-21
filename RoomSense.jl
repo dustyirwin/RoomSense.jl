@@ -1,5 +1,6 @@
 using Pkg
 pkg"activate ."
+#pkg"up; precompile"
 
 println("Loading RoomSense v0.1, please wait...")
 
@@ -15,7 +16,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
     segment_pixel_count, labels_map, segment_mean, SegmentedImage
 
 
-# Blink window
+# Blink window  !!! WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "RoomSense v0.1"); size(w, 1100, 700);
 
@@ -35,7 +36,6 @@ s = [Dict{Any,Any}(
     "prev_op_tab"=>"Set Scale",
     "scale"=>Nothing)]
 
-ui["img_tabs"][] = "Original"
 body!(w, ui["html"])
 
 
