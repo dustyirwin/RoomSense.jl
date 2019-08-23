@@ -1,9 +1,8 @@
-
 handle(w, "op_tab_change") do args
     global s
     println("!op_tab_change: $(ui["ops_tabs"][])")
     s[wi]["$(s[wi]["prev_op_tab"])_input"] = ui["input"][]
-    ui["input"][] = haskey(s[wi], "$(ui["ops_tabs"][])_input") ? s[wi]["$(ui["ops_tabs"][])_input"] : ""
+    ui["input"][] = haskey(s[wi], "$(ui["ops_tabs"][])_input") ? s[wi]["$(ui["ops_tabs"][])_input"] : "";
     s[wi]["prev_op_tab"] = ui["ops_tabs"][]
     selected_op = ui["ops_tabs"][]
 
@@ -26,7 +25,7 @@ handle(w, "img_selected") do args
         s[wi]["_alpha.png"] = s[wi]["_seeds.png"] = s[wi]["_labels.png"] = make_transparent(s[wi]["user_img"]);
         save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
-        ui["img_tabs"][] = "Original"
+        ui["img_tabs"][] = "Original";
         @js_ w document.getElementById("img_info").innerHTML = $img_info;
         @js_ w document.getElementById("toolset").hidden = false;
         @js_ w document.getElementById("img_tabs").hidden = false;
@@ -37,22 +36,21 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "go") do args
-    global s, wi
+    global s, wi;
+    println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
-
-    try parse_input(ui["input"][]) catch
-        @js_ w alert("Please enter a valid input value(s)."); end
 
     if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
-        @js_ w document.getElementById("go").classList = ["button is-primary"];
-        return end
 
-    if ui["ops_tabs"][] == "Segment Image"
+    elseif ui["ops_tabs"][] == "Export Data"
+        js_str = export_CSV(""); @js_ w alert($js_str);
+
+    elseif ui["ops_tabs"][] == "Segment Image"
         pt = @elapsed begin
         if ui["segs_funcs"][][1] == seeded_region_growing
             seeds = parse_input(ui["input"][])
@@ -68,13 +66,10 @@ handle(w, "go") do args
     elseif ui["ops_tabs"][] == "Modify Segments"
         pt = @elapsed begin
         segs = ui["mod_segs_funcs"][][1](s[wi]["segs"], parse_input(ui["input"][]))
-        img_fln = s[wi]["img_fln"] end
+        img_fln = s[wi]["img_fln"] end end
 
-    elseif ui["ops_tabs"][] == "Export Data"
-        segs_details = make_segs_details(s[wi]["segs"])
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details; end
-
-    try segs_info = make_segs_info(segs, pt)
+    if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
+        segs_info = make_segs_info(segs, pt)
         segs_details = make_segs_details(segs)
         segs_img = make_segs_img(segs, ui["colorize"][])
         labels_img = make_labels_img(segs, ui["draw_labels"][])
@@ -84,32 +79,28 @@ handle(w, "go") do args
         draw(SVG(img_fln[1:end-4] * "_pxplot.svg", 6inch, 4inch), pxplot_img)
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
-
         push!(s, merge(s[wi], Dict(
             "segs"=>segs,
             "_segs.png"=>segs_img,
             "_labels.png"=>labels_img,
             "_pxplot.svg"=>pxplot_img,
             "segs_info"=>segs_info)))
-        wi=length(s); s[wi]["input"] = ui["input"][]
+        wi=length(s); @js w msg("img_tab_click"); end
 
-    catch err; println(err) end
-
-    @js_ w msg("img_tab_click", []);
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end;
+    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "img_tab_click") do args
     global s, wi
-    img_fln = ui["img_fln"][]
+    img_fln = ui["img_fln"][]; current_img_tab = s[wi]["current_img_tab"]
     println("!img_tab_click: $(ui["img_tabs"][])")
 
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
-        ui["img_tabs"][] = s[wi]["prev_img_tab"];
+        @js_ w msg("img_tab_click", current_img_tab);
     elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1;
-        ui["img_tabs"][] = s[wi]["prev_img_tab"] end
+        @js_ w msg("img_tab_click", current_img_tab); end
 
     if wi > 1
-        ui["img_fln"][] = s[wi]["img_fln"]
+        ui["img_fln"][] = s[wi]["img_fln"];
         segs_info = s[wi]["segs_info"]
         segs_details = make_segs_details(s[wi]["segs"])
         dummy_segs = get_dummy("_segs.png")
@@ -117,33 +108,33 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
 
-    if wi > 1 && ui["draw_plot"][] == true
+    if haskey(s[wi], "_pxplot.svg") && ui["draw_plot"][]
         dummy_plot = get_dummy("_pxplot.svg")
         @js_ w document.getElementById("plot").hidden = false;
         @js_ w document.getElementById("plot").src = $dummy_plot;
     else; @js_ w document.getElementById("plot").hidden = true; end
 
-    if wi > 1 && ui["draw_labels"][] == true
+    if haskey(s[wi], "_labels.png") && ui["draw_labels"][]
         dummy_labels = get_dummy("_labels.png")
         @js_ w document.getElementById("overlay_labels").src = $dummy_labels;
     else; @js_ w document.getElementById("overlay_labels").src = ""; end
 
-     if wi > 1 && ui["draw_seeds"][] == true
+    if haskey(s[wi], "_seeds.png") && ui["draw_seeds"][]
         dummy_seeds = get_dummy("_seeds.png")
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
     else; @js_ w document.getElementById("overlay_seeds").src = ""; end
 
-    if ui["img_tabs"][] == "Original"; s[wi]["prev_img_tab"] = "Original"
+    if "Original" in [ui["img_tabs"][], args]; s[wi]["current_img_tab"] = "Original"
         dummy_original = img_fln * "?dummy=$(now())"
         @js_ w document.getElementById("overlay_alpha").src = "";
         @js_ w document.getElementById("display_img").src = $dummy_original;
-    elseif ui["img_tabs"][] == "Segmented"; s[wi]["prev_img_tab"] = "Segmented"
+    elseif "Segmented" in [ui["img_tabs"][], args]; s[wi]["current_img_tab"] = "Segmented"
         dummy_segs = wi > 1 ? dummy_segs : ""
         @js_ w document.getElementById("overlay_alpha").src = "";
         @js_ w document.getElementById("display_img").src = $dummy_segs;
-    elseif ui["img_tabs"][] == "Overlayed"; s[wi]["prev_img_tab"] = "Overlayed"
-        dummy_segs = wi > 1 ? dummy_segs : ""
+    elseif "Overlayed" in [ui["img_tabs"][], args]; s[wi]["current_img_tab"] = "Overlayed"
         dummy_alpha = wi > 1 ? get_dummy("_alpha.png") : ""
+        dummy_segs = wi > 1 ? dummy_segs : ""
         @js_ w document.getElementById("overlay_alpha").src = $dummy_alpha;
         @js_ w document.getElementById("display_img").src = $dummy_segs; end end
 
@@ -166,15 +157,15 @@ handle(w, "img_click") do args
     if ui["ops_tabs"][] == "Modify Segments"
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
-            ui["input"][] = ui["input"][] * "$label, "
+            ui["input"][] = ui["input"][] * "$label, ";
         else; label = 0 end
         println("label: $label @ y:$(args[1]), x:$(args[2])")
 
     elseif ui["ops_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
         seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
         if args[7] == false
-            ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; "
-        else; ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); " end
+            ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; ";
+        else; ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num + 1); "; end
         seeds = parse_input(ui["input"][])
         seeds_img = make_seeds_img(seeds)
         s[wi]["_seeds.png"] = seeds_img

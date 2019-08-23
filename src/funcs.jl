@@ -1,9 +1,7 @@
-
 # terse funcs
 make_segs_info(segs::SegmentedImage, pt::Float64) = "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
-
 
 
 function diff_fn_wrapper(segs)
@@ -95,7 +93,7 @@ function remove_segments()
     segs = prune_segments(segs, args, diff_fn_wrapper(segs)) end
 
 function parse_input(input::String)
-    input = replace(input, " "=>"")
+    input = replace(input, " "=>""); if input == ""; return 0 end
     if ui["ops_tabs"][] in ["Set Scale"] || ui["segs_funcs"][][1] == seeded_region_growing
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
@@ -103,12 +101,13 @@ function parse_input(input::String)
             var = length(vars) > 2 ? [parse(Int64, var) for var in split(vars, ',')] : continue
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
         catch; var = [parse(Int64, var) for var in split(input, ',')]
-            push!(args, (CartesianIndex(var[1], var[2]), var[3]))
-         end
+            push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
     else
-        args = Vector{Any}()
+        type = '.' in input ? Float64 : Int64
+        args = Vector{type}()
+
         for i in unique!(split(input, ','))
-            '.' in i ? push!(args, parse(Float64, i)) : push!(args, parse(Int64, i)) end end
+            push!(args, parse(type, i)) end end
     return args end
 
 function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
@@ -129,6 +128,15 @@ function feet() return "ft" end
 
 function meters() return "m" end
 
-function export_CSV()
+function export_CSV(input::String)
+    input = parse_input(input)
+    df = DataFrame(segment_labels=Int64[], segment_pixel_count=Int64[], area_estimate=Int64[])
+    csv_fln = "$(s[wi]["img_fln"][1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
+    println(csv_fln)
+    js_str = "Data exported to $csv_fln"
 
-    return "" end
+    for (seg_label, px_ct) in segment_pixel_count(s[wi]["segs"])
+        push!(df, [seg_label, px_ct, floor(px_ct/s[wi]["scale"][1])]) end
+
+    write(csv_fln, df)
+    return js_str end
