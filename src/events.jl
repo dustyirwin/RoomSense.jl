@@ -45,6 +45,8 @@ handle(w, "go") do args
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
+        segs_details = make_segs_details(s[wi]["segs"])
+        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
 
     elseif ui["ops_tabs"][] == "Export Data"
@@ -85,7 +87,7 @@ handle(w, "go") do args
             "_labels.png"=>labels_img,
             "_pxplot.svg"=>pxplot_img,
             "segs_info"=>segs_info)))
-        wi=length(s); @js w msg("img_tab_click"); end
+        wi=length(s); @js_ w msg("img_tab_click", ""); end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
