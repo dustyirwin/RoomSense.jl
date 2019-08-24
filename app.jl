@@ -19,7 +19,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
     segment_pixel_count, labels_map, segment_mean, SegmentedImage
 
 
-@time begin
+begin
     s = [Dict{Any,Any}(
         "current_img_tab"=>"Original",
         "prev_op_tab"=>"Set Scale",
@@ -40,5 +40,9 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
     # using Mux
     # WebIO.webio_serve(page("/", req -> ui["html"], 8000))
 
-    body!(w, ui["html"]);
+    w = body!(w, ui["html"]);
 end
+
+# Diag tools
+# tools(w)
+# using Debugger

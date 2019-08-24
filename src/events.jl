@@ -31,9 +31,8 @@ handle(w, "img_selected") do args
         @js_ w document.getElementById("img_tabs").hidden = false;
         @js_ w msg("op_tab_change", "Set Scale");
         @js_ w msg("img_tab_click", "Original");
-    catch err
-        println(err); @js_ w alert("Error loading image file."); end
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    catch err; println(err); @js_ w alert("Error loading image file.");
+    finally @js_ w document.getElementById("go").classList = ["button is-primary"]; end end
 
 handle(w, "go") do args
     global s, wi;
@@ -41,11 +40,11 @@ handle(w, "go") do args
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
-    if ui["ops_tabs"][] == "Set Scale"
+    try if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
-        segs_details = make_segs_details(s[wi]["segs"])
+        segs_details = haskey(s[wi], "segs") ? make_segs_details(s[wi]["segs"]) : ""
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
 
@@ -67,8 +66,7 @@ handle(w, "go") do args
 
     elseif ui["ops_tabs"][] == "Modify Segments"
         pt = @elapsed begin
-        segs = ui["mod_segs_funcs"][][1](s[wi]["segs"], parse_input(ui["input"][]))
-        img_fln = s[wi]["img_fln"] end end
+        segs = ui["mod_segs_funcs"][][1](s[wi]["segs"], parse_input(ui["input"][])) end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
         segs_info = make_segs_info(segs, pt)
@@ -89,7 +87,10 @@ handle(w, "go") do args
             "segs_info"=>segs_info)))
         wi=length(s); @js_ w msg("img_tab_click", ""); end
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    catch err; println(err); @js_ w alert(
+        "An error has occured, please check your inputs. If the probem persists, contact...")
+    finally
+        @js_ w document.getElementById("go").classList = ["button is-primary"]; end end
 
 handle(w, "img_tab_click") do args
     global s, wi

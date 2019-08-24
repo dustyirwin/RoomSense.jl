@@ -48,7 +48,7 @@ function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
     if seeds != nothing
         for seed in seeds
             renderstring!(
-                overlay_img, "$(seed[2])", ui["font"], (30, 30), seed[1][1], seed[1][2],
+                overlay_img, "$(seed[2])", ui["font"], (ui["font_size"], ui["font_size"]), seed[1][1], seed[1][2],
                 halign=:hcenter, valign=:vcenter)
     end end
     return make_transparent(overlay_img, 1.0, 0.0) end
@@ -89,12 +89,9 @@ function make_segs_details(segs::SegmentedImage)
         """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count")</strong></p>""" *
         "<ul>$(lis...)</ul>" end
 
-function remove_segments()
-    segs = prune_segments(segs, args, diff_fn_wrapper(segs)) end
-
 function parse_input(input::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
-    if ui["ops_tabs"][] in ["Set Scale"] || ui["segs_funcs"][][1] == seeded_region_growing
+    if ui["ops_tabs"][] in ["Set Scale", "Segment Image"]
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
         try for vars in split(input[end] == ';' ? input : input * ';', ';')

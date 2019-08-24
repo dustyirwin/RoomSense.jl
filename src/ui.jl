@@ -1,5 +1,6 @@
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
+    "font_size"=>30,
     "img_fln" => filepicker("Load Image"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
@@ -13,8 +14,8 @@ ui = Dict(
         "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
-        "Remove Segments by MPGS"=>(prune_min_size, Int64),
-        "Remove / Reorder Segment(s)"=>(remove_segments, String)), attributes=Dict(
+        "Prune Segments by MPGS"=>(prune_min_size, Int64),
+        "Prune / Reorder Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs" => dropdown(OrderedDict(
         "Export to CSV"=>(export_CSV, String)), attributes=Dict(
@@ -30,8 +31,8 @@ ui = Dict(
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
-        feet=>"Click on two points on the floorplan and enter the length in whole feet above. e.g. x1,x2,l1; ...",
-        meters=>"Click on two points on the floorplan and enter the length in whole meters above. e.g. x1,x2,l1; ...",
+        feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         export_CSV=>"Enter labels of segments to export to CSV, separated of commas. Leave blank to export all segment data."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
