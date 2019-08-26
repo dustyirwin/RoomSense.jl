@@ -157,6 +157,12 @@ handle(w, "img_click") do args
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     println(args)
 
+    if haskey(s[wi], "segs")
+        label = labels_map(s[wi]["segs"])[args[1], args[2]]
+        area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
+        segs_info = "Label: $(label) $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): $(area) $(s[wi]["scale"][2])²"
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
+
     if ui["ops_tabs"][] == "Modify Segments"
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]

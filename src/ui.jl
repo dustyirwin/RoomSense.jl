@@ -15,7 +15,7 @@ ui = Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs" => dropdown(OrderedDict(
         "Prune Segments by MPGS"=>(prune_min_size, Int64),
-        "Prune / Reorder Segment(s)"=>(remove_segments, String)), attributes=Dict(
+        "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs" => dropdown(OrderedDict(
         "Export to CSV"=>(export_CSV, String)), attributes=Dict(
@@ -28,12 +28,12 @@ ui = Dict(
     "help_text" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
-        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels.",
+        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels. Leave blank to reorder segment data.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        export_CSV=>"Enter labels of segments to export to CSV, separated of commas. Leave blank to export all segment data."),
+        export_CSV=>"Enter labels of segments to export to CSV, separated of commas."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
 
@@ -54,7 +54,9 @@ ui["toolset"] = node(:div,
             node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset", "hidden"=>true)),
             node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
             node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)), hskip(0.6em),
-            ui["input"], hskip(0.6em), ui["go"], hskip(0.6em), node(:strong, "", attributes=Dict("id"=>"segs_info"))),
+            ui["input"], hskip(0.6em), ui["go"], hskip(0.6em), vbox(
+                vskip(0.3em),
+                node(:strong, "", attributes=Dict("id"=>"segs_info")))),
         hbox(hskip(1em),
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text", "style"=>"buffer: 5px;")))),
     attributes=Dict("id"=>"toolset", "hidden"=>true));
