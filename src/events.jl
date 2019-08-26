@@ -56,10 +56,10 @@ handle(w, "go") do args
         if ui["segs_funcs"][][1] == seeded_region_growing
             seeds = parse_input(ui["input"][])
             segs = seeded_region_growing(Gray.(load(ui["img_fln"][])), seeds)
-        elseif length(split(ui["input"][], ",")) > 1
-            args = parse_input(ui["input"][])
+        elseif ',' in ui["input"][]
+            args = split(ui["input"][], ',')
             segs = recursive_segmentation(
-                ui["img_fln"][], ui["segs_funcs"][][1], args[1], args[2])
+                ui["img_fln"][], ui["segs_funcs"][][1], parse(Int64, args[1]), parse(Int64, args[2]))
         else;
             segs = segment_img(ui["img_fln"][], parse(
             ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end end
