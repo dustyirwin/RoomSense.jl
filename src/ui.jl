@@ -8,24 +8,24 @@ ui = Dict(
         "feet"=>(feet, "ft"),
         "meters"=>(meters, "m")), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "segs_funcs" => dropdown(OrderedDict(
+    "segs_funcs"=>dropdown(OrderedDict(
         "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}}),
         "Fast Scanning"=>(fast_scanning, Float64),
         "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "mod_segs_funcs" => dropdown(OrderedDict(
+    "mod_segs_funcs"=>dropdown(OrderedDict(
         "Prune Segments by MPGS"=>(prune_min_size, Int64),
         "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "export_data_funcs" => dropdown(OrderedDict(
+    "export_data_funcs"=>dropdown(OrderedDict(
         "Export to CSV"=>(export_CSV, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Labels"),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
     "draw_plot"=>checkbox(value=false; label="Plots"),
-    "colorize" => checkbox(value=false, label="Colorize"),
-    "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
-    "help_text" => Dict(
+    "colorize"=>checkbox(value=false, label="Colorize"),
+    "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
+    "help_text"=>Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels. Leave blank to reorder segment data.",

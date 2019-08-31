@@ -98,8 +98,9 @@ handle(w, "img_tab_click") do args
     println("!img_tab_click: $(ui["img_tabs"][])")
 
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
-        @js_ w msg("img_tab_click", current_img_tab);
-    elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1;
+    elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1 end
+    if ui["img_tabs"] in ["<<",">>"]
+        ui["img_tabs"][] = current_img_tab
         @js_ w msg("img_tab_click", current_img_tab); end
 
     if wi > 1
@@ -160,15 +161,17 @@ handle(w, "img_click") do args
     if haskey(s[wi], "segs")
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
-        segs_info = "Label: $(label) $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): $(area) $(s[wi]["scale"][2])²"
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
+        segs_info = """Label: $(label) @ y:$(args[1]), x:$(args[2])\n
+            $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): $(area) $(s[wi]["scale"][2])²"""
+    else
+        segs_info = "y: $(args[1]) x: $(args[2])" end
+    @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
 
     if ui["ops_tabs"][] == "Modify Segments"
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, ";
         else; label = 0 end
-        println("label: $label @ y:$(args[1]), x:$(args[2])")
 
     elseif ui["ops_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
         seed_num = try parse(Int64, split(split(ui["input"][], ';')[end-1], ',')[3]) catch; 1 end
