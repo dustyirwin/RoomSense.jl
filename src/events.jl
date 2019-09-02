@@ -43,7 +43,7 @@ handle(w, "go") do args
     try if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
-        scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])^2"
+        scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])²"
         segs_details = haskey(s[wi], "segs") ? make_segs_details(s[wi]["segs"]) : ""
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
@@ -158,11 +158,11 @@ handle(w, "img_click") do args
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     println(args)
 
-    if haskey(s[wi], "segs")
+    if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale"
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
-        segs_info = """Label: $(label) @ y:$(args[1]), x:$(args[2])\n
-            $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): $(area) $(s[wi]["scale"][2])²"""
+        segs_info = """Label: $(label) @ y:$(args[1]) x:$(args[2])\n
+            $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): ~$area $(s[wi]["scale"][2])²"""
     else
         segs_info = "y: $(args[1]) x: $(args[2])" end
     @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
@@ -185,5 +185,5 @@ handle(w, "img_click") do args
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
 
     elseif ui["ops_tabs"][] == "Set Scale"
-        ui["input"][] = ui["input"][] * "$(args[7] == true ? args[1] : args[2]),"
+        ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2]),"
     end end

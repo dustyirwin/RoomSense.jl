@@ -97,10 +97,13 @@ ui["segs_details"] = vbox(vskip(1em),
     node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), vskip(1em),
     node(:ul, attributes=Dict("id"=>"segs_details")));
 
-ui["html"] = vbox(
+ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
     ui["toolset"],
-    ui["display_options"],
-    hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]),
-    );
+    ui["display_options"]);
+
+ui["html"] = node(:div,
+    node(:div, ui["tools"], attributes=Dict("position"=>"fixed")),
+    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative"))
+    )
