@@ -1,3 +1,9 @@
+# Blink Window
+try close(w) catch end
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)))
+title(w, "RoomSense v0.1")
+size(w, 1100, 700)
+
 handle(w, "op_tab_change") do args
     global s
     println("!op_tab_change: $(ui["ops_tabs"][])")
@@ -43,7 +49,7 @@ handle(w, "go") do args
     try if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
-        scale_info = "$(round(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])²"
+        scale_info = "~$(ceil(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])²"
         segs_details = haskey(s[wi], "segs") ? make_segs_details(s[wi]["segs"]) : ""
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
@@ -161,13 +167,23 @@ handle(w, "img_click") do args
     if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale"
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
-        segs_info = """Label: $(label) @ y:$(args[1]) x:$(args[2])\n
-            $(s[wi]["scale"][1] > 1 ? "Area" : "Pxl Ct"): ~$area $(s[wi]["scale"][2])²"""
+
+        if args[7] == true
+            unique!(push!(s[wi]["selected_areas"], (label, area)))
+            labels = join(["$label, " for label in s[wi]["selected_areas"]])
+            s[wi]["segs_info"] = "Total Area: ~$(sum([area for (label, area) in s[wi]["selected_areas"]])) $(s[wi]["scale"][1] != 1 ? "$(s[wi]["scale"][2])² " : "pixels ")" *
+                "Labels: $(join(["$label, " for (label, area) in s[wi]["selected_areas"]]))"
+        else
+            s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
+            s[wi]["segs_info"] = """Label: $(label) @ y:$(args[1]) x:$(args[2])
+                $(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")""" end
     else
-        segs_info = "y: $(args[1]) x: $(args[2])" end
+        s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end
+
+    segs_info = s[wi]["segs_info"]
     @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
 
-    if ui["ops_tabs"][] == "Modify Segments"
+    if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs")
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, ";
@@ -185,5 +201,4 @@ handle(w, "img_click") do args
         @js_ w document.getElementById("overlay_seeds").src = $dummy_seeds;
 
     elseif ui["ops_tabs"][] == "Set Scale"
-        ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2]),"
-    end end
+        ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2])," end end

@@ -1,3 +1,4 @@
+
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
@@ -28,7 +29,7 @@ ui = Dict(
     "help_text"=>Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
-        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels. Leave blank to reorder segment data.",
+        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels. Enter 0 to relabel segment data.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
@@ -93,8 +94,8 @@ ui["display_imgs"] = vbox(
                 event.ctrlKey]);""",
             "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
-ui["segs_details"] = vbox(vskip(1em),
-    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), vskip(1em),
+ui["segs_details"] = hbox(hskip(1em),
+    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), hskip(1em),
     node(:ul, attributes=Dict("id"=>"segs_details")));
 
 ui["tools"] = vbox(
@@ -107,3 +108,5 @@ ui["html"] = node(:div,
     node(:div, ui["tools"], attributes=Dict("position"=>"fixed")),
     node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative"))
     )
+
+ui["img_tabs"][] = "Original"

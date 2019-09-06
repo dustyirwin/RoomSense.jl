@@ -1,9 +1,9 @@
-try close(w) catch end  # closing any open w
 println("Loading RoomSense v0.1, please wait...")
 
 using Pkg
 pkg"activate ."
-#pkg"up; precompile"  # may break app, do not update unless you can fix it. :)
+pkg"instantiate"
+pkg"precompile"
 
 using Interact
 using CSV: write
@@ -19,29 +19,24 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
     segment_pixel_count, labels_map, segment_mean, SegmentedImage
 
 
-begin
-    s = [Dict{Any,Any}(
-        "current_img_tab"=>"Original",
-        "prev_op_tab"=>"Set Scale",
-        "scale"=>(1,"ft",""))]
+wi = 1  # work index
+s = [Dict{Any,Any}(
+    "current_img_tab"=>"Original",
+    "prev_op_tab"=>"Set Scale",
+    "scale"=>(1,"ft",""),
+    "selected_areas"=>Vector{Int64}())]
 
-    # Blink window  !!! WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
-    w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
-    title(w, "RoomSense v0.1"); size(w, 1100, 700)
-    wi = 1
+# WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
+for file in readdir("./src")
+    include("./src/$file") end
 
-    for file in readdir("./src")
-        include("./src/$file") end
+body!(w, ui["html"])
+println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 
-    ui["img_tabs"][] = "Original"
-    println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
+# Mux web hosting
+# using Mux
+# WebIO.webio_serve(page("/", req -> ui["html"], 8000))
 
-    # Mux web hosting
-    # using Mux
-    # WebIO.webio_serve(page("/", req -> ui["html"], 8000))
-
-    w = body!(w, ui["html"]);
-end
 
 # Diag tools
 # tools(w)
