@@ -9,6 +9,7 @@ using Interact
 using CSV: write
 using Dates: now
 using Random: seed!
+using AssetRegistry
 using JLD2: @save, @load
 using DataFrames: DataFrame
 using FreeTypeAbstraction: renderstring!, newface
