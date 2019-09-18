@@ -15,7 +15,7 @@ ui = Dict(
         "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs"=>dropdown(OrderedDict(
-        "Prune Segments by MPGS"=>(prune_min_size, Int64),
+        "Prune Segments by MGS"=>(prune_min_size, Int64),
         "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs"=>dropdown(OrderedDict(
@@ -23,20 +23,19 @@ ui = Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_labels"=>checkbox(value=false; label="Labels"),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
-    "draw_plot"=>checkbox(value=false; label="Plots"),
     "colorize"=>checkbox(value=false, label="Colorize"),
     "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_text"=>Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
-        prune_min_size=>"Removes any segment below the input minimum pixel group size (MPGS) in pixels. Enter 0 to relabel segment data.",
+        prune_min_size=>"Removes any segment below the input minimum group size (MGS) in ft or pixels. Enter 0 to re-label segment data.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         export_CSV=>"Enter labels of segments to export to CSV, separated of commas."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
-    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", ">>"])))
+    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
 
 ui["toolbox"] = hbox(
     node(:div, ui["ops_tabs"], attributes=Dict(
@@ -64,7 +63,7 @@ ui["toolset"] = node(:div,
 
 ui["display_options"] = node(:div,
     hbox(ui["img_tabs"], hskip(1.5em), vbox(
-        vskip(0.4em), hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["draw_plot"]))),
+        vskip(0.4em), hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", null)""",
         "id"=>"img_tabs", "hidden"=>true));
@@ -94,9 +93,7 @@ ui["display_imgs"] = vbox(
                 event.ctrlKey]);""",
             "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
-ui["segs_details"] = hbox(hskip(1em),
-    node(:img, attributes=Dict("id"=>"plot", "src"=>"", "alt"=>"")), hskip(1em),
-    node(:ul, attributes=Dict("id"=>"segs_details")));
+ui["segs_details"] = node(:ul, attributes=Dict("id"=>"segs_details"));
 
 ui["tools"] = vbox(
     ui["toolbox"],

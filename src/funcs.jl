@@ -17,7 +17,10 @@ function get_random_color(seed::Int64)
 
 function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
-        if v < min_size[1]; push!(prune_list, k) end end
+        if s[wi]["scale"][1] != 1;
+            v / s[wi]["scale"][1] < min_size[1] ? push!(prune_list, k) : continue
+        elseif v < min_size[1]
+            push!(prune_list, k) end end
     segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs)) end
 
 function make_segs_img(segs::SegmentedImage, colorize::Bool)
@@ -53,16 +56,14 @@ function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}})
     end end
     return make_transparent(overlay_img, 1.0, 0.0) end
 
-function make_plot_img(segs::SegmentedImage, create_plot::Bool)
-    if create_plot == true
-        return plot(
+function make_plot_img(segs::SegmentedImage)
+    return plot(
             x=[i[1] for i in collect(segs.segment_pixel_count)],
             y=[i[2] for i in collect(segs.segment_pixel_count)],
             xlabel("Segment Label"),
             ylabel("Pixel Group Count"),
             bar,
-            y_log10)
-    else; return plot(x=[], y=[], xlabel("Segment Label"), ylabel("Pixel Group Count"), bar, y_log10) end end
+            y_log10) end
 
 function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mpgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
@@ -85,6 +86,7 @@ function make_segs_details(segs::SegmentedImage)
     s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / s[wi]["scale"][1] for (label, pixel_count) in segs.segment_pixel_count])
+
     return "<p><strong>Total Area: $(trunc(area_sum))</strong></p>" *
         """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count")</strong></p>""" *
         "<ul>$(lis...)</ul>" end
@@ -117,9 +119,9 @@ function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
     avg_pxs_per_unit_length = sum(pxs_per_unit_lengths) / length(pxs_per_unit_lengths)
     return avg_pxs_per_unit_length^2 end
 
-function get_dummy(img_type::String)
+function get_img(img_type::String)
     save(s[wi]["img_fln"][1:end-4] * img_type, s[wi][img_type])
-    dummy_name = s[wi]["img_fln"][1:end-4] * "$img_type?dummy=$(now())" end
+    img = AssetRegistry.register(s[wi]["img_fln"][1:end-4] * img_type) end
 
 function feet() return "ft" end
 
