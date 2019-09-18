@@ -87,8 +87,8 @@ function make_segs_details(segs::SegmentedImage)
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / s[wi]["scale"][1] for (label, pixel_count) in segs.segment_pixel_count])
 
-    return "<p><strong>Total Area: $(trunc(area_sum))</strong></p>" *
-        """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count")</strong></p>""" *
+    return "<p><strong>Total Area: $(trunc(area_sum)) " * "$(s[wi]["scale"][1] == 1 ? "pixels" : s[wi]["scale"][2])" * "</strong></p>" *
+        """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count") - Type - Name</strong></p>""" *
         "<ul>$(lis...)</ul>" end
 
 function parse_input(input::String)

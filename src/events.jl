@@ -168,7 +168,7 @@ handle(w, "img_click") do args
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     println(args)
 
-    if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale"
+    if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale" && ui["img_tabs"][] != "Plots"
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
 
@@ -181,7 +181,7 @@ handle(w, "img_click") do args
             s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
             s[wi]["segs_info"] = """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
                 Label: $(label) @ y:$(args[1]) x:$(args[2])""" end
-    else
+    elseif ui["img_tabs"][] != "Plots"
         s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end
 
     segs_info = s[wi]["segs_info"]
