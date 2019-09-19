@@ -33,7 +33,7 @@ ui = Dict(
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
         feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        export_CSV=>"Enter labels of segments to export to CSV, separated of commas."),
+        export_CSV=>"Exports segment data to CSV. To export specific segments, enter their labels, separated by commas."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
 

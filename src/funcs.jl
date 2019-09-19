@@ -121,7 +121,7 @@ function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
 
 function get_img(img_type::String)
     save(s[wi]["img_fln"][1:end-4] * img_type, s[wi][img_type])
-    img = AssetRegistry.register(s[wi]["img_fln"][1:end-4] * img_type) end
+    img = s[wi]["img_fln"][1:end-4] * "$img_type?dummy=$(now())" end
 
 function feet() return "ft" end
 

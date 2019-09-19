@@ -28,7 +28,9 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     try s[wi]["img_fln"] = ui["img_fln"][]
         s[wi]["user_img"] = load(ui["img_fln"][])
-        s[wi]["_alpha.png"] = s[wi]["_seeds.png"] = s[wi]["_labels.png"] = make_transparent(s[wi]["user_img"]);
+        s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
+        s[wi]["_seeds.png"] = s[wi]["_labels.png"] = make_transparent(
+            zeros(height(s[wi]["user_img"]), width(s[wi]["user_img"])), 1.0, 0.0)
         save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
         img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
         ui["img_tabs"][] = "Original";
