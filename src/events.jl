@@ -189,7 +189,7 @@ handle(w, "img_click") do args
     segs_info = s[wi]["segs_info"]
     @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
 
-    if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs")
+    if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs") && ui["mod_segs_funcs"][][1] == remove_segments
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
             ui["input"][] = ui["input"][] * "$label, ";
