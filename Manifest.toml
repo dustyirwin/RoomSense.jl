@@ -522,6 +522,12 @@ git-tree-sha1 = "4528a536425453c9658ad00cf097c979cc0fa03f"
 uuid = "d3863d7c-f0c8-5437-a7b4-3ae773c01009"
 version = "0.10.3"
 
+[[InteractBulma]]
+deps = ["InteractBase", "Sass", "Test"]
+git-tree-sha1 = "1f5789da81ef33ada621ed6404a44224290306d3"
+uuid = "7981ab7d-5bfa-5e03-9ec9-f3d4afc0a1ca"
+version = "0.6.1"
+
 [[InteractiveUtils]]
 deps = ["Markdown"]
 uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
@@ -867,6 +873,12 @@ version = "0.12.0"
 
 [[SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
+
+[[Sass]]
+deps = ["BinaryProvider", "Libdl", "Test"]
+git-tree-sha1 = "de11179555c6363c5a61c4c94376db3498983734"
+uuid = "322a6be2-4ae8-5d68-aaf1-3e960788d1d9"
+version = "0.1.0"
 
 [[Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"

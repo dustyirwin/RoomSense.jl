@@ -10,10 +10,10 @@ ui = Dict(
         "meters"=>(meters, "m")), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "segs_funcs"=>dropdown(OrderedDict(
-        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}}),
+        "Felzenszwalb"=>(felzenszwalb, Int64),
         "Fast Scanning"=>(fast_scanning, Float64),
-        "Felzenszwalb"=>(felzenszwalb, Int64)), attributes=Dict(
-            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
+        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
+            attributes=Dict("onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs"=>dropdown(OrderedDict(
         "Prune Segments by MGS"=>(prune_min_size, Int64),
         "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
@@ -35,17 +35,16 @@ ui = Dict(
         meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         export_CSV=>"Exports segment data to CSV. To export specific segments, enter their labels, separated by commas."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
-    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
+    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])),
+    "notifications" => notifications([], layout = node(:div)))
 
 ui["toolbox"] = hbox(
     node(:div, ui["ops_tabs"], attributes=Dict(
-        "id"=>"operation_tabs",
-        "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
+        "id"=>"operation_tabs", "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
     node(:div, ui["img_fln"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
-    vbox(
-        node(:div, "", attributes=Dict("id"=>"img_info")),
-        node(:div, "", attributes=Dict("id"=>"scale_info"))));
+        node(:div, "", attributes=Dict("id"=>"img_info")), hskip(0.25em),
+        node(:div, "", attributes=Dict("id"=>"scale_info")));
 
 ui["toolset"] = node(:div,
     vbox(
@@ -99,11 +98,11 @@ ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
     ui["toolset"],
-    ui["display_options"]);
+    ui["display_options"],
+    ui["notifications"]);
 
 ui["html"] = node(:div,
     node(:div, ui["tools"], attributes=Dict("position"=>"fixed")),
-    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative"))
-    )
+    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative")))
 
 ui["img_tabs"][] = "Original"

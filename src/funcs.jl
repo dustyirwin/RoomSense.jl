@@ -80,16 +80,15 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
     return segs end
 
 function make_segs_details(segs::SegmentedImage)
-    lis = [
-        """<li>$label - $(haskey(s[wi], "scale") == true ? trunc(pixel_count / s[wi]["scale"][1]) : pixel_count)</li>"""
+    lis = ["""<li>$label - $(haskey(s[wi], "scale") == true ? trunc(pixel_count / s[wi]["scale"][1]) : pixel_count)</li>"""
         for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     s[wi]["segs_details"] = lis
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / s[wi]["scale"][1] for (label, pixel_count) in segs.segment_pixel_count])
-
-    return "<p><strong>Total Area: $(trunc(area_sum)) " * "$(s[wi]["scale"][1] == 1 ? "pixels" : s[wi]["scale"][2])" * "</strong></p>" *
-        """<p><strong>Label - $(haskey(s[wi], "scale") == true ? "Area" : "Pixel Count") - Type - Name</strong></p>""" *
-        "<ul>$(lis...)</ul>" end
+    return haskey(s[wi], "segs") ? "<p><strong>Total Area: $(trunc(area_sum)) " * "$(s[wi]["scale"][1] == 1 ? "pixels" : s[wi]["scale"][2])" * "</strong></p>" *
+        "<p><strong>Segments: $(length(segment_labels(s[wi]["segs"])))</strong></p>" *
+        "<p><strong>Label - $(s[wi]["scale"][1] == 1 ? "Pixel Count" : "Area")</strong></p>" *
+        "<ul>$(lis...)</ul>" : "" end
 
 function parse_input(input::String)
     input = replace(input, " "=>""); if input == ""; return 0 end

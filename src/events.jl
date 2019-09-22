@@ -51,7 +51,7 @@ handle(w, "go") do args
     try if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(ui["input"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
-        scale_info = "~$(ceil(s[wi]["scale"][1])) pixels per $(s[wi]["scale"][2])²"
+        scale_info = " px/$(s[wi]["scale"][2])²: ~$(ceil(s[wi]["scale"][1]))"
         segs_details = haskey(s[wi], "segs") ? make_segs_details(s[wi]["segs"]) : ""
         @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
@@ -104,7 +104,7 @@ handle(w, "img_tab_click") do args
 
     if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1;
     elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1 end
-    if ui["img_tabs"] in ["<<",">>"]; ui["img_tabs"][] = current_img_tab
+    if ui["img_tabs"] in ["<<",">>"]; ui["img_tabs"][] = current_img_tab;
         @js_ w msg("img_tab_click", current_img_tab); end
 
     if wi > 1
@@ -183,6 +183,10 @@ handle(w, "img_click") do args
             s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
             s[wi]["segs_info"] = """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
                 Label: $(label) @ y:$(args[1]) x:$(args[2])""" end
+
+        ui["notifications"][] = args[7] ? push!(ui["notifications"][], """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
+            Label: $(label) @ y:$(args[1]) x:$(args[2])""") : []
+
     elseif ui["img_tabs"][] != "Plots"
         s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end
 

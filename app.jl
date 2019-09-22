@@ -16,7 +16,7 @@ using Images: save, load, height, width, Gray, GrayA, RGB, N0f8
 using Blink: Window, title, size, handle, msg, js, tools, body!, @js_
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
 using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments,
-    segment_pixel_count, labels_map, segment_mean, SegmentedImage
+    segment_pixel_count, labels_map, segment_mean, segment_labels, SegmentedImage
 
 
 wi = 1  # work index
