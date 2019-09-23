@@ -138,3 +138,6 @@ function export_CSV(input::String)
 
     write(csv_fln, df)
     return js_str end
+
+
+function error_wrapper() end
