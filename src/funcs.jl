@@ -1,5 +1,5 @@
 # terse funcs
-make_segs_info(segs::SegmentedImage, pt::Float64) = "Processed $(length(segs.segment_labels)) segments in $(round(pt, digits=2))s."
+make_segs_info(segs::SegmentedImage, pt::Float64) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
