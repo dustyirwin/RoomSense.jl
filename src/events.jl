@@ -41,7 +41,7 @@ handle(w, "img_selected") do args
         @js_ w document.getElementById("img_tabs").hidden = false;
         @js_ w msg("op_tab_change", ["Set Scale"]);
         @js_ w msg("img_tab_click", ["Original"]);
-        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png")
+        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
         if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
     catch err; println(err); @js_ w alert("Error loading image file.");
     finally @js_ w document.getElementById("go").classList = ["button is-primary"]; end end
@@ -144,7 +144,7 @@ handle(w, "img_tab_click") do args
             @js_ w document.getElementById("display_img").src = $img_segs; end
 
         if "Overlayed" == ui["img_tabs"][]; s[wi]["current_img_tab"] = "Overlayed"
-            @js_ w document.getElementById("display_img").src = $img_segs; 
+            @js_ w document.getElementById("display_img").src = $img_segs;
             @js_ w document.getElementById("overlay_alpha").hidden = false; end
 
         if "Info" == ui["img_tabs"][]; s[wi]["current_img_tab"] = "Info"

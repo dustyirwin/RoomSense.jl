@@ -15,7 +15,7 @@ function get_random_color(seed::Int64)
     seed!(seed)
     rand(RGB{N0f8}) end
 
-function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, prune_list=Vector{Int64}())
+function prune_min_size(segs::SegmentedImage, min_size::Int64, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
         if s[wi]["scale"][1] != 1;
             v / s[wi]["scale"][1] < min_size[1] ? push!(prune_list, k) : continue
