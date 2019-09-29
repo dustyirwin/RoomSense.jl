@@ -19,6 +19,10 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
     segment_pixel_count, labels_map, segment_mean, segment_labels, SegmentedImage
 
 
+# Blink Window
+try close(w) catch end
+w = Window(async=true, Dict("webPreferences"=>Dict("webSecurity"=>false)))
+
 wi = 1  # work index
 s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
@@ -30,7 +34,10 @@ s = [Dict{Any,Any}(
 for file in readdir("./src")
     include("./src/$file") end
 
+title(w, "RoomSense v0.1")
+size(w, 1100, 700)
 body!(w, ui["html"])
+
 println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 
 # Mux web hosting

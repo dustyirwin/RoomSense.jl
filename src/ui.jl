@@ -1,4 +1,3 @@
-
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
@@ -26,8 +25,8 @@ ui = Dict(
     "colorize"=>checkbox(value=false, label="Colorize"),
     "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_text"=>Dict(
-        fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
-        felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mpgs. e.g. '50, 2000'",
+        fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
+        felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum group size (MGS) in ft or pixels. Enter 0 to re-label segment data.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
@@ -91,7 +90,9 @@ ui["display_imgs"] = vbox(
                 document.getElementById("display_img").width,
                 document.getElementById("display_img").naturalHeight,
                 document.getElementById("display_img").naturalWidth,
-                event.ctrlKey]);""",
+                event.ctrlKey,
+                event.shiftKey,
+                event.altKey]);""",
             "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
 ui["segs_details"] = node(:ul, attributes=Dict("id"=>"segs_details", "hidden"=>true));

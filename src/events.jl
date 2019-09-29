@@ -1,8 +1,4 @@
-# Blink Window
-try close(w) catch end
-w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)))
-title(w, "RoomSense v0.1")
-size(w, 1100, 700)
+# event handlers
 
 handle(w, "op_tab_change") do args
     global s
