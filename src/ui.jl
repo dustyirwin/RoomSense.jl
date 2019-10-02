@@ -14,14 +14,14 @@ ui = Dict(
         "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
             attributes=Dict("onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs"=>dropdown(OrderedDict(
-        "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}),
+        "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
         "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs"=>dropdown(OrderedDict(
         "Export to CSV"=>(export_CSV, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_labels"=>checkbox(value=false; label="Labels"),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
+    "draw_labels"=>checkbox(value=false; label="Labels"),
     "colorize"=>checkbox(value=false, label="Colorize"),
     "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_text"=>Dict(
@@ -53,11 +53,11 @@ ui["toolset"] = node(:div,
             node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
             node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)), hskip(0.6em),
             ui["input"], hskip(0.6em), ui["go"], hskip(0.6em), vbox(
-                vskip(0.3em),
+                vskip(0.2em),
                 node(:strong, "", attributes=Dict("id"=>"segs_info")))),
         hbox(hskip(1em),
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text", "style"=>"buffer: 5px;")))),
-    attributes=Dict("id"=>"toolset", "hidden"=>true));
+    attributes=Dict("id"=>"toolset", "hidden"=>false));
 
 ui["display_options"] = node(:div,
     hbox(ui["img_tabs"], hskip(1.5em), vbox(
@@ -100,13 +100,13 @@ ui["segs_details"] = node(:ul, attributes=Dict("id"=>"segs_details", "hidden"=>t
 ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
+    ui["notifications"],
     ui["toolset"],
-    ui["display_options"]);
+    ui["display_options"],
+    ui["notifications"]);
 
 ui["html"] = node(:div,
     node(:div, ui["tools"], attributes=Dict("position"=>"fixed")),
-    ui["notifications"],
-    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative")),
-    ui["notifications"])
+    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative")));
 
-ui["img_tabs"][] = "Original"
+ui["img_tabs"][] = "Original";
