@@ -1,5 +1,9 @@
-# event handlers
+# WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
+try close(w) catch end
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
+# event handlers
 handle(w, "go") do args
     global s, wi
     println("!go clicked")
@@ -144,7 +148,7 @@ handle(w, "op_tab_change") do args
     end end end
 
 handle(w, "img_selected") do args
-    global s, wi, ui
+    global s, wi
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
 
     s[wi]["img_fln"] = ui["img_fln"][]
@@ -166,7 +170,7 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "img_click") do args
-    global s, wi, ui
+    global s, wi
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))

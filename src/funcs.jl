@@ -1,7 +1,21 @@
+using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments,
+    segment_pixel_count, labels_map, segment_mean, segment_labels, SegmentedImage
+using FreeTypeAbstraction: renderstring!, newface, FreeType
+using Blink: Window, title, size, handle, msg, js, tools, body!, @js_
+using ImageTransformations: imresize
+using Images: save, load, height, width, Gray, GrayA, RGB, N0f8, FixedPointNumbers
+using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
+using DataFrames: DataFrame
+using Random: seed!
+using CSV: write
+using Dates: now
+
+
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+
 
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
@@ -134,7 +148,7 @@ function export_CSV(segs::SegmentedImage, input::String, img_fln::String, scale:
     write(csv_fln, df)
     return js_str end
 
-function get_bounds(segs::SegmentedImage, bounds=Dict())
+function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     for label in segment_labels(segs)
         x_range = []
@@ -160,11 +174,5 @@ function get_bounds(segs::SegmentedImage, bounds=Dict())
             "b"=>bottom) end
 
     return bounds end
-
-function update_model(model, data, epochs::Int64)
-    loss(x, y) = Flux.crossentropy(model(x), y)
-    @show @time Flux.@epochs epochs Flux.train!(loss, params(model), data, ADAM(0.001))
-    return model
-end
 
 function error_wrapper() end

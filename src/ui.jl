@@ -1,3 +1,6 @@
+using Interact
+
+
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
@@ -18,7 +21,8 @@ ui = Dict(
         "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs"=>dropdown(OrderedDict(
-        "Export to CSV"=>(export_CSV, String)), attributes=Dict(
+        "Export to CSV"=>(export_CSV, String),
+        "Classify Space Types"=>(classify_space_types, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
     "draw_labels"=>checkbox(value=false; label="Labels"),
@@ -29,9 +33,9 @@ ui = Dict(
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum group size (MGS) in ft or pixels. Enter 0 to re-label segment data.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
-        seeded_region_growing=>"Click on the image to create a segment seed at that location. Ctrl+click to increase seed number.",
-        feet=>"Click on two points on the floorplan and enter the length in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        meters=>"Click on two points on the floorplan and enter the length in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
+        feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         export_CSV=>"Exports segment data to CSV. To export specific segments, enter their labels, separated by commas."),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Info", ">>"])),
