@@ -1,4 +1,17 @@
+using Blink: Window, title, size, handle, msg, body!
 using Interact
+
+wi = 1  # work index
+s = [Dict{Any,Any}(
+    "current_img_tab"=>"Original",
+    "prev_op_tab"=>"Set Scale",
+    "scale"=>(1.,"ft",""),
+    "selected_areas"=>Vector{Int64}())];
+
+# WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
+try close(w) catch end
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
 ui = Dict(
@@ -52,7 +65,7 @@ ui["toolbox"] = hbox(
 ui["toolset"] = node(:div,
     vbox(
         hbox(hskip(0.6em),
-            ui["go"], hskip(0.6em), 
+            ui["go"], hskip(0.6em),
             node(:div, ui["set_scale_funcs"], attributes=Dict("id"=>"Set Scale toolset")),
             node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset", "hidden"=>true)),
             node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
@@ -115,3 +128,5 @@ ui["html"] = node(:div,
     node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative")));
 
 ui["img_tabs"][] = "Original";
+
+body!(w, ui["html"])

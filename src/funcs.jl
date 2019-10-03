@@ -1,15 +1,14 @@
 using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments,
     segment_pixel_count, labels_map, segment_mean, segment_labels, SegmentedImage
 using FreeTypeAbstraction: renderstring!, newface, FreeType
-using Blink: Window, title, size, handle, msg, js, tools, body!, @js_
 using ImageTransformations: imresize
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8, FixedPointNumbers
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
+using Blink: @js_ js, tools
 using DataFrames: DataFrame
 using Random: seed!
 using CSV: write
 using Dates: now
-
 
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."

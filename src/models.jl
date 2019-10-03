@@ -49,7 +49,7 @@ model = Chain(
 @save "./models/space_type_classifier.jld2" model
 """
 
-@load "./models/space_type_classifier.jld2" model
+s[wi]["model"] = @load "./models/space_type_classifier.jld2" model
 
 primary_space_types = Dict(
     1 => "Building Support",       2 => "Process",

@@ -1,11 +1,57 @@
-# WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
-try close(w) catch end
-w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
-title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
-
 # event handlers
+
+handle(w, "img_selected") do args
+    global s, ui
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+
+    s[wi]["img_fln"] = ui["img_fln"][]
+    s[wi]["user_img"] = load(ui["img_fln"][])
+    s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
+    save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
+    img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
+    ui["img_tabs"][] = "Original"
+    img_alpha = get_dummy("_alpha.png", s[wi]["img_fln"], s[wi]["_alpha.png"])
+    @js_ w document.getElementById("overlay_alpha").src = $img_alpha;
+    @js_ w document.getElementById("img_info").innerHTML = $img_info;
+    @js_ w document.getElementById("toolset").hidden = false;
+    @js_ w document.getElementById("img_tabs").hidden = false;
+    @js_ w msg("op_tab_change", []);
+    @js_ w msg("img_tab_click", []);
+    if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
+    if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
+
+    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+
+handle(w, "op_tab_change") do args
+    global s, ui
+    selected_op = ui["ops_tabs"][]
+    println("!op_tab_change: $selected_op")
+
+    if haskey(s[wi], "$(selected_op)_input")
+        ui["input"][] = s[wi]["$(selected_op)_input"]
+    else
+        ui["input"][] = "" end
+
+    s[wi]["$(selected_op)_input"] = ui["input"][]
+
+    if selected_op == "Export Data"
+        @js_ w document.getElementById("input").hidden = true;
+    else
+        @js_ w document.getElementById("input").hidden = false; end
+
+    @js_ w msg("dropdown_selected", []);
+    @js_ w document.getElementById("help_text").innerHTML = "";
+    @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
+    @async js(w, WebIO.JSString("""document.getElementById("$selected_op toolset").hidden = false;"""))
+
+    for op in ui["ops_tabs"][:options][]
+        if op != ui["ops_tabs"][]
+            @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
+            @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;"""))
+    end end end
+
 handle(w, "go") do args
-    global s, wi
+    global s, wi, ui
     println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
@@ -62,7 +108,7 @@ handle(w, "go") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "img_tab_click") do args
-    global s, wi
+    global s, wi, ui
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     img_fln = ui["img_fln"][]
     println("!img_tab_click: $(ui["img_tabs"][])")
@@ -129,54 +175,8 @@ handle(w, "img_tab_click") do args
 
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
-handle(w, "op_tab_change") do args
-    global s
-    println("!op_tab_change: $(ui["ops_tabs"][])")
-    s[wi]["$(s[wi]["prev_op_tab"])_input"] = ui["input"][]
-    ui["input"][] = haskey(s[wi], "$(ui["ops_tabs"][])_input") ? s[wi]["$(ui["ops_tabs"][])_input"] : ui["input"][]
-    s[wi]["prev_op_tab"] = ui["ops_tabs"][]
-    selected_op = ui["ops_tabs"][]
-
-    if selected_op == "Export Data"
-        @js_ w document.getElementById("input").hidden = true;
-    else
-        @js_ w document.getElementById("input").hidden = false; end
-
-    @js_ w msg("dropdown_selected", []);
-    @js_ w document.getElementById("help_text").innerHTML = "";
-    @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
-    @async js(w, WebIO.JSString("""document.getElementById("$selected_op toolset").hidden = false;"""))
-
-    for op in ui["ops_tabs"][:options][]
-        if op != selected_op
-            @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
-            @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;"""))
-    end end end
-
-handle(w, "img_selected") do args
-    global s, wi
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
-
-    s[wi]["img_fln"] = ui["img_fln"][]
-    s[wi]["user_img"] = load(ui["img_fln"][])
-    s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
-    save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
-    img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
-    ui["img_tabs"][] = "Original"
-    img_alpha = get_dummy("_alpha.png", s[wi]["img_fln"], s[wi]["_alpha.png"])
-    @js_ w document.getElementById("overlay_alpha").src = $img_alpha;
-    @js_ w document.getElementById("img_info").innerHTML = $img_info;
-    @js_ w document.getElementById("toolset").hidden = false;
-    @js_ w document.getElementById("img_tabs").hidden = false;
-    @js_ w msg("op_tab_change", ["Set Scale"]);
-    @js_ w msg("img_tab_click", ["Original"]);
-    if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
-    if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
-
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
-
 handle(w, "img_click") do args
-    global s, wi
+    global s, ui
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))

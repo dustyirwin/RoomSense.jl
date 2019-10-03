@@ -9,16 +9,6 @@ println("Loading RoomSense v0.1, please wait...")
     include("./src/ui.jl");
     include("./src/events.jl");
     include("./src/models.jl");
-
-    wi = 1  # work index
-    s = [Dict{Any,Any}(
-        "current_img_tab"=>"Original",
-        "prev_op_tab"=>"Set Scale",
-        "scale"=>(1.,"ft",""),
-        "selected_areas"=>Vector{Int64}(),
-        "model"=>model)];
-
-    body!(w, ui["html"])
 end
 
 println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
