@@ -4,14 +4,13 @@ using CuArrays
 using JLD2: @save, @load
 
 
-function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[])
+function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[], img_slices=Dict())
     img = Gray.(load(img_fln))
     bs = get_bounds(segs)
     n = length(segment_labels(segs))
 
-    for i in 1:n
-        seg_type32 = Float32.(zeros(12))
-        seg_type32[rand(1:12)] = 1.  # random space_type
+    for i in keys(segment_labels(segs))
+        seg_type32 = Float32.(zeros(12))  # TODO: write func for csv space_type ground-truth data as a OHVF32
 
         img_slice = img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]]
         img_slice = imresize(img_slice, 128, 128)
@@ -19,19 +18,20 @@ function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[])
 
         push!(X, img_slice32)
         push!(Y, seg_type32)
+
+        img_slices[i] = img_slice32
     end
 
     X = reshape(vcat(X...), (128,128,1,n)) |> gpu
     Y = reshape(vcat(Y...), (11,n)) |> gpu
 
-    return [(X, Y)] end
+    return ([(X, Y)], img_slices) end
 
-function update_model(model, data, epochs::Int64)
+function update_model(model, data::Tuple{Array{Float32,4},Array{Float32,2}}, epochs::Int64)
     data |> gpu
     model |> gpu
     loss(x, y) = Flux.crossentropy(model(x), y)
     @show @time Flux.@epochs epochs Flux.train!(loss, params(model), data, ADAM(0.001))
-    @save "./models/space_type_classifier.jld2" model
     return model end
 
 
@@ -49,7 +49,7 @@ model = Chain(
 @save "./models/space_type_classifier.jld2" model
 """
 
-try @load "./models/space_type_classifier.jld2" model catch err; println(err) end
+@load "./models/space_type_classifier.jld2" model
 
 primary_space_types = Dict(
     1 => "Building Support",       2 => "Process",

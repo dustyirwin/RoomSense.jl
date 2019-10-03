@@ -15,7 +15,8 @@ println("Loading RoomSense v0.1, please wait...")
         "current_img_tab"=>"Original",
         "prev_op_tab"=>"Set Scale",
         "scale"=>(1.,"ft",""),
-        "selected_areas"=>Vector{Int64}())];
+        "selected_areas"=>Vector{Int64}(),
+        "model"=>model)];
 
     body!(w, ui["html"])
 end

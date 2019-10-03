@@ -15,17 +15,15 @@ using Dates: now
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
-
+pred_space_type(m,) = Int64(m(img_slices[label]))
 
 # verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
-function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
+function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function, m, SP::Bool)
     img = Gray.(load(img_fln))
-    segs = alg(img, args)
-    segs_types = Dict(label=>primary_space_types[rand(1:12)] for label in segment_labels(segs))
-    return (segs, segs_types) end
+    segs = alg(img, args) end
 
 function get_random_color(seed::Int64)
     seed!(seed)
@@ -85,8 +83,8 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
     if alg == felzenszwalb k*=500; j*=500 end
     if alg == fast_scanning k*=1.5 end
     segs, segs_types = segment_img(img_fln, k, alg)
-    c = length(segs.segment_labels)
-    while c > max_segs
+
+    while c > length(segs.segment_labels)
         segs, segs_types = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
         segs = prune_min_size(segs, [mgs], s[wi]["scale"][1])
         c = length(segs.segment_labels)
@@ -114,7 +112,7 @@ function parse_input(input::String, ops_tabs::String)
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
         catch; var = [parse(Int64, var) for var in split(input, ',')]
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
-    else
+    elseif ops_tabs in ["Modify Segments"]
         type = '.' in input ? Float64 : Int64
         args = Vector{type}()
 
@@ -179,8 +177,14 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function classify_space_types(model, data, segs)
-    return "MAGICAL AI WIZARDY"
-end
+function get_segs_types(segs::SegmentedImage, img_fln::String, m, SP::Bool)
+    if SP
+        segs_types=Dict()
+        img_slices = make_segs_data(segs, img_fln)[2]
+        for (label, img_slice) in img_slices
+            pred_vec = m(img_slice)
+            segs_types[label] = primary_space_types[Int64(findall(pred_vec .== maximum(pred_vec))[1])] end
+    else
+        segs_types = Dict(label=>primary_space_types[12] for label in segment_labels(segs)) end end
 
 function error_wrapper() end

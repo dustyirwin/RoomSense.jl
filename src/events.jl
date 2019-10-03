@@ -18,7 +18,7 @@ handle(w, "go") do args
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
-        js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2]) 
+        js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2])
         @js_ w alert($js_str);
 
     elseif ui["ops_tabs"][] == "Segment Image"
@@ -27,20 +27,21 @@ handle(w, "go") do args
             segs = seeded_region_growing(Gray.(load(ui["img_fln"][])), seeds)
         elseif ',' in ui["input"][]
             args = split(ui["input"][], ',')
-            segs, segs_types = recursive_segmentation(
+            segs = recursive_segmentation(
                 ui["img_fln"][], ui["segs_funcs"][][1], parse(Int64, args[1]), parse(Int64, args[2]))
-        else;
-            segs, segs_types = segment_img(ui["img_fln"][], parse(
-            ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
+        else
+            segs = segment_img(ui["img_fln"][], parse(ui["segs_funcs"][][2], ui["input"][]),
+                ui["segs_funcs"][][1], s[wi]["model"], ui["predict_space_type"][]) end
 
     elseif ui["ops_tabs"][] == "Modify Segments"
         segs = if ui["mod_segs_funcs"][][1] == prune_min_size
             prune_min_size(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]), s[wi]["scale"][1])
         elseif ui["mod_segs_funcs"][][1] == remove_segments
-            remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][])) end
-        segs_types = Dict(label=>primary_space_types[rand(1:12)] for label in segment_labels(segs)) end
+            remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
+        else nothing end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
+        segs_types = get_segs_types(segs, img_fln, s[wi]["model"], ui["predict_space_type"][])
         segs_info = make_segs_info(segs)
         segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
@@ -135,6 +136,11 @@ handle(w, "op_tab_change") do args
     ui["input"][] = haskey(s[wi], "$(ui["ops_tabs"][])_input") ? s[wi]["$(ui["ops_tabs"][])_input"] : ui["input"][]
     s[wi]["prev_op_tab"] = ui["ops_tabs"][]
     selected_op = ui["ops_tabs"][]
+
+    if selected_op == "Export Data"
+        @js_ w document.getElementById("input").hidden = true;
+    else
+        @js_ w document.getElementById("input").hidden = false; end
 
     @js_ w msg("dropdown_selected", []);
     @js_ w document.getElementById("help_text").innerHTML = "";
