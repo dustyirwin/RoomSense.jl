@@ -15,13 +15,11 @@ handle(w, "go") do args
             ui["input"][], ui["ops_tabs"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = " ~px/$(s[wi]["scale"][2])²: $(ceil(s[wi]["scale"][1]))"
-        segs_details = haskey(s[wi], "segs") ? make_segs_details(
-            s[wi]["segs"], s[wi]["scale"][1], s[wi]["scale"][2]) : ""
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
 
-    elseif ui["ops_tabs"][] == "Export Data"
-        js_str = export_CSV(""); @js_ w alert($js_str);
+    elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
+        js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2]) 
+        @js_ w alert($js_str);
 
     elseif ui["ops_tabs"][] == "Segment Image"
         if ui["segs_funcs"][][1] == seeded_region_growing
@@ -29,21 +27,22 @@ handle(w, "go") do args
             segs = seeded_region_growing(Gray.(load(ui["img_fln"][])), seeds)
         elseif ',' in ui["input"][]
             args = split(ui["input"][], ',')
-            segs = recursive_segmentation(
+            segs, segs_types = recursive_segmentation(
                 ui["img_fln"][], ui["segs_funcs"][][1], parse(Int64, args[1]), parse(Int64, args[2]))
         else;
-            segs = segment_img(ui["img_fln"][], parse(
+            segs, segs_types = segment_img(ui["img_fln"][], parse(
             ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
 
     elseif ui["ops_tabs"][] == "Modify Segments"
         segs = if ui["mod_segs_funcs"][][1] == prune_min_size
             prune_min_size(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]), s[wi]["scale"][1])
         elseif ui["mod_segs_funcs"][][1] == remove_segments
-            remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][])) end end
+            remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][])) end
+        segs_types = Dict(label=>primary_space_types[rand(1:12)] for label in segment_labels(segs)) end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
         segs_info = make_segs_info(segs)
-        segs_details = make_segs_details(segs, s[wi]["scale"][1], s[wi]["scale"][2])
+        segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
         save(img_fln[1:end-4] * "_segs.png", segs_img)
         if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
@@ -52,6 +51,7 @@ handle(w, "go") do args
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
         push!(s, merge(s[wi], Dict(
             "segs"=>segs,
+            "segs_types"=>segs_types,
             "segs_info"=>segs_info,
             "_segs.png"=>segs_img)))
         wi=length(s); @js_ w msg("img_tab_click", "");
@@ -92,7 +92,7 @@ handle(w, "img_tab_click") do args
 
     if haskey(s[wi], "segs")
 
-        if ui["draw_labels"][]
+        if ui["draw_labels"][] && ui["img_tabs"][] != "Info"
             if haskey(s[wi], "_labels.png") == false
                 s[wi]["_labels.png"] = make_labels_img(s[wi]["segs"], ui["draw_labels"][], ui["font"])
                 save(img_fln[1:end-4] * "_labels.png", s[wi]["_labels.png"])
@@ -109,7 +109,7 @@ handle(w, "img_tab_click") do args
 
         if "Info" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Info"
             segs_details = make_segs_details(
-                s[wi]["segs"], s[wi]["scale"][1], s[wi]["scale"][2])
+                s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
             @js_ w document.getElementById("display_img").hidden = true;
             @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
             @js_ w document.getElementById("segs_details").hidden = false;

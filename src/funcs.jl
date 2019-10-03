@@ -17,12 +17,15 @@ remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
 
+# verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
 function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
     img = Gray.(load(img_fln))
-    segs = alg(img, args) end
+    segs = alg(img, args)
+    segs_types = Dict(label=>primary_space_types[rand(1:12)] for label in segment_labels(segs))
+    return (segs, segs_types) end
 
 function get_random_color(seed::Int64)
     seed!(seed)
@@ -34,7 +37,8 @@ function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, scale::Fl
             v / scale < min_size[1] ? push!(prune_list, k) : continue
         elseif v < min_size[1]
             push!(prune_list, k) end end
-    segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs)) end
+    segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs))
+    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
 
 function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
@@ -80,24 +84,24 @@ function make_plot_img(segs::SegmentedImage)
 function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
     if alg == fast_scanning k*=1.5 end
-    segs = segment_img(img_fln, k, alg)
+    segs, segs_types = segment_img(img_fln, k, alg)
     c = length(segs.segment_labels)
     while c > max_segs
-        segs = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
+        segs, segs_types = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
         segs = prune_min_size(segs, [mgs], s[wi]["scale"][1])
         c = length(segs.segment_labels)
         update = "alg: $alg segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
         @js_ w document.getElementById("segs_info").innerHTML = $update; end
-    return segs end
+    return (segs, segs_types) end
 
-function make_segs_details(segs::SegmentedImage, scale::Float64, scale_units::String)
-    lis = ["""<li>$label - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count)</li>"""
+function make_segs_details(segs::SegmentedImage, segs_types::Dict, scale::Float64, scale_units::String)
+    lis = ["""<li>$label - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(segs_types[label])</li>"""
         for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     return scale > 1 ? "<p><strong>Total Area: $(trunc(area_sum)) " * "$(scale == 1 ? "pixels" : scale_units)" * "</strong></p>" *
-        "<p><strong>Segments: $(length(segment_labels(segs)))</strong></p>" *
-        "<p><strong>Label - $(scale == 1 ? "Pixel Count" : "Area") (Top 100)</strong></p>" *
+        "<p><strong>Total Segments: $(length(segment_labels(segs)))</strong></p>" *
+        "<p><strong>Label - $(scale == 1 ? "Pixel Count" : "Area") - Type (Top 100)</strong></p>" *
         "<ul>$(lis...)</ul>" : "" end
 
 function parse_input(input::String, ops_tabs::String)
@@ -136,14 +140,14 @@ function feet() return "ft" end
 
 function meters() return "m" end
 
-function export_CSV(segs::SegmentedImage, input::String, img_fln::String, scale::Float64)
-    input = parse_input(input)
-    df = DataFrame(segment_labels=Int64[], segment_pixel_count=Int64[], area_estimate=Int64[])
+function export_CSV(segs::SegmentedImage, segs_types::Dict, img_fln::String, scale::Float64, scale_unit::String)
+    area_estimate = Symbol("area_estimate_$scale_unit")
+    df = DataFrame(segment_labels=Int64[], segment_pixel_count=Int64[], area_estimate=Int64[], space_type_pred=String[])
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
     js_str = "Data exported to $csv_fln"
 
-    for (seg_label, px_ct) in segment_pixel_count(segs)
-        push!(df, [seg_label, px_ct, floor(px_ct/scale[1])]) end
+    for (label, px_ct) in segment_pixel_count(segs)
+        push!(df, [label, px_ct, floor(px_ct/scale[1]), segs_types[label]]) end
 
     write(csv_fln, df)
     return js_str end
@@ -174,5 +178,9 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
             "b"=>bottom) end
 
     return bounds end
+
+function classify_space_types(model, data, segs)
+    return "MAGICAL AI WIZARDY"
+end
 
 function error_wrapper() end

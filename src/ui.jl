@@ -31,12 +31,13 @@ ui = Dict(
     "help_text"=>Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
-        prune_min_size=>"Removes any segment below the input minimum group size (MGS) in ft or pixels. Enter 0 to re-label segment data.",
+        prune_min_size=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
         seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        export_CSV=>"Exports segment data to CSV. To export specific segments, enter their labels, separated by commas."),
+        export_CSV=>"Exports segment data to CSV.",
+        classify_space_types=>"Have SpaceCadet make a guess at the segment space-use types!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Info", ">>"])),
     "notifications" => notifications([], layout = node(:div)))
