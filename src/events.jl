@@ -15,7 +15,6 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("img_info").innerHTML = $img_info;
     @js_ w document.getElementById("toolset").hidden = false;
     @js_ w document.getElementById("img_tabs").hidden = false;
-    @js_ w msg("op_tab_change", []);
     @js_ w msg("img_tab_click", []);
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
     if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
@@ -23,7 +22,7 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "op_tab_change") do args
-    global s, ui
+    global s, wi, ui
     selected_op = ui["ops_tabs"][]
     println("!op_tab_change: $selected_op")
 
@@ -40,18 +39,15 @@ handle(w, "op_tab_change") do args
         @js_ w document.getElementById("input").hidden = false; end
 
     @js_ w msg("dropdown_selected", []);
-    @js_ w document.getElementById("help_text").innerHTML = "";
-    @async js(w, WebIO.JSString("""document.getElementById("$selected_op").hidden = false;"""))
-    @async js(w, WebIO.JSString("""document.getElementById("$selected_op toolset").hidden = false;"""))
+    @async js(w, WebIO.JSString("""document.getElementById("$(selected_op) toolset").hidden = false;"""))
 
     for op in ui["ops_tabs"][:options][]
         if op != ui["ops_tabs"][]
-            @async js(w, WebIO.JSString("""document.getElementById("$op").hidden = true;"""))
-            @async js(w, WebIO.JSString("""document.getElementById("$op toolset").hidden = true;"""))
+            @async js(w, WebIO.JSString("""document.getElementById("$(op) toolset").hidden = true;"""))
     end end end
 
 handle(w, "go") do args
-    global s, wi, ui
+    global s, wi, ui, model
     println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
@@ -73,11 +69,11 @@ handle(w, "go") do args
             segs = seeded_region_growing(Gray.(load(ui["img_fln"][])), seeds)
         elseif ',' in ui["input"][]
             args = split(ui["input"][], ',')
-            segs = recursive_segmentation(
-                ui["img_fln"][], ui["segs_funcs"][][1], parse(Int64, args[1]), parse(Int64, args[2]))
+            segs = recursive_segmentation(ui["img_fln"][], ui["segs_funcs"][][1],
+                parse(Int64, args[1]), parse(Int64, args[2]))
         else
-            segs = segment_img(ui["img_fln"][], parse(ui["segs_funcs"][][2], ui["input"][]),
-                ui["segs_funcs"][][1], s[wi]["model"], ui["predict_space_type"][]) end
+            segs = segment_img(ui["img_fln"][],
+                parse(ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
 
     elseif ui["ops_tabs"][] == "Modify Segments"
         segs = if ui["mod_segs_funcs"][][1] == prune_min_size
@@ -87,7 +83,6 @@ handle(w, "go") do args
         else nothing end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
-        segs_types = get_segs_types(segs, img_fln, s[wi]["model"], ui["predict_space_type"][])
         segs_info = make_segs_info(segs)
         segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
@@ -98,7 +93,6 @@ handle(w, "go") do args
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
         push!(s, merge(s[wi], Dict(
             "segs"=>segs,
-            "segs_types"=>segs_types,
             "segs_info"=>segs_info,
             "_segs.png"=>segs_img)))
         wi=length(s); @js_ w msg("img_tab_click", "");
@@ -108,7 +102,7 @@ handle(w, "go") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "img_tab_click") do args
-    global s, wi, ui
+    global s, wi, ui, model
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
     img_fln = ui["img_fln"][]
     println("!img_tab_click: $(ui["img_tabs"][])")
@@ -146,6 +140,9 @@ handle(w, "img_tab_click") do args
                 img_labels = get_dummy("_labels.png", s[wi]["img_fln"], s[wi]["_labels.png"])
                 @js_ w document.getElementById("overlay_labels").src = $img_labels; end
             @js_ w document.getElementById("overlay_labels").hidden = false; end
+
+        if ui["SpacePred"][]
+            s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], model) end
 
         if "Segmented" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Segmented"
             @js_ w document.getElementById("display_img").src = $img_segs; end
@@ -231,6 +228,7 @@ handle(w, "img_click") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "dropdown_selected") do args
+    global ui
     if ui["ops_tabs"][] == "Segment Image"
         help_text = ui["help_text"][ui["segs_funcs"][][1]]
     elseif ui["ops_tabs"][] == "Modify Segments"

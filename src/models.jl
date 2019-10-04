@@ -4,7 +4,7 @@ using CuArrays
 using JLD2: @save, @load
 
 
-function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[], img_slices=Dict())
+function make_segs_data(segs::SegmentedImage, img_fln::String, GTDF::DataFrame, X=[], Y=[], img_slices=Dict())
     img = Gray.(load(img_fln))
     bs = get_bounds(segs)
     n = length(segment_labels(segs))
@@ -27,12 +27,22 @@ function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[], img_s
 
     return ([(X, Y)], img_slices) end
 
+
 function update_model(model, data::Tuple{Array{Float32,4},Array{Float32,2}}, epochs::Int64)
     data |> gpu
     model |> gpu
     loss(x, y) = Flux.crossentropy(model(x), y)
     @show @time Flux.@epochs epochs Flux.train!(loss, params(model), data, ADAM(0.001))
     return model end
+
+
+function get_segs_types(segs::SegmentedImage, img_fln::String, m, segs_types=Dict())
+    img_slices = make_segs_data(segs, img_fln)[2]
+
+    for (label, img_slice) in img_slices
+        pred_vec = m(img_slice)
+        segs_types[label] = primary_space_types[Int64(
+            findall(pred_vec .== maximum(pred_vec))[1])] end end
 
 
 """
@@ -49,7 +59,7 @@ model = Chain(
 @save "./models/space_type_classifier.jld2" model
 """
 
-s[wi]["model"] = @load "./models/space_type_classifier.jld2" model
+@load "./models/space_type_classifier.jld2" model
 
 primary_space_types = Dict(
     1 => "Building Support",       2 => "Process",

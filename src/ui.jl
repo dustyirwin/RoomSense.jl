@@ -1,4 +1,4 @@
-using Blink: Window, title, size, handle, msg, body!
+using Blink: Window, title, size, handle, msg, body!, loadcss!
 using Interact
 
 wi = 1  # work index
@@ -10,7 +10,7 @@ s = [Dict{Any,Any}(
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 try close(w) catch end
-w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
@@ -124,9 +124,12 @@ ui["tools"] = vbox(
     ui["notifications"]);
 
 ui["html"] = node(:div,
-    node(:div, ui["tools"], attributes=Dict("position"=>"fixed")),
-    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict("position"=>"relative")));
+    node(:div, ui["tools"], attributes=Dict(
+        "classList"=>"navbar", "position"=>"fixed")),
+    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict(
+        "class"=>"main", "position"=>"relative")));
 
 ui["img_tabs"][] = "Original";
 
+loadcss!(w, "./src/space_cadet.css")
 body!(w, ui["html"])

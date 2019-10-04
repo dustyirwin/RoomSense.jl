@@ -20,7 +20,7 @@ pred_space_type(m,) = Int64(m(img_slices[label]))
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
-function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function, m, SP::Bool)
+function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
     img = Gray.(load(img_fln))
     segs = alg(img, args) end
 
@@ -175,15 +175,5 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
             "b"=>bottom) end
 
     return bounds end
-
-function get_segs_types(segs::SegmentedImage, img_fln::String, m, SP::Bool)
-    if SP
-        segs_types=Dict()
-        img_slices = make_segs_data(segs, img_fln)[2]
-        for (label, img_slice) in img_slices
-            pred_vec = m(img_slice)
-            segs_types[label] = primary_space_types[Int64(findall(pred_vec .== maximum(pred_vec))[1])] end
-    else
-        segs_types = Dict(label=>primary_space_types[12] for label in segment_labels(segs)) end end
 
 function error_wrapper() end
