@@ -92,7 +92,7 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
     return (segs, segs_types) end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Dict, scale::Float64, scale_units::String)
-    lis = ["""<li>$label - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(segs_types[label])</li>"""
+    lis = ["""<li>$label - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(length(segs_types) > 0 ? segs_types[label] : "???")</li>"""
         for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])

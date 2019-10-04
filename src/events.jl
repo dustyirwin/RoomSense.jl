@@ -84,6 +84,7 @@ handle(w, "go") do args
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
         segs_info = make_segs_info(segs)
+        segs_types = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : Dict()
         segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
         save(img_fln[1:end-4] * "_segs.png", segs_img)
@@ -104,6 +105,7 @@ handle(w, "go") do args
 handle(w, "img_tab_click") do args
     global s, wi, ui, model
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    s[wi]["segs_types"] = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : Dict()
     img_fln = ui["img_fln"][]
     println("!img_tab_click: $(ui["img_tabs"][])")
 
@@ -141,9 +143,6 @@ handle(w, "img_tab_click") do args
                 @js_ w document.getElementById("overlay_labels").src = $img_labels; end
             @js_ w document.getElementById("overlay_labels").hidden = false; end
 
-        if ui["SpacePred"][]
-            s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], model) end
-
         if "Segmented" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Segmented"
             @js_ w document.getElementById("display_img").src = $img_segs; end
 
@@ -152,9 +151,14 @@ handle(w, "img_tab_click") do args
             @js_ w document.getElementById("overlay_alpha").hidden = false; end
 
         if "Info" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Info"
+            @js_ w document.getElementById("display_img").hidden = true;
+
+            s[wi]["segs_types"] = if ui["predict_space_type"][]
+                get_segs_types(s[wi]["segs"], s[wi]["img_fln"], model)
+            else; Dict() end
+
             segs_details = make_segs_details(
                 s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-            @js_ w document.getElementById("display_img").hidden = true;
             @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
             @js_ w document.getElementById("segs_details").hidden = false;
 
