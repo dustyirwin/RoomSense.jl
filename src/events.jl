@@ -74,7 +74,7 @@ handle(w, "go") do args
     elseif ui["ops_tabs"][] == "Segment Image"
         if ui["segs_funcs"][][1] == seeded_region_growing
             seeds = parse_input(ui["input"][], ui["ops_tabs"][])
-            segs = seeded_region_growing(Gray.(load(ui["img_fln"][])), seeds)
+            segs = seeded_region_growing(Gray.(load(img_fln)), seeds)
         elseif ',' in ui["input"][]
             args = split(ui["input"][], ',')
             segs = recursive_segmentation(ui["img_fln"][], ui["segs_funcs"][][1],
@@ -241,6 +241,8 @@ handle(w, "img_click") do args
     if ui["ops_tabs"][] == "Set Scale"
         ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2])," end
 
+    segs_info = s[wi]["segs_info"]
+    @js_ w document.getElementById("segs_info").innerHTML = $segs_info
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "dropdown_selected") do args
