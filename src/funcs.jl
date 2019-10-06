@@ -68,16 +68,16 @@ function make_plot_img(segs::SegmentedImage, scale::Float64)
 
 function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
-    if alg == fast_scanning k*=1.5 end
-    segs, segs_types = segment_img(img_fln, k, alg)
+    segs = segment_img(img_fln, k, alg)
+    c = length(segs.segment_labels)
 
     while c > length(segs.segment_labels)
-        segs, segs_types = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
+        segs = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
         segs = prune_min_size(segs, [mgs], s[wi]["scale"][1])
         c = length(segs.segment_labels)
         update = "alg: $alg segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
-        @js_ w document.getElementById("segs_info").innerHTML = $update; end
-    return (segs, segs_types) end
+        @js_ w document.getElementById("segs_info").innerHTML = $update end
+    return segs end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
     lis = ["""<li>$(label) - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(segs_types != nothing ? segs_types[label] : "???")</li>"""
@@ -126,13 +126,18 @@ function feet() return "ft" end
 function meters() return "m" end
 
 function export_CSV(segs::SegmentedImage, segs_types::Dict, img_fln::String, scale::Float64, scale_unit::String)
-    area_estimate = Symbol("area_estimate_$scale_unit")
-    df = DataFrame(segment_labels=Int64[], segment_pixel_count=Int64[], area_estimate=Int64[], space_type_pred=String[])
+    df = DataFrame(
+        segment_label=Int64[],
+        segment_pixel_count=Int64[],
+        area_estimate=Int64[],
+        area_unit=String[],
+        space_type_predicted=String[],
+        space_type_actual=String[])
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
     js_str = "Data exported to $csv_fln"
 
     for (label, px_ct) in segment_pixel_count(segs)
-        push!(df, [label, px_ct, floor(px_ct/scale[1]), segs_types[label]]) end
+        push!(df, [label, px_ct, floor(px_ct/scale[1]), scale_unit, segs_types[label], ""]) end
 
     write(csv_fln, df)
     return js_str end
