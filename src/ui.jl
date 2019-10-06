@@ -4,6 +4,7 @@ s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
     "scale"=>(1.,"ft",""),
+    "segs_types"=>nothing,
     "selected_areas"=>Vector{Int64}())];
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
@@ -76,7 +77,7 @@ ui["toolset"] = node(:div,
 
 ui["display_options"] = node(:div,
     hbox(ui["img_tabs"],
-        node(:p, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;")), vbox(vskip(0.5em), 
+        node(:p, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;")), vbox(vskip(0.5em),
         hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", [])""",

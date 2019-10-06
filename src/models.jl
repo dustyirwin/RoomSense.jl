@@ -53,6 +53,7 @@ m = Chain(
 @save "./models/space_type_classifier.jld2" m
 """
 
+@load "./models/space_type_classifier.jld2" m
 
 primary_space_types = Dict(
     1 => "Building Support",       2 => "Process",
@@ -62,6 +63,3 @@ primary_space_types = Dict(
     9 => "Office/Classroom",       10 => "Common Areas",
     11 => "Living Quarters",       12 => "Unknown"
     )
-
-@load "./models/space_type_classifier.jld2" m
-m

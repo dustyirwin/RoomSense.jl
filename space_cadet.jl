@@ -10,7 +10,7 @@ using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale
 using Blink: Window, title, size, body!, loadcss!, js, tools, msg, handle, JSString, @js_
 using ImageTransformations: imresize
 using DataFrames: DataFrame
-using JLD2: @save, @load
+using BSON: @save, @load
 using Random: seed!
 using CSV: write
 using Dates: now

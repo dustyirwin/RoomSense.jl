@@ -18,8 +18,8 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("img_tabs").hidden = false
 
     ui["img_tabs"][] = "Original"
-    @js_ w msg("op_tab_change", [])
-    @js_ w msg("img_tab_click", [])
+    #@js_ w msg("op_tab_change", "")
+    @js_ w msg("img_tab_click", "")
 
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
     if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
@@ -27,7 +27,7 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "op_tab_change") do args
-    global s
+    global s, ui
     selected_op = ui["ops_tabs"][]
     println("!op_tab_change: $selected_op")
 
@@ -45,12 +45,12 @@ handle(w, "op_tab_change") do args
 
     @js_ w msg("dropdown_selected", [])
     @async js(w, JSString(
-        """document.getElementById("$(selected_op) toolset").hidden = false;"""))
+        """document.getElementById("$(selected_op) toolset").hidden = false"""))
 
     for not_op in ui["ops_tabs"][:options][]
         if not_op != ui["ops_tabs"][]
             @async js(w, JSString(
-                """document.getElementById("$(not_op) toolset").hidden = true;"""))
+                """document.getElementById("$(not_op) toolset").hidden = true"""))
     end end end
 
 handle(w, "go") do args
@@ -112,16 +112,19 @@ handle(w, "go") do args
 handle(w, "img_tab_click") do args
     global s, wi, ui
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
-    s[wi]["segs_types"] = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : Dict()
     img_fln = ui["img_fln"][]
     println("!img_tab_click: $(ui["img_tabs"][])")
+
+    if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
+        img_orig = img_fln * "?dummy=$(now())"
+        @js_ w document.getElementById("display_img").src = $img_orig end
 
     if ui["img_tabs"][] in ["<<", ">>"]
         if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1
         elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1 end
-
         @js_ w document.getElementById("wi").innerHTML = $wi
-        ui["img_fln"][] = s[wi]["img_fln"]
+
+        s[wi]["img_fln"] = ui["img_fln"][]
         ui["img_tabs"][] = s[wi]["prev_img_tab"]
         @js_ w msg("img_tab_click", []) end
 
@@ -150,10 +153,6 @@ handle(w, "img_tab_click") do args
                 @js_ w document.getElementById("overlay_labels").src = $img_labels end
             @js_ w document.getElementById("overlay_labels").hidden = false end
 
-        if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
-            img_orig = img_fln * "?dummy=$(now())"
-            @js_ w document.getElementById("display_img").src = $img_orig end
-
         if "Segmented" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Segmented"
             @js_ w document.getElementById("display_img").src = $img_segs end
 
@@ -172,9 +171,8 @@ handle(w, "img_tab_click") do args
                 img_plot = get_dummy("_pxplot.svg", s[wi]["img_fln"], s[wi]["_pxplot.svg"])
                 @js_ w document.getElementById("plot").src = $img_plot end
 
-            s[wi]["segs_types"] = if ui["predict_space_type"][]
-                get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m)
-            else; nothing end
+            if ui["predict_space_type"][]
+                s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
 
             segs_details = make_segs_details(
                 s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
