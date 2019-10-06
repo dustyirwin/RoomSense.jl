@@ -1,5 +1,3 @@
-using Blink: Window, title, size, handle, msg, body!, loadcss!
-using Interact
 
 wi = 1  # work index
 s = [Dict{Any,Any}(
@@ -10,7 +8,7 @@ s = [Dict{Any,Any}(
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 try close(w) catch end
-w = Window(Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
@@ -18,7 +16,7 @@ ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
     "img_fln" => filepicker("Load Image"),
-    "go" => button("Go!", attributes=Dict(
+    "go" => button("GO!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
         "feet"=>(feet, "ft"),
@@ -40,7 +38,7 @@ ui = Dict(
     "draw_labels"=>checkbox(value=false; label="Labels"),
     "colorize"=>checkbox(value=false, label="Colorize"),
     "predict_space_type"=>checkbox(value=false, label="SpacePred"),
-    "input"=>textbox("See instructions below...", attributes=Dict("size"=>"70")),
+    "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_text"=>Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
@@ -70,16 +68,16 @@ ui["toolset"] = node(:div,
             node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset", "hidden"=>true)),
             node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
             node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)), hskip(0.6em),
-            node(:div, ui["input"], attributes=Dict("id"=>"input")), hskip(0.6em), vbox(
-                vskip(0.2em),
-                node(:strong, "", attributes=Dict("id"=>"segs_info")))),
+            node(:div, ui["input"], attributes=Dict("id"=>"input")), hskip(0.6em), vbox(vskip(0.2em),
+            node(:strong, "", attributes=Dict("id"=>"segs_info")))),
         hbox(hskip(1em),
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text", "style"=>"buffer: 5px;")))),
     attributes=Dict("id"=>"toolset", "hidden"=>false));
 
 ui["display_options"] = node(:div,
-    hbox(ui["img_tabs"], hskip(1.5em), vbox(
-        vskip(0.4em), hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
+    hbox(ui["img_tabs"],
+        node(:p, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;")), vbox(vskip(0.5em), 
+        hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", [])""",
         "id"=>"img_tabs", "hidden"=>true));
@@ -131,5 +129,5 @@ ui["html"] = node(:div,
 
 ui["img_tabs"][] = "Original";
 
-loadcss!(w, "./src/space_cadet.css")
+
 body!(w, ui["html"])

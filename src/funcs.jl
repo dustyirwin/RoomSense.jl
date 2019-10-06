@@ -1,20 +1,8 @@
-using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, prune_segments,
-    segment_pixel_count, labels_map, segment_mean, segment_labels, SegmentedImage
-using FreeTypeAbstraction: renderstring!, newface, FreeType
-using ImageTransformations: imresize
-using Images: save, load, height, width, Gray, GrayA, RGB, N0f8, FixedPointNumbers
-using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
-using Blink: @js_ js, tools
-using DataFrames: DataFrame
-using Random: seed!
-using CSV: write
-using Dates: now
 
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
-pred_space_type(m,) = Int64(m(img_slices[label]))
 
 # verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
@@ -69,14 +57,14 @@ function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}}, height::I
             seed[1][1], seed[1][2], halign=:hcenter, valign=:vcenter) end
     return make_transparent(overlay_img, 1.0, 0.0) end
 
-function make_plot_img(segs::SegmentedImage)
+function make_plot_img(segs::SegmentedImage, scale::Float64)
     return plot(
-            x=[i[1] for i in collect(segs.segment_pixel_count)],
-            y=[i[2] for i in collect(segs.segment_pixel_count)],
-            xlabel("Segment Label"),
-            ylabel("Pixel Group Count"),
-            bar,
-            y_log10) end
+        x=[i[1] for i in collect(segs.segment_pixel_count)],
+        y=[i[2] for i in collect(segs.segment_pixel_count)],
+        xlabel("Segment Label"),
+        ylabel(scale > 1 ? "Area" : "Pixels"),
+        bar,
+        y_log10) end
 
 function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
@@ -91,15 +79,15 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
         @js_ w document.getElementById("segs_info").innerHTML = $update; end
     return (segs, segs_types) end
 
-function make_segs_details(segs::SegmentedImage, segs_types::Dict, scale::Float64, scale_units::String)
-    lis = ["""<li>$label - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(length(segs_types) > 0 ? segs_types[label] : "???")</li>"""
-        for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by = x -> x[2], rev=true)]
+function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
+    lis = ["""<li>$(label) - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(segs_types != nothing ? segs_types[label] : "???")</li>"""
+        for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
-    return scale > 1 ? "<p><strong>Total Area: $(trunc(area_sum)) " * "$(scale == 1 ? "pixels" : scale_units)" * "</strong></p>" *
+    return "<p><strong>Total Area: $(trunc(area_sum)) " * "$(scale == 1 ? "pixels" : scale_units)" * "</strong></p>" *
         "<p><strong>Total Segments: $(length(segment_labels(segs)))</strong></p>" *
         "<p><strong>Label - $(scale == 1 ? "Pixel Count" : "Area") - Type (Top 100)</strong></p>" *
-        "<ul>$(lis...)</ul>" : "" end
+        "<ul>$(lis...)</ul>" end
 
 function parse_input(input::String, ops_tabs::String)
     input = replace(input, " "=>""); if input == ""; return 0 end

@@ -1,28 +1,33 @@
-# event handlers
 
 handle(w, "img_selected") do args
     global s, ui
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
 
     s[wi]["img_fln"] = ui["img_fln"][]
     s[wi]["user_img"] = load(ui["img_fln"][])
-    s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"]);
+    s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"])
+
     save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
+
     img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
-    ui["img_tabs"][] = "Original"
     img_alpha = get_dummy("_alpha.png", s[wi]["img_fln"], s[wi]["_alpha.png"])
-    @js_ w document.getElementById("overlay_alpha").src = $img_alpha;
-    @js_ w document.getElementById("img_info").innerHTML = $img_info;
-    @js_ w document.getElementById("toolset").hidden = false;
-    @js_ w document.getElementById("img_tabs").hidden = false;
-    @js_ w msg("img_tab_click", []);
+
+    @js_ w document.getElementById("overlay_alpha").src = $img_alpha
+    @js_ w document.getElementById("img_info").innerHTML = $img_info
+    @js_ w document.getElementById("toolset").hidden = false
+    @js_ w document.getElementById("img_tabs").hidden = false
+
+    ui["img_tabs"][] = "Original"
+    @js_ w msg("op_tab_change", [])
+    @js_ w msg("img_tab_click", [])
+
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
     if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "op_tab_change") do args
-    global s, wi, ui
+    global s
     selected_op = ui["ops_tabs"][]
     println("!op_tab_change: $selected_op")
 
@@ -34,20 +39,22 @@ handle(w, "op_tab_change") do args
     s[wi]["$(selected_op)_input"] = ui["input"][]
 
     if selected_op == "Export Data"
-        @js_ w document.getElementById("input").hidden = true;
+        @js_ w document.getElementById("input").hidden = true
     else
-        @js_ w document.getElementById("input").hidden = false; end
+        @js_ w document.getElementById("input").hidden = false end
 
-    @js_ w msg("dropdown_selected", []);
-    @async js(w, WebIO.JSString("""document.getElementById("$(selected_op) toolset").hidden = false;"""))
+    @js_ w msg("dropdown_selected", [])
+    @async js(w, JSString(
+        """document.getElementById("$(selected_op) toolset").hidden = false;"""))
 
-    for op in ui["ops_tabs"][:options][]
-        if op != ui["ops_tabs"][]
-            @async js(w, WebIO.JSString("""document.getElementById("$(op) toolset").hidden = true;"""))
+    for not_op in ui["ops_tabs"][:options][]
+        if not_op != ui["ops_tabs"][]
+            @async js(w, JSString(
+                """document.getElementById("$(not_op) toolset").hidden = true;"""))
     end end end
 
 handle(w, "go") do args
-    global s, wi, ui, model
+    global s, wi
     println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
@@ -103,35 +110,35 @@ handle(w, "go") do args
     @js_ w document.getElementById("go").classList = ["button is-primary"]; end
 
 handle(w, "img_tab_click") do args
-    global s, wi, ui, model
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    global s, wi, ui
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
     s[wi]["segs_types"] = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : Dict()
     img_fln = ui["img_fln"][]
     println("!img_tab_click: $(ui["img_tabs"][])")
 
-    if ui["img_tabs"][] == "<<"
-        wi<=2 ? wi=1 : wi-=1;
-    elseif ui["img_tabs"][] == ">>"
-        wi>=length(s) ? length(s) : wi+=1 end
-    if ui["img_tabs"][] in ["<<",">>"]
+    if ui["img_tabs"][] in ["<<", ">>"]
+        if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1
+        elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1 end
+
+        @js_ w document.getElementById("wi").innerHTML = $wi
         ui["img_fln"][] = s[wi]["img_fln"]
         ui["img_tabs"][] = s[wi]["prev_img_tab"]
-        @js_ w msg("img_tab_click", []); end
+        @js_ w msg("img_tab_click", []) end
 
     if wi > 1
         img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["_segs.png"])
         segs_info = s[wi]["segs_info"]
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info; end
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info end
 
-    @js_ w document.getElementById("plot").hidden = true;
-    @js_ w document.getElementById("segs_details").hidden = true;
-    @js_ w document.getElementById("overlay_alpha").hidden = true;
-    @js_ w document.getElementById("overlay_seeds").hidden = true;
-    @js_ w document.getElementById("overlay_labels").hidden = true;
-    @js_ w document.getElementById("display_img").hidden = false;
+    @js_ w document.getElementById("plot").hidden = true
+    @js_ w document.getElementById("segs_details").hidden = true
+    @js_ w document.getElementById("overlay_alpha").hidden = true
+    @js_ w document.getElementById("overlay_seeds").hidden = true
+    @js_ w document.getElementById("overlay_labels").hidden = true
+    @js_ w document.getElementById("display_img").hidden = false
 
     if ui["draw_seeds"][] && haskey(s[wi], "_seeds.png")
-        @js_ w document.getElementById("overlay_seeds").hidden = false; end
+        @js_ w document.getElementById("overlay_seeds").hidden = false end
 
     if haskey(s[wi], "segs")
 
@@ -140,45 +147,45 @@ handle(w, "img_tab_click") do args
                 s[wi]["_labels.png"] = make_labels_img(s[wi]["segs"], ui["draw_labels"][], ui["font"])
                 save(img_fln[1:end-4] * "_labels.png", s[wi]["_labels.png"])
                 img_labels = get_dummy("_labels.png", s[wi]["img_fln"], s[wi]["_labels.png"])
-                @js_ w document.getElementById("overlay_labels").src = $img_labels; end
-            @js_ w document.getElementById("overlay_labels").hidden = false; end
+                @js_ w document.getElementById("overlay_labels").src = $img_labels end
+            @js_ w document.getElementById("overlay_labels").hidden = false end
+
+        if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
+            img_orig = img_fln * "?dummy=$(now())"
+            @js_ w document.getElementById("display_img").src = $img_orig end
 
         if "Segmented" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Segmented"
-            @js_ w document.getElementById("display_img").src = $img_segs; end
+            @js_ w document.getElementById("display_img").src = $img_segs end
 
         if "Overlayed" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Overlayed"
-            @js_ w document.getElementById("display_img").src = $img_segs;
-            @js_ w document.getElementById("overlay_alpha").hidden = false; end
+            @js_ w document.getElementById("display_img").src = $img_segs
+            @js_ w document.getElementById("overlay_alpha").hidden = false end
 
         if "Info" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Info"
-            @js_ w document.getElementById("display_img").hidden = true;
+            @js_ w document.getElementById("display_img").hidden = true
+            @js_ w document.getElementById("segs_details").hidden = false
+            @js_ w document.getElementById("plot").hidden = false
+
+            if haskey(s[wi], "_pxplot.svg") == false
+                s[wi]["_pxplot.svg"] = make_plot_img(s[wi]["segs"], s[wi]["scale"][1])
+                save(img_fln[1:end-4] * "_pxplot.svg", s[wi]["_pxplot.svg"])
+                img_plot = get_dummy("_pxplot.svg", s[wi]["img_fln"], s[wi]["_pxplot.svg"])
+                @js_ w document.getElementById("plot").src = $img_plot end
 
             s[wi]["segs_types"] = if ui["predict_space_type"][]
-                get_segs_types(s[wi]["segs"], s[wi]["img_fln"], model)
-            else; Dict() end
+                get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m)
+            else; nothing end
 
             segs_details = make_segs_details(
                 s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-            @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
-            @js_ w document.getElementById("segs_details").hidden = false;
+            @js_ w document.getElementById("segs_details").innerHTML = $segs_details
+        end end
 
-            if haskey(s[wi], "_pxplot.svg") == false
-                s[wi]["_pxplot.svg"] = make_plot_img(s[wi]["segs"])
-                save(img_fln[1:end-4] * "_pxplot.svg", s[wi]["_pxplot.svg"])
-                img_plot = get_dummy("_pxplot.svg", s[wi]["img_fln"], s[wi]["_pxplot.svg"])
-                @js_ w document.getElementById("plot").src = $img_plot; end
-
-            @js_ w document.getElementById("plot").hidden = false; end end
-
-    if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
-        img_orig = img_fln * "?dummy=$(now())"
-        @js_ w document.getElementById("display_img").src = $img_orig; end
-
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "img_click") do args
-    global s, ui
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    global s, wi, ui
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
     args[1] = Int64(floor(args[1] * (args[5] / args[3])))
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     println(args)
@@ -193,23 +200,27 @@ handle(w, "img_click") do args
         if args[8] == true
             unique!(push!(s[wi]["selected_areas"], (label, area)))
             labels = join(["$label, " for label in s[wi]["selected_areas"]])
-            s[wi]["segs_info"] = "Total Area: ~$(sum([area for (label, area) in s[wi]["selected_areas"]])) $(s[wi]["scale"][1] != 1 ? "$(s[wi]["scale"][2])² " : "pixels ")" *
+            s[wi]["segs_info"] = "Total Area: ~$(
+                sum([area for (label, area) in s[wi]["selected_areas"]])) $(
+                s[wi]["scale"][1] != 1 ? "$(s[wi]["scale"][2])² " : "pixels ")" *
                 "Labels: $(join(["$label, " for (label, area) in s[wi]["selected_areas"]]))"
         else
             s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
-            s[wi]["segs_info"] = """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
+            s[wi]["segs_info"] = """$(
+            s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
                 Label: $(label) @ y:$(args[1]) x:$(args[2])""" end
 
-        ui["notifications"][] = args[7] ? push!(ui["notifications"][], """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
+        ui["notifications"][] = args[7] ? push!(ui["notifications"][], """$(
+            s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
             Label: $(label) @ y:$(args[1]) x:$(args[2])""") : [] end
 
     segs_info = s[wi]["segs_info"]
-    @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
+    @js_ w document.getElementById("segs_info").innerHTML = $segs_info
 
     if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs") && ui["mod_segs_funcs"][][1] == remove_segments
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
-            ui["input"][] = ui["input"][] * "$label, ";
+            ui["input"][] = ui["input"][] * "$label, "
         else; label = 0 end end
 
     if ui["ops_tabs"][] == "Segment Image" && ui["segs_funcs"][][1] == seeded_region_growing
@@ -224,15 +235,14 @@ handle(w, "img_click") do args
             seeds, height(s[wi]["user_img"]), width(s[wi]["user_img"]), ui["font"], ui["font_size"])
         save(s[wi]["img_fln"][1:end-4] * "_seeds.png", s[wi]["_seeds.png"])
         img_seeds = get_dummy("_seeds.png", s[wi]["img_fln"], s[wi]["_seeds.png"])
-        @js_ w document.getElementById("overlay_seeds").src = $img_seeds; end
+        @js_ w document.getElementById("overlay_seeds").src = $img_seeds end
 
     if ui["ops_tabs"][] == "Set Scale"
         ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2])," end
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "dropdown_selected") do args
-    global ui
     if ui["ops_tabs"][] == "Segment Image"
         help_text = ui["help_text"][ui["segs_funcs"][][1]]
     elseif ui["ops_tabs"][] == "Modify Segments"
@@ -241,4 +251,4 @@ handle(w, "dropdown_selected") do args
         help_text = ui["help_text"][ui["set_scale_funcs"][][1]]
     elseif ui["ops_tabs"][] == "Export Data"
         help_text = ui["help_text"][ui["export_data_funcs"][][1]] end
-    @js_ w document.getElementById("help_text").innerHTML = $help_text; end
+    @js_ w document.getElementById("help_text").innerHTML = $help_text end
