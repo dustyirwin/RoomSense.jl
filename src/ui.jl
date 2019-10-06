@@ -76,8 +76,8 @@ ui["toolset"] = node(:div,
     attributes=Dict("id"=>"toolset", "hidden"=>false));
 
 ui["display_options"] = node(:div,
-    hbox(ui["img_tabs"],
-        node(:p, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;")), vbox(vskip(0.5em),
+    hbox(ui["img_tabs"], hskip(0.5em), vbox(vskip(0.5em),
+        node(:strong, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;"))), hskip(0.5em), vbox(vskip(0.5em),
         hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", [])""",

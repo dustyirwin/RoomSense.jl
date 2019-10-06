@@ -7,7 +7,7 @@ function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[], img_s
     for i in keys(segment_labels(segs))
         seg_type32 = Float32.(zeros(12))  # TODO: write func for csv space_type ground-truth data as a OHVF32
 
-        img_slice = img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]]
+        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; rand(128,128,1,1) end
         img_slice = height(img_slice) > 1 && width(img_slice) > 1 ? imresize(img_slice, 128, 128) : rand(128,128,1)
         img_slice32 = Float32.(img_slice)
         img_slices[i] = reshape(img_slice32, 128,128,1,1)
@@ -50,10 +50,11 @@ m = Chain(
     x -> reshape(x, :, size(x, 4)),
     Dense(512, 12, swish),
     softmax)
-@save "./models/space_type_classifier.jld2" m
+
+@save "./models/space_type_classifier.BSON" m
 """
 
-@load "./models/space_type_classifier.jld2" m
+@load "./models/space_type_classifier.BSON" m
 
 primary_space_types = Dict(
     1 => "Building Support",       2 => "Process",

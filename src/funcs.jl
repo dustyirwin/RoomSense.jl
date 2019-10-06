@@ -22,8 +22,7 @@ function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, scale::Fl
             v / scale < min_size[1] ? push!(prune_list, k) : continue
         elseif v < min_size[1]
             push!(prune_list, k) end end
-    segs = prune_segments(segs, prune_list, diff_fn_wrapper(segs))
-    return prune_segments(segs, [0], diff_fn_wrapper(segs)) end
+    return prune_segments(segs, prune_list, diff_fn_wrapper(segs)) end
 
 function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
@@ -66,21 +65,23 @@ function make_plot_img(segs::SegmentedImage, scale::Float64)
         bar,
         y_log10) end
 
-function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, k=0.05; j=0.01)
+function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, scale::Float64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
+    if alg == fast_scanning k*=1.5 end
     segs = segment_img(img_fln, k, alg)
     c = length(segs.segment_labels)
-
-    while c > length(segs.segment_labels)
-        segs = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
-        segs = prune_min_size(segs, [mgs], s[wi]["scale"][1])
-        c = length(segs.segment_labels)
-        update = "alg: $alg segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
-        @js_ w document.getElementById("segs_info").innerHTML = $update end
-    return segs end
+    while c > max_segs
+       segs = c / max_segs > 2 ? segment_img(img_fln, k+=j*3, alg) : segment_img(img_fln, k+=j, alg)
+       segs = prune_min_size(segs, [mgs], scale)
+       c = length(segs.segment_labels)
+       update = "alg:" * "$alg"[19:end] * "
+           segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
+       @js_ w document.getElementById("segs_info").innerHTML = $update; end
+       return segs end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
-    lis = ["""<li>$(label) - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(segs_types != nothing ? segs_types[label] : "???")</li>"""
+    lis = ["""<li>$(label) - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(
+        segs_types != nothing ? try segs_types[label] catch; "???" end : "???")</li>"""
         for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)]
     lis = lis[1:(length(lis) > 100 ? 100 : end)]
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])

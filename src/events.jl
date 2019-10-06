@@ -23,6 +23,7 @@ handle(w, "img_selected") do args
 
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
     if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
+    if haskey(s[wi], "_labels.png"); delete!(s[wi], "_seeds.png") end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
@@ -77,7 +78,7 @@ handle(w, "go") do args
         elseif ',' in ui["input"][]
             args = split(ui["input"][], ',')
             segs = recursive_segmentation(ui["img_fln"][], ui["segs_funcs"][][1],
-                parse(Int64, args[1]), parse(Int64, args[2]))
+                parse(Int64, args[1]), parse(Int64, args[2]), s[wi]["scale"][1])
         else
             segs = segment_img(ui["img_fln"][],
                 parse(ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
@@ -91,7 +92,7 @@ handle(w, "go") do args
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
         segs_info = make_segs_info(segs)
-        segs_types = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : Dict()
+        segs_types = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : nothing
         segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
         save(img_fln[1:end-4] * "_segs.png", segs_img)
@@ -104,6 +105,7 @@ handle(w, "go") do args
             "segs_info"=>segs_info,
             "_segs.png"=>segs_img)))
         wi=length(s); @js_ w msg("img_tab_click", "");
+        @js_ w document.getElementById("wi").innerHTML = $wi
         img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["user_img"])
         @js_ w document.getElementById("display_img").src = $img_segs; end
 
@@ -121,7 +123,10 @@ handle(w, "img_tab_click") do args
 
     if ui["img_tabs"][] in ["<<", ">>"]
         if ui["img_tabs"][] == "<<"; wi<=2 ? wi=1 : wi-=1
-        elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1 end
+            ui["img_tabs"][] = s[wi]["prev_img_tab"]
+        elseif ui["img_tabs"][] == ">>"; wi>=length(s) ? length(s) : wi+=1
+            ui["img_tabs"][] = s[wi]["prev_img_tab"] end
+
         @js_ w document.getElementById("wi").innerHTML = $wi
 
         s[wi]["img_fln"] = ui["img_fln"][]
@@ -212,9 +217,6 @@ handle(w, "img_click") do args
             s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
             Label: $(label) @ y:$(args[1]) x:$(args[2])""") : [] end
 
-    segs_info = s[wi]["segs_info"]
-    @js_ w document.getElementById("segs_info").innerHTML = $segs_info
-
     if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs") && ui["mod_segs_funcs"][][1] == remove_segments
         if length(s) > 0
             label = s[wi]["segs"].image_indexmap[args[1], args[2]]
@@ -228,12 +230,13 @@ handle(w, "img_click") do args
         elseif args[9] == true
             ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$(seed_num - (seed_num == 1 ? 0 : 1)); "
         else; ui["input"][] = ui["input"][] * "$(args[1]),$(args[2]),$seed_num; " end
+
         seeds = parse_input(ui["input"][], ui["ops_tabs"][])
         s[wi]["_seeds.png"] = make_seeds_img(
             seeds, height(s[wi]["user_img"]), width(s[wi]["user_img"]), ui["font"], ui["font_size"])
         save(s[wi]["img_fln"][1:end-4] * "_seeds.png", s[wi]["_seeds.png"])
         img_seeds = get_dummy("_seeds.png", s[wi]["img_fln"], s[wi]["_seeds.png"])
-        @js_ w document.getElementById("overlay_seeds").src = $img_seeds end
+        @js_ w document.getElementById("overlay_seeds").src = $img_seeds; end
 
     if ui["ops_tabs"][] == "Set Scale"
         ui["input"][] = ui["input"][] * "$(args[7] ? args[1] : args[2])," end
