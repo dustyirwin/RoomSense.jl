@@ -86,12 +86,14 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     dd_obs = [dropdown(dd_opts, value=try segs_types[label] catch; "" end, label="""
         $label - $(scale > 1 ? "$(trunc(pixel_count / scale)) $scale_units" : "$pixel_count $scale_units")""")
         for (label, pixel_count) in segs_details]
+    checkboxes = [checkbox(label="Export?") for i in segs.segment_labels]
+    spinboxes = [spinbox(length=50) for i in segs.segment_labels]
 
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = "Total Area: $(trunc(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))"
 
-    html = hbox(hskip(0.5em),
-        vbox(node(:strong, summary_text), vbox(dd_obs)))
+    html = hbox(hskip(0.75em), vbox(
+        node(:strong, summary_text) , vbox(dd_obs)))
     return html, dd_obs end
 
 function parse_input(input::String, ops_tabs::String)

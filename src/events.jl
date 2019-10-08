@@ -180,11 +180,9 @@ handle(w, "img_tab_click") do args
             segs_details_html, dd_obs = make_segs_details(s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
             s[wi]["segs_types"] = Dict(label=>dd_obs[label][] for label in s[wi]["segs"].segment_labels)
 
-            try body!(sdw, html) catch;
-                try close(sdw) catch end
-                sdw = Window()
-                size(sdw, 380, 700)
-                body!(sdw, segs_details_html) end
+            sdw = Window()
+            size(sdw, 380, 700)
+            body!(sdw, segs_details_html)
     end end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
