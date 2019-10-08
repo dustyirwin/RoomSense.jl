@@ -177,11 +177,15 @@ handle(w, "img_tab_click") do args
             if ui["predict_space_type"][]
                 s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
 
-            segs_details_html, dd_obs = make_segs_details(s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-            s[wi]["segs_types"] = Dict(label=>dd_obs[label][] for label in s[wi]["segs"].segment_labels)
+            segs_details_html, dds, checks, spins = make_segs_details(s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
+            s[wi]["dds"] = dds
+            s[wi]["checks"] = checks
+            s[wi]["spins"] = spins
 
             sdw = Window()
-            size(sdw, 380, 700)
+            handle(sdw, "mouseover_detail") do args
+                @show "!mouseover $args" end
+            size(sdw, 625, 750)
             body!(sdw, segs_details_html)
     end end
 

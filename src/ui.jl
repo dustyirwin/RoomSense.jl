@@ -98,6 +98,9 @@ ui["display_imgs"] = vbox(
         node(:img, attributes=Dict(
             "id"=>"overlay_seeds", "src"=>"", "alt"=>"",
             "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+        node(:img, attributes=Dict(
+            "id"=>"highlight_segment", "src"=>"", "alt"=>"",
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
         attributes=Dict(
             "id"=>"img_container",
             "onclick"=>"""Blink.msg("img_click", [

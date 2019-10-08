@@ -83,18 +83,22 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
     segs_details = try segs_details[1:100] catch; segs_details end
 
-    dd_obs = [dropdown(dd_opts, value=try segs_types[label] catch; "" end, label="""
-        $label - $(scale > 1 ? "$(trunc(pixel_count / scale)) $scale_units" : "$pixel_count $scale_units")""")
-        for (label, pixel_count) in segs_details]
-    checkboxes = [checkbox(label="Export?") for i in segs.segment_labels]
-    spinboxes = [spinbox(length=50) for i in segs.segment_labels]
-
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = "Total Area: $(trunc(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))"
 
-    html = hbox(hskip(0.75em), vbox(
-        node(:strong, summary_text) , vbox(dd_obs)))
-    return html, dd_obs end
+    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
+        $lbl - $(scale > 1 ? trunc(px_ct / scale) : px_ct) $scale_units""")
+        for (lbl, px_ct) in segs_details)
+    checks = OrderedDict(lbl => checkbox(label="Export?") for (lbl, px_ct) in segs_details)
+    spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
+
+    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])), attributes=Dict(
+        "id"=>"segment_detail_$lbl",
+        "onmouseover"=>"""Blink.msg("mouseover_detail", $lbl)"""))
+        for (lbl, px_ct) in segs_details]
+
+    html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
+    return html, dds, checks, spins end
 
 function parse_input(input::String, ops_tabs::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
