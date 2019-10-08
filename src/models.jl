@@ -48,7 +48,7 @@ m = Chain(
     Conv((3, 3), 64=>32, relu, pad=(1,1)), MaxPool((2,2)),
     Conv((3, 3), 32=>32, relu, pad=(1,1)), MaxPool((2,2)),
     x -> reshape(x, :, size(x, 4)),
-    Dense(512, 12, swish),
+    Dense(512, 11, swish),
     softmax)
 
 @save "./models/space_type_classifier.BSON" m
@@ -56,11 +56,12 @@ m = Chain(
 
 @load "./models/space_type_classifier.BSON" m
 
-primary_space_types = Dict(
-    1 => "Building Support",       2 => "Process",
-    3 => "Public Access",          4 => "Storage",
-    5 => "Refrigerated Storage",   6 => "Parking",
-    7 => "Exterior",               8 => "Exterior",
-    9 => "Office/Classroom",       10 => "Common Areas",
-    11 => "Living Quarters",       12 => "Unknown"
-    )
+primary_space_types = OrderedDict{Int64,String}(
+    1 => "Building Support",        2 => "Process",
+    3 => "Public Access",           4 => "Storage",
+    5 => "Refrigerated Storage",    6 => "Parking",
+    7 => "Exterior",                8 => "Office/Classroom",
+    9 => "Common Areas",            10 => "Living Quarters",
+    12 => "Unknown")
+
+dd_opts = Observable(collect(values(primary_space_types)))

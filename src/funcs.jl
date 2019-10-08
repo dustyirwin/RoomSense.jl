@@ -80,15 +80,19 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
        return segs end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
-    lis = ["""<li>$(label) - $(scale > 1 ? trunc(pixel_count / scale) : pixel_count) - $(
-        segs_types != nothing ? try segs_types[label] catch; "???" end : "???")</li>"""
-        for (label, pixel_count) in sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)]
-    lis = lis[1:(length(lis) > 100 ? 100 : end)]
+    segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
+    segs_details = try segs_details[1:100] catch; segs_details end
+
+    dd_obs = [dropdown(dd_opts, value=try segs_types[label] catch; "" end, label="""
+        $label - $(scale > 1 ? "$(trunc(pixel_count / scale)) $scale_units" : "$pixel_count $scale_units")""")
+        for (label, pixel_count) in segs_details]
+
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
-    return "<p><strong>Total Area: $(trunc(area_sum)) " * "$(scale == 1 ? "pixels" : scale_units)" * "</strong></p>" *
-        "<p><strong>Total Segments: $(length(segment_labels(segs)))</strong></p>" *
-        "<p><strong>Label - $(scale == 1 ? "Pixel Count" : "Area") - Type (Top 100)</strong></p>" *
-        "<ul>$(lis...)</ul>" end
+    summary_text = "Total Area: $(trunc(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))"
+
+    html = hbox(hskip(0.5em),
+        vbox(node(:strong, summary_text), vbox(dd_obs)))
+    return html, dd_obs end
 
 function parse_input(input::String, ops_tabs::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
@@ -132,13 +136,12 @@ function export_CSV(segs::SegmentedImage, segs_types::Dict, img_fln::String, sca
         segment_pixel_count=Int64[],
         area_estimate=Int64[],
         area_unit=String[],
-        space_type_predicted=String[],
-        space_type_actual=String[])
+        space_type=String[])
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
     js_str = "Data exported to $csv_fln"
 
     for (label, px_ct) in segment_pixel_count(segs)
-        push!(df, [label, px_ct, floor(px_ct/scale[1]), scale_unit, segs_types[label], ""]) end
+        push!(df, [label, px_ct, floor(px_ct/scale[1]), scale_unit, segs_types[label]]) end
 
     write(csv_fln, df)
     return js_str end

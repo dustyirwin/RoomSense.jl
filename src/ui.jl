@@ -8,8 +8,8 @@ s = [Dict{Any,Any}(
     "selected_areas"=>Vector{Int64}())];
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
-try close(w) catch end
-w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+try close(w); close(sdw) catch end
+w = Window(async=true, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
@@ -112,23 +112,16 @@ ui["display_imgs"] = vbox(
                 event.altKey]);""",
             "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
-ui["segs_details"] = node(:ul, attributes=Dict("id"=>"segs_details", "hidden"=>true));
-
 ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
     ui["notifications"],
     ui["toolset"],
-    ui["display_options"],
-    ui["notifications"]);
+    ui["display_options"]);
 
 ui["html"] = node(:div,
-    node(:div, ui["tools"], attributes=Dict(
-        "classList"=>"navbar", "position"=>"fixed")),
-    node(:div, hbox(ui["display_imgs"], hskip(1em), ui["segs_details"]), attributes=Dict(
-        "class"=>"main", "position"=>"relative")));
+    node(:div, ui["tools"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
+    node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative")));
 
-ui["img_tabs"][] = "Original";
-
-
+ui["img_tabs"][] = "Original"
 body!(w, ui["html"])

@@ -58,14 +58,14 @@ handle(w, "go") do args
     global s, wi
     println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"];
+    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
 
     if ui["ops_tabs"][] == "Set Scale"
         scale = (calc_scale(parse_input(
             ui["input"][], ui["ops_tabs"][])), ui["set_scale_funcs"][][2], ui["input"][])
         s[wi]["scale"] = scale
         scale_info = " ~px/$(s[wi]["scale"][2])²: $(ceil(s[wi]["scale"][1]))"
-        @js_ w document.getElementById("scale_info").innerHTML = $scale_info;
+        @js_ w document.getElementById("scale_info").innerHTML = $scale_info
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
         js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2])
@@ -93,23 +93,22 @@ handle(w, "go") do args
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
         segs_info = make_segs_info(segs)
         segs_types = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : nothing
-        segs_details = make_segs_details(segs, segs_types, s[wi]["scale"][1], s[wi]["scale"][2])
         segs_img = make_segs_img(segs, ui["colorize"][])
         save(img_fln[1:end-4] * "_segs.png", segs_img)
         if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
         if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
-        @js_ w document.getElementById("segs_details").innerHTML = $segs_details;
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info;
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info
         push!(s, merge(s[wi], Dict(
             "segs"=>segs,
             "segs_info"=>segs_info,
-            "_segs.png"=>segs_img)))
+            "_segs.png"=>segs_img,
+            "dd_obs"=>[dropdown(dd_opts) for i in segment_labels(segs)])))
         wi=length(s); @js_ w msg("img_tab_click", "");
         @js_ w document.getElementById("wi").innerHTML = $wi
         img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["user_img"])
-        @js_ w document.getElementById("display_img").src = $img_segs; end
+        @js_ w document.getElementById("display_img").src = $img_segs end
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"]; end
+    @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "img_tab_click") do args
     global s, wi, ui
@@ -139,7 +138,6 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info end
 
     @js_ w document.getElementById("plot").hidden = true
-    @js_ w document.getElementById("segs_details").hidden = true
     @js_ w document.getElementById("overlay_alpha").hidden = true
     @js_ w document.getElementById("overlay_seeds").hidden = true
     @js_ w document.getElementById("overlay_labels").hidden = true
@@ -179,10 +177,15 @@ handle(w, "img_tab_click") do args
             if ui["predict_space_type"][]
                 s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
 
-            segs_details = make_segs_details(
-                s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-            @js_ w document.getElementById("segs_details").innerHTML = $segs_details
-        end end
+            segs_details_html, dd_obs = make_segs_details(s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
+            s[wi]["segs_types"] = Dict(label=>dd_obs[label][] for label in s[wi]["segs"].segment_labels)
+
+            try body!(sdw, html) catch;
+                try close(sdw) catch end
+                sdw = Window()
+                size(sdw, 380, 700)
+                body!(sdw, segs_details_html) end
+    end end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
