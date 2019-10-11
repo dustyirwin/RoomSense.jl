@@ -17,15 +17,14 @@ function launch_space_editor()
     sdw = Window()
     size(sdw, 625, 750)
 
-    if ui["predict_space_type"][]
-        s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
-
     handle(sdw, "mouseover_detail") do args
         @show args end
 
-    if haskey(s[wi], "segs_details_html") else;
-        s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
-            s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2]) end
+    if ui["predict_space_type"][]
+        s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
+
+    s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
+        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
 
     body!(sdw, s[wi]["segs_details_html"]) end
 

@@ -144,7 +144,7 @@ handle(w, "img_tab_click") do args
     if haskey(s[wi], "segs")
 
         img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["_segs.png"])
-        segs_info = s[wi]["segs_info"]
+        segs_info = make_segs_info(s[wi]["segs"])
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info
 
         if ui["draw_labels"][] && ui["img_tabs"][] != "Plots"
