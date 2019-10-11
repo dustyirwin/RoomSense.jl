@@ -1,5 +1,5 @@
 
-wi = 1  # work index
+wi = Int64(1)  # work index
 const s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
@@ -63,8 +63,8 @@ const ui = Dict(
         "meters"=>(meters, "m")), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "segs_funcs"=>dropdown(OrderedDict(
-        "Felzenszwalb"=>(felzenszwalb, Int64),
         "Fast Scanning"=>(fast_scanning, Float64),
+        "Felzenszwalb"=>(felzenszwalb, Int64),
         "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
             attributes=Dict("onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs"=>dropdown(OrderedDict(

@@ -22,7 +22,6 @@ handle(w, "img_selected") do args
     if haskey(s[wi], "_seeds.png"); delete!(s[wi], "_seeds.png") end
 
     ui["img_tabs"][] = "Original"
-    @js_ w msg("op_tab_change", "")
     @js_ w msg("img_tab_click", "")
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
@@ -32,11 +31,7 @@ handle(w, "op_tab_change") do args
     selected_op = ui["ops_tabs"][]
     println("!op_tab_change: $selected_op")
 
-    if haskey(s[wi], "$(selected_op)_input")
-        ui["input"][] = s[wi]["$(selected_op)_input"]
-    else
-        ui["input"][] = "" end
-
+    ui["input"][] = haskey(s[wi], "$(selected_op)_input") ? s[wi]["$(selected_op)_input"] : ""
     s[wi]["$(selected_op)_input"] = ui["input"][]
 
     if selected_op == "Export Data"
@@ -94,8 +89,8 @@ handle(w, "go") do args
         else nothing end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"] && segs != nothing
-        segs_info = make_segs_info(segs)
         segs_img = make_segs_img(segs, ui["colorize"][])
+        segs_info = make_segs_info(segs)
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info
 
         save(img_fln[1:end-4] * "_segs.png", segs_img)
@@ -107,11 +102,11 @@ handle(w, "go") do args
             "segs_info"=>segs_info,
             "_segs.png"=>segs_img)))
 
-        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
-        if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
-
         wi=length(s); @js_ w msg("img_tab_click", "");
         @js_ w document.getElementById("wi").innerHTML = $wi end
+
+        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
+        if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
