@@ -17,13 +17,13 @@ handle(w, "img_selected") do args
     @js_ w document.getElementById("toolset").hidden = false
     @js_ w document.getElementById("img_tabs").hidden = false
 
-    ui["img_tabs"][] = "Original"
-    #@js_ w msg("op_tab_change", "")
-    @js_ w msg("img_tab_click", "")
-
+    if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
-    if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
-    if haskey(s[wi], "_labels.png"); delete!(s[wi], "_seeds.png") end
+    if haskey(s[wi], "_seeds.png"); delete!(s[wi], "_seeds.png") end
+
+    ui["img_tabs"][] = "Original"
+    @js_ w msg("op_tab_change", "")
+    @js_ w msg("img_tab_click", "")
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
@@ -55,7 +55,7 @@ handle(w, "op_tab_change") do args
     end end end
 
 handle(w, "go") do args
-    global s, wi
+    global s, wi, ui
     println("!go clicked")
     img_fln=ui["img_fln"][]; s[wi]["$(ui["ops_tabs"][])_input"] = ui["input"][]
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
@@ -68,8 +68,11 @@ handle(w, "go") do args
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
-        js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2])
-        @js_ w alert($js_str);
+        if launch_space_editor == ui["export_data_funcs"][][1]
+            launch_space_editor()
+        elseif export_CSV == ui["export_data_funcs"][][1]
+            js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2])
+            @js_ w alert($js_str); end
 
     elseif ui["ops_tabs"][] == "Segment Image"
         if ui["segs_funcs"][][1] == seeded_region_growing
@@ -84,37 +87,39 @@ handle(w, "go") do args
                 parse(ui["segs_funcs"][][2], ui["input"][]), ui["segs_funcs"][][1]) end
 
     elseif ui["ops_tabs"][] == "Modify Segments"
-        segs = if ui["mod_segs_funcs"][][1] == prune_min_size
+        segs = if prune_min_size == ui["mod_segs_funcs"][][1]
             prune_min_size(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]), s[wi]["scale"][1])
-        elseif ui["mod_segs_funcs"][][1] == remove_segments
+        elseif remove_segments == ui["mod_segs_funcs"][][1]
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
         else nothing end end
 
-    if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"]
+    if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"] && segs != nothing
         segs_info = make_segs_info(segs)
-        segs_types = haskey(s[wi], "segs_types") ? s[wi]["segs_types"] : nothing
         segs_img = make_segs_img(segs, ui["colorize"][])
-        save(img_fln[1:end-4] * "_segs.png", segs_img)
-        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
-        if haskey(s[wi], "_pxplot.png"); delete!(s[wi], "_pxplot.png") end
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info
+
+        save(img_fln[1:end-4] * "_segs.png", segs_img)
+        img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["user_img"])
+        @js_ w document.getElementById("display_img").src = $img_segs
+
         push!(s, merge(s[wi], Dict(
             "segs"=>segs,
             "segs_info"=>segs_info,
-            "_segs.png"=>segs_img,
-            "dd_obs"=>[dropdown(dd_opts) for i in segment_labels(segs)])))
+            "_segs.png"=>segs_img)))
+
+        if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
+        if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
+
         wi=length(s); @js_ w msg("img_tab_click", "");
-        @js_ w document.getElementById("wi").innerHTML = $wi
-        img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["user_img"])
-        @js_ w document.getElementById("display_img").src = $img_segs end
+        @js_ w document.getElementById("wi").innerHTML = $wi end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "img_tab_click") do args
     global s, wi, ui
+    println("!img_tab_click: $(ui["img_tabs"][])")
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
     img_fln = ui["img_fln"][]
-    println("!img_tab_click: $(ui["img_tabs"][])")
 
     if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
         img_orig = img_fln * "?dummy=$(now())"
@@ -132,11 +137,6 @@ handle(w, "img_tab_click") do args
         ui["img_tabs"][] = s[wi]["prev_img_tab"]
         @js_ w msg("img_tab_click", []) end
 
-    if wi > 1
-        img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["_segs.png"])
-        segs_info = s[wi]["segs_info"]
-        @js_ w document.getElementById("segs_info").innerHTML = $segs_info end
-
     @js_ w document.getElementById("plot").hidden = true
     @js_ w document.getElementById("overlay_alpha").hidden = true
     @js_ w document.getElementById("overlay_seeds").hidden = true
@@ -148,7 +148,11 @@ handle(w, "img_tab_click") do args
 
     if haskey(s[wi], "segs")
 
-        if ui["draw_labels"][] && ui["img_tabs"][] != "Info"
+        img_segs = get_dummy("_segs.png", s[wi]["img_fln"], s[wi]["_segs.png"])
+        segs_info = s[wi]["segs_info"]
+        @js_ w document.getElementById("segs_info").innerHTML = $segs_info
+
+        if ui["draw_labels"][] && ui["img_tabs"][] != "Plots"
             if haskey(s[wi], "_labels.png") == false
                 s[wi]["_labels.png"] = make_labels_img(s[wi]["segs"], ui["draw_labels"][], ui["font"])
                 save(img_fln[1:end-4] * "_labels.png", s[wi]["_labels.png"])
@@ -163,7 +167,7 @@ handle(w, "img_tab_click") do args
             @js_ w document.getElementById("display_img").src = $img_segs
             @js_ w document.getElementById("overlay_alpha").hidden = false end
 
-        if "Info" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Info"
+        if "Plots" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Plots"
             @js_ w document.getElementById("display_img").hidden = true
             @js_ w document.getElementById("segs_details").hidden = false
             @js_ w document.getElementById("plot").hidden = false
@@ -173,20 +177,6 @@ handle(w, "img_tab_click") do args
                 save(img_fln[1:end-4] * "_pxplot.svg", s[wi]["_pxplot.svg"])
                 img_plot = get_dummy("_pxplot.svg", s[wi]["img_fln"], s[wi]["_pxplot.svg"])
                 @js_ w document.getElementById("plot").src = $img_plot end
-
-            if ui["predict_space_type"][]
-                s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
-
-            segs_details_html, dds, checks, spins = make_segs_details(s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-            s[wi]["dds"] = dds
-            s[wi]["checks"] = checks
-            s[wi]["spins"] = spins
-
-            sdw = Window()
-            handle(sdw, "mouseover_detail") do args
-                @show "!mouseover $args" end
-            size(sdw, 625, 750)
-            body!(sdw, segs_details_html)
     end end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
@@ -198,10 +188,10 @@ handle(w, "img_click") do args
     args[2] = Int64(floor(args[2] * (args[6] / args[4])))
     println(args)
 
-    if ui["img_tabs"][] != "Info"
+    if ui["img_tabs"][] != "Plots"
         s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end
 
-    if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale" && ui["img_tabs"][] != "Info"
+    if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale" && ui["img_tabs"][] != "Plots"
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
 
@@ -216,11 +206,7 @@ handle(w, "img_click") do args
             s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
             s[wi]["segs_info"] = """$(
             s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
-                Label: $(label) @ y:$(args[1]) x:$(args[2])""" end
-
-        ui["notifications"][] = args[7] ? push!(ui["notifications"][], """$(
-            s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
-            Label: $(label) @ y:$(args[1]) x:$(args[2])""") : [] end
+                Label: $(label) @ y:$(args[1]) x:$(args[2])""" end end
 
     if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs") && ui["mod_segs_funcs"][][1] == remove_segments
         if length(s) > 0

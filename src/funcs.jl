@@ -39,8 +39,8 @@ function make_labels_img(segs::SegmentedImage, draw_labels::Bool, font::Vector{P
                     if segs.image_indexmap[x, y] == label
                         push!(label_pts, (x, y))
             end end end
-            x_centroid = trunc(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
-            y_centroid = trunc(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
+            x_centroid = ceil(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
+            y_centroid = ceil(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
             try label = label * labels[label] catch end
             renderstring!(
                 overlay_img, "$label", font, (28, 28), x_centroid, y_centroid,
@@ -78,27 +78,6 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
            segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
        @js_ w document.getElementById("segs_info").innerHTML = $update; end
        return segs end
-
-function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
-    segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
-    segs_details = try segs_details[1:100] catch; segs_details end
-
-    area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
-    summary_text = "Total Area: $(trunc(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))"
-
-    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
-        $lbl - $(scale > 1 ? trunc(px_ct / scale) : px_ct) $scale_units""")
-        for (lbl, px_ct) in segs_details)
-    checks = OrderedDict(lbl => checkbox(label="Export?") for (lbl, px_ct) in segs_details)
-    spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
-
-    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])), attributes=Dict(
-        "id"=>"segment_detail_$lbl",
-        "onmouseover"=>"""Blink.msg("mouseover_detail", $lbl)"""))
-        for (lbl, px_ct) in segs_details]
-
-    html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
-    return html, dds, checks, spins end
 
 function parse_input(input::String, ops_tabs::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
@@ -153,7 +132,6 @@ function export_CSV(segs::SegmentedImage, segs_types::Dict, img_fln::String, sca
     return js_str end
 
 function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
-
     for label in segment_labels(segs)
         x_range = []
         y_range = []
@@ -180,3 +158,5 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
     return bounds end
 
 function error_wrapper() end
+
+function export_training_data() end

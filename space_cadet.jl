@@ -17,7 +17,7 @@ using Dates: now
 using Interact
 using Flux
 using Zygote
-using CuArrays
+#using CuArrays
 
 
 @time begin
