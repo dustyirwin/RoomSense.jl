@@ -20,12 +20,12 @@ using Zygote
 #using CuArrays
 
 
-@time begin
+begin
     println("Loading RoomSense v0.1, please wait...")
-    include("./src/funcs.jl");
-    include("./src/ui.jl");
-    include("./src/events.jl");
-    include("./src/models.jl");
+    include("./src/funcs.jl")
+    include("./src/ui.jl")
+    include("./src/events.jl")
+    include("./src/models.jl")
     println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 end
 

@@ -1,6 +1,6 @@
 
-wi = Int64(1)  # work index
-const s = [Dict{Any,Any}(
+wi = 1  # work index
+s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
     "scale"=>(1.,"ft",""),
@@ -9,19 +9,18 @@ const s = [Dict{Any,Any}(
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 try close(w) catch end
-const w = Window(async=true, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
 function launch_space_editor()
     sdw = Window()
-    size(sdw, 625, 750)
+    size(sdw, 625, 750); title(sdw, "Space Type Editor")
 
     handle(sdw, "mouseover_detail") do args
         @show args end
 
-    if ui["predict_space_type"][]
-        s[wi]["segs_types"] = get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) end
+    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) : nothing
 
     s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
         s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
@@ -51,7 +50,7 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     return html, dds, checks, spins end
 
 
-const ui = Dict(
+ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
     "img_fln" => filepicker("Load Image"),
@@ -168,4 +167,5 @@ ui["html"] = node(:div,
     node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative")));
 
 ui["img_tabs"][] = "Original"
+
 body!(w, ui["html"])
