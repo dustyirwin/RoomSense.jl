@@ -36,11 +36,11 @@ function launch_space_editor(segs, img, img_fln)
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
-    segs_details = length(segs_details) > 100 ? segs_details[1:100] : segs_details  # restricted to the Top 100 elements by size
+    # segs_details = length(segs_details) > 100 ? segs_details[1:100] : segs_details  # restricted to the Top 100 elements by size
 
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = hbox(
-        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs))) (Top 100) ")
+        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))")
 
     dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
         $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(

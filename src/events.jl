@@ -114,6 +114,7 @@ handle(w, "go") do args
 
         if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
         if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
+        if haskey(s[wi], "segs_details_html"); delete!(s[wi], "segs_details_html") end
 
     @js_ w document.getElementById("go").classList = ["button is-primary"] end
 

@@ -132,10 +132,9 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
                 label,
                 px_ct,
                 floor(px_ct/scale[1]),
-                floor((px_ct + spins[label][])/scale[1]),
+                floor((px_ct)/scale[1] + spins[label][]),
                 scale_unit,
-                dds[label][]])
-    end end
+                dds[label][]]) end end
 
     write(csv_fln, df)
     return js_str end
