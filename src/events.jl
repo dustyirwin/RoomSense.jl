@@ -188,8 +188,8 @@ handle(w, "img_tab_click") do args
 handle(w, "img_click") do args
     global s, wi, ui
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
-    args[1] = Int64(floor(args[1] * (args[5] / args[3])))
-    args[2] = Int64(floor(args[2] * (args[6] / args[4])))
+    args[1] = Int64(ceil(args[1] * (args[5] / args[3])))
+    args[2] = Int64(ceil(args[2] * (args[6] / args[4])))
     println(args)
 
     if ui["img_tabs"][] != "Plots"

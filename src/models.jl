@@ -35,7 +35,7 @@ function get_segs_types(segs::SegmentedImage, img_fln::String, model::Chain, seg
     for (label, img_slice) in img_slices
         img_slice = img_slice |> gpu
         pred_vec = model(img_slice)
-        segs_types[label] = primary_space_types[findall(pred_vec .== maximum(pred_vec))[1][1]] end
+        segs_types[label] = primary_space_types[findfirst(pred_vec .== maximum(pred_vec))[1][1]] end
     return segs_types end
 
 

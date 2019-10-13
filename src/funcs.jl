@@ -131,8 +131,8 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
             push!(df, [
                 label,
                 px_ct,
-                floor(px_ct/scale[1]),
-                floor((px_ct)/scale[1] + spins[label][]),
+                ceil(px_ct/scale[1]),
+                ceil((px_ct)/scale[1] + spins[label][]),
                 scale_unit,
                 dds[label][]]) end end
 
