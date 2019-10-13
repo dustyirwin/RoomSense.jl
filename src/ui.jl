@@ -10,13 +10,13 @@ s = [Dict{Any,Any}(
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 try close(w) catch end
-w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
+w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
 function launch_space_editor(segs, img, img_fln)
     sdw = Window()
-    size(sdw, 625, 750); title(sdw, "Space Type Editor")
+    size(sdw, 750, 850); title(sdw, "Space Type Editor")
 
     handle(sdw, "click_stdd") do args
         global s, w
