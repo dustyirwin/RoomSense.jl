@@ -5,6 +5,7 @@ s = [Dict{Any,Any}(
     "prev_op_tab"=>"Set Scale",
     "scale"=>(1.,"ft",""),
     "segs_types"=>nothing,
+    "mouseover_seg"=>0,
     "selected_areas"=>Vector{Int64}())];
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
@@ -13,37 +14,42 @@ w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)));
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
-function launch_space_editor()
+function launch_space_editor(segs, img, img_fln)
     sdw = Window()
     size(sdw, 625, 750); title(sdw, "Space Type Editor")
 
-    handle(sdw, "mouseover_detail") do args
-        @show args end
+    handle(sdw, "click_stdd") do args
+        global s, w
+        if s[wi]["mouseover_seg"] != args
+            @show args
+            s[wi]["mouseover_seg"] = args
+            img_deep = deepcopy(s[wi]["user_img"])
+            hs = highlight_seg(segs, img_deep, img_fln, args)
+            @js_ w document.getElementById("highlight_segment").hidden = false;
+            @js_ w document.getElementById("highlight_segment").src = $hs; end end
 
     s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) : nothing
-
-    s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
-        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2])
-
+    if haskey(s[wi], "segs_details_html")
+    else; s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
+        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2]) end
     body!(sdw, s[wi]["segs_details_html"]) end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
-    segs_details = length(segs_details) > 100 ? segs_details[1:100] : segs_details
+    segs_details = length(segs_details) > 100 ? segs_details[1:100] : segs_details  # restricted to the Top 100 elements by size
 
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = hbox(
         "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs))) (Top 100) ")
 
     dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
-        $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""")
+        $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(
+            "onclick"=>"""Blink.msg("click_stdd", $lbl)"""))
         for (lbl, px_ct) in segs_details)
     checks = OrderedDict(lbl => checkbox(label="Export?") for (lbl, px_ct) in segs_details)
     spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
 
-    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])), attributes=Dict(
-        "id"=>"segment_detail_$lbl",
-        "onmouseover"=>"""Blink.msg("mouseover_detail", $lbl)"""))
+    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
         for (lbl, px_ct) in segs_details]
 
     html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
@@ -87,7 +93,7 @@ ui = Dict(
         seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        launch_space_editor=>"Hang on to your butts and press Go!",
+        launch_space_editor=>"Hang on to your butts!",
         export_CSV=>"Exports segment data to CSV.",
         export_training_data=>"Exports session training data. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
@@ -132,16 +138,16 @@ ui["display_imgs"] = vbox(
             "id"=>"plot", "src"=>"", "alt"=>"", "style"=>"opacity: 1.0;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
         node(:img, attributes=Dict(
             "id"=>"overlay_seeds", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
         node(:img, attributes=Dict(
             "id"=>"highlight_segment", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 1.0;")),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.75;")),
         attributes=Dict(
             "id"=>"img_container",
             "onclick"=>"""Blink.msg("img_click", [

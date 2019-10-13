@@ -64,9 +64,16 @@ handle(w, "go") do args
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
         if launch_space_editor == ui["export_data_funcs"][][1]
-            launch_space_editor()
+            launch_space_editor(s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
         elseif export_CSV == ui["export_data_funcs"][][1]
-            js_str = export_CSV(s[wi]["segs"], s[wi]["segs_types"], s[wi]["img_fln"], s[wi]["scale"][1], s[wi]["scale"][2])
+            js_str = export_CSV(
+                s[wi]["segs"],
+                s[wi]["dds"],
+                s[wi]["spins"],
+                s[wi]["checks"],
+                s[wi]["img_fln"],
+                s[wi]["scale"][1],
+                s[wi]["scale"][2])
             @js_ w alert($js_str); end
 
     elseif ui["ops_tabs"][] == "Segment Image"
@@ -136,6 +143,7 @@ handle(w, "img_tab_click") do args
     @js_ w document.getElementById("overlay_alpha").hidden = true
     @js_ w document.getElementById("overlay_seeds").hidden = true
     @js_ w document.getElementById("overlay_labels").hidden = true
+    @js_ w document.getElementById("highlight_segment").hidden = true
     @js_ w document.getElementById("display_img").hidden = false
 
     if ui["draw_seeds"][] && haskey(s[wi], "_seeds.png")

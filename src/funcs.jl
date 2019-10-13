@@ -115,18 +115,27 @@ function feet() return "ft" end
 
 function meters() return "m" end
 
-function export_CSV(segs::SegmentedImage, segs_types::Dict, img_fln::String, scale::Float64, scale_unit::String)
+function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
     df = DataFrame(
         segment_label=Int64[],
         segment_pixel_count=Int64[],
         area_estimate=Int64[],
+        area_estimate_adjusted=Int64[],
         area_unit=String[],
         space_type=String[])
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
     js_str = "Data exported to $csv_fln"
 
     for (label, px_ct) in segment_pixel_count(segs)
-        push!(df, [label, px_ct, floor(px_ct/scale[1]), scale_unit, segs_types[label]]) end
+        if checks[label][]
+            push!(df, [
+                label,
+                px_ct,
+                floor(px_ct/scale[1]),
+                floor((px_ct + spins[label][])/scale[1]),
+                scale_unit,
+                dds[label][]])
+    end end
 
     write(csv_fln, df)
     return js_str end
@@ -160,3 +169,14 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 function error_wrapper() end
 
 function export_training_data() end
+
+function highlight_seg(segs, img, img_fln, i)
+    for j in 1:height(img)
+        for k in 1:width(img)
+            if segs.image_indexmap[j,k] != i
+                img[j,k] = RGB{N0f8}(0.,0.,0.)
+    end end end
+
+    ima = make_transparent(img)
+    save(img_fln * "_highlight.png", ima)
+    get_dummy("_highlight.png", img_fln, ima) end
