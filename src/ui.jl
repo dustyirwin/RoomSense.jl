@@ -5,7 +5,6 @@ s = [Dict{Any,Any}(
     "prev_op_tab"=>"Set Scale",
     "scale"=>(1.,"ft",""),
     "segs_types"=>nothing,
-    "mouseover_seg"=>0,
     "selected_areas"=>Vector{Int64}())];
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
@@ -14,33 +13,32 @@ w = Window(async=false, Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 
-function launch_space_editor(segs, img, img_fln)
+function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String)
     sdw = Window()
     size(sdw, 750, 850); title(sdw, "Space Type Editor")
 
     handle(sdw, "click_stdd") do args
         global s, w
-        if s[wi]["mouseover_seg"] != args
-            @show args
-            s[wi]["mouseover_seg"] = args
-            img_deep = deepcopy(s[wi]["user_img"])
-            hs = highlight_seg(segs, img_deep, img_fln, args)
-            @js_ w document.getElementById("highlight_segment").hidden = false;
-            @js_ w document.getElementById("highlight_segment").src = $hs; end end
+        @show args
+        img_deep = deepcopy(s[wi]["user_img"])
+        hs = highlight_segs(segs, img_deep, img_fln, [args])
+        @js_ w document.getElementById("highlight_segment").hidden = false;
+        @js_ w document.getElementById("highlight_segment").src = $hs; end
 
     s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) : nothing
-    if haskey(s[wi], "segs_details_html")
-    else; s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
-        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2]) end
+    s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
+        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
+        parse_input(ui["input"][], "Modify Segments")[1])
+
     body!(sdw, s[wi]["segs_details_html"]) end
 
-function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String)
+function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
-    # segs_details = length(segs_details) > 100 ? segs_details[1:100] : segs_details  # restricted to the Top 100 elements by size
+    segs_details = length(segs_details) > segs_limit ? segs_details[1:segs_limit] : segs_details  # restricted to the Top 100 elements by size
 
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = hbox(
-        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs)))")
+        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs))) (Top $segs_limit)")
 
     dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
         $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(
@@ -73,10 +71,10 @@ ui = Dict(
             attributes=Dict("onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "mod_segs_funcs"=>dropdown(OrderedDict(
         "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
-        "Prune Segment(s)"=>(remove_segments, String)), attributes=Dict(
+        "Prune Segment(s)"=>(remove_segments, String),
+        "Assign Space Types"=>(launch_space_editor, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs"=>dropdown(OrderedDict(
-        "Assign Space Types"=>(launch_space_editor, String),
         "Export Segment Data to CSV"=>(export_CSV, String),
         "Export Training Data"=>(export_training_data, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),

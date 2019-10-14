@@ -169,11 +169,11 @@ function error_wrapper() end
 
 function export_training_data() end
 
-function highlight_seg(segs, img, img_fln, i)
+function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args::Vector)
     for j in 1:height(img)
         for k in 1:width(img)
-            if segs.image_indexmap[j,k] != i
-                img[j,k] = RGB{N0f8}(0.,0.,0.)
+            if segs.image_indexmap[j,k] in args
+            else; img[j,k] = RGB{N0f8}(0.,0.,0.)
     end end end
 
     ima = make_transparent(img)

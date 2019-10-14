@@ -63,9 +63,7 @@ handle(w, "go") do args
         @js_ w document.getElementById("scale_info").innerHTML = $scale_info
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
-        if launch_space_editor == ui["export_data_funcs"][][1]
-            launch_space_editor(s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
-        elseif export_CSV == ui["export_data_funcs"][][1]
+        if export_CSV == ui["export_data_funcs"][][1]
             js_str = export_CSV(
                 s[wi]["segs"],
                 s[wi]["dds"],
@@ -93,7 +91,12 @@ handle(w, "go") do args
             prune_min_size(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]), s[wi]["scale"][1])
         elseif remove_segments == ui["mod_segs_funcs"][][1]
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
-        else nothing end end
+        else nothing end
+        if launch_space_editor == ui["mod_segs_funcs"][][1]
+            launch_space_editor(s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
+            @js_ w document.getElementById("go").classList = ["button is-primary"]
+            return
+        end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"] && segs != nothing
         segs_img = make_segs_img(segs, ui["colorize"][])
@@ -198,19 +201,29 @@ handle(w, "img_click") do args
     if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale" && ui["img_tabs"][] != "Plots"
         label = labels_map(s[wi]["segs"])[args[1], args[2]]
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
+        img_deep = deepcopy(s[wi]["user_img"])
+        s[wi]["segs_info"] = """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
+            Label: $(label) @ y:$(args[1]) x:$(args[2])"""
 
-        if args[8] == true
-            unique!(push!(s[wi]["selected_areas"], (label, area)))
-            labels = join(["$label, " for label in s[wi]["selected_areas"]])
-            s[wi]["segs_info"] = "Total Area: ~$(
-                sum([area for (label, area) in s[wi]["selected_areas"]])) $(
+        if args[7] == true && args[8] == false
+            s[wi]["selected_segs"] = Vector(); unique!(push!(s[wi]["selected_segs"], (label, area)))
+            hs = highlight_segs(s[wi]["segs"], img_deep, s[wi]["img_fln"], [label])
+            @js_ w document.getElementById("highlight_segment").hidden = false;
+            @js_ w document.getElementById("highlight_segment").src = $hs;
+
+        elseif args[8] == true
+            unique!(push!(s[wi]["selected_segs"], (label, area)))
+            s[wi]["segs_info"] = "Total Area: ~$(sum([area for (label, area) in s[wi]["selected_segs"]])) $(
                 s[wi]["scale"][1] != 1 ? "$(s[wi]["scale"][2])² " : "pixels ")" *
-                "Labels: $(join(["$label, " for (label, area) in s[wi]["selected_areas"]]))"
+                "Labels: $(join(["$label, " for (label, area) in s[wi]["selected_segs"]]))"
+            if args[7] == true
+                hs = highlight_segs(s[wi]["segs"], img_deep, s[wi]["img_fln"], [i[1] for i in s[wi]["selected_segs"]])
+                @js_ w document.getElementById("highlight_segment").hidden = false;
+                @js_ w document.getElementById("highlight_segment").src = $hs; end
+
         else
-            s[wi]["selected_areas"] = Vector(); unique!(push!(s[wi]["selected_areas"], (label, area)))
-            s[wi]["segs_info"] = """$(
-            s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")
-                Label: $(label) @ y:$(args[1]) x:$(args[2])""" end end
+            s[wi]["selected_segs"] = Vector(); unique!(push!(s[wi]["selected_segs"], (label, area)))
+            @js_ w document.getElementById("highlight_segment").hidden = true; end end
 
     if ui["ops_tabs"][] == "Modify Segments" && haskey(s[wi], "segs") && ui["mod_segs_funcs"][][1] == remove_segments
         if length(s) > 0
