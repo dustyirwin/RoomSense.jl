@@ -165,9 +165,6 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function error_wrapper() end
-
-function export_training_data() end
 
 function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args::Vector)
     for j in 1:height(img)
@@ -177,5 +174,11 @@ function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args
     end end end
 
     ima = make_transparent(img)
-    save(img_fln * "_highlight.png", ima)
+    save(img_fln[1:end-4] * "_highlight.png", ima)
     get_dummy("_highlight.png", img_fln, ima) end
+
+
+
+function error_wrapper() end
+
+function export_training_data() end

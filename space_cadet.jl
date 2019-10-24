@@ -21,7 +21,7 @@ using Zygote
 
 
 begin
-    println("Loading RoomSense v0.1, please wait...")
+    println("Loading SpaceCadet v0.1, please wait...")
     include("./src/funcs.jl")
     include("./src/ui.jl")
     include("./src/events.jl")
