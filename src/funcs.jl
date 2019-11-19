@@ -109,7 +109,7 @@ function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
 
 function get_dummy(img_type::String, img_fln::String, img::Any)
     save(img_fln[1:end-4] * img_type, img)
-    img = img_fln[1:end-4] * "$img_type?dummy=$(now())" end
+    img = register(img_fln[1:end-4] * img_type) * "?dummy=$(now())" end
 
 function feet() return "ft" end
 
@@ -165,7 +165,6 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-
 function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args::Vector)
     for j in 1:height(img)
         for k in 1:width(img)
@@ -176,8 +175,6 @@ function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args
     ima = make_transparent(img)
     save(img_fln[1:end-4] * "_highlight.png", ima)
     get_dummy("_highlight.png", img_fln, ima) end
-
-
 
 function error_wrapper() end
 

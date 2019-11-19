@@ -128,7 +128,7 @@ handle(w, "img_tab_click") do args
     img_fln = ui["img_fln"][]
 
     if "Original" == ui["img_tabs"][]; s[wi]["prev_img_tab"] = "Original"
-        img_orig = img_fln * "?dummy=$(now())"
+        img_orig = register(img_fln)
         @js_ w document.getElementById("display_img").src = $img_orig end
 
     if ui["img_tabs"][] in ["<<", ">>"]
