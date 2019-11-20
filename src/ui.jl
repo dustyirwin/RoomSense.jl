@@ -9,7 +9,7 @@ s = [Dict{Any,Any}(
 
 # WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
 try close(w) catch end
-w = Window(async=true) #, Dict("webPreferences"=>Dict("webSecurity"=>false)))
+w = Window(async=true)  # Dict("webPreferences"=>Dict("webSecurity"=>false)))
 title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
 

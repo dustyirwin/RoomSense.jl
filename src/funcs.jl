@@ -124,10 +124,9 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
         area_unit=String[],
         space_type=String[])
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
-    js_str = "Data exported to $csv_fln"
 
-    for (label, px_ct) in segment_pixel_count(segs)
-        if checks[label][]
+    for (label, px_ct) in collect(segment_pixel_count(segs))
+        if label in keys(checks) && checks[label][]
             push!(df, [
                 label,
                 px_ct,
@@ -137,7 +136,7 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
                 dds[label][]]) end end
 
     write(csv_fln, df)
-    return js_str end
+    return "Data exported to $csv_fln" end
 
 function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
     for label in segment_labels(segs)

@@ -95,7 +95,6 @@ handle(w, "go") do args
         if launch_space_editor == ui["mod_segs_funcs"][][1]
             launch_space_editor(s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
             @js_ w document.getElementById("go").classList = ["button is-primary"]
-            return
         end end
 
     if ui["ops_tabs"][] in ["Segment Image", "Modify Segments"] && segs != nothing
