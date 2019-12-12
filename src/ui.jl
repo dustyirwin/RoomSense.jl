@@ -44,7 +44,7 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
         $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(
             "onclick"=>"""Blink.msg("click_stdd", $lbl)"""))
         for (lbl, px_ct) in segs_details)
-    checks = OrderedDict(lbl => checkbox(label="Export?") for (lbl, px_ct) in segs_details)
+    checks = OrderedDict(lbl => checkbox(label="Export?", value=true) for (lbl, px_ct) in segs_details)
     spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
 
     details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
