@@ -3,6 +3,9 @@
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+feet() = "ft"
+meters() = "m"
+pixels() = "pxs"
 
 # verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
@@ -111,33 +114,6 @@ function get_dummy(img_type::String, img_fln::String, img::Any)
     save(img_fln[1:end-4] * img_type, img)
     img = register(img_fln[1:end-4] * img_type) * "?dummy=$(now())" end
 
-function feet() return "ft" end
-
-function meters() return "m" end
-
-function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
-    df = DataFrame(
-        segment_label=Int64[],
-        segment_pixel_count=Int64[],
-        area_estimate=Int64[],
-        area_estimate_adjusted=Int64[],
-        area_unit=String[],
-        space_type=String[])
-    csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
-
-    for (label, px_ct) in collect(segment_pixel_count(segs))
-        if label in keys(checks) && checks[label][]
-            push!(df, [
-                label,
-                px_ct,
-                ceil(px_ct/scale[1]),
-                ceil((px_ct)/scale[1] + spins[label][]),
-                scale_unit,
-                dds[label][]]) end end
-
-    write(csv_fln, df)
-    return "Data exported to $csv_fln" end
-
 function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
     for label in segment_labels(segs)
         x_range = []
@@ -177,4 +153,39 @@ function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args
 
 function error_wrapper() end
 
-function export_training_data() end
+function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
+    df = DataFrame(
+        segment_label=Int64[],
+        segment_pixel_count=Int64[],
+        area_estimate=Int64[],
+        area_estimate_adjusted=Int64[],
+        area_unit=String[],
+        space_type=String[])
+    csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
+
+    for (label, px_ct) in collect(segment_pixel_count(segs))
+        if label in keys(checks) && checks[label][]
+            push!(df, [
+                label,
+                px_ct,
+                ceil(px_ct/scale[1]),
+                ceil((px_ct)/scale[1] + spins[label][]),
+                scale_unit,
+                dds[label][]]) end end
+
+    write(csv_fln, df)
+    return "Data exported to $csv_fln" end
+
+function export_session_data(w::Window, s::Vector{Dict{Any,Any}}, xd=Dict())
+    s_exp = deepcopy(s[end])
+    s_exp["dds"] = Dict(k=>v[] for (k,v) in s_exp["dds"])
+    s_exp["spins"] = Dict(k=>v[] for (k,v) in s_exp["spins"])
+    s_exp["checks"] = Dict(k=>v[] for (k,v) in s_exp["checks"])
+    img_name = split(s[end]["img_fln"][1:end-4], "\\")[end] # windows only?
+    dt = string(now())[1:10]
+    filename = "$(img_name)_$(dt).BSON"
+    BSON.@save filename s_exp
+    export_text = "Data exported to $(filename)!
+Please email to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'"
+    @js w alert($export_text);
+end

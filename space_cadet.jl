@@ -7,7 +7,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing, pru
 using FreeTypeAbstraction: renderstring!, newface, FreeType
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8, FixedPointNumbers
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar, Scale.y_log10
-using Blink: Window, title, size, body!, loadcss!, js, tools, msg, handle, JSString, @js_
+using Blink: Page, Window, title, size, body!, loadcss!, js, tools, msg, handle, JSString, @js_
 using ImageTransformations: imresize
 using DataFrames: DataFrame
 using AssetRegistry: register
@@ -30,10 +30,6 @@ begin
     println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 end
 
-
-# Mux web hosting
-# using Mux
-# WebIO.webio_serve(page("/", req -> ui["html"], 8000))
 
 # Diag tools
 # tools(w)

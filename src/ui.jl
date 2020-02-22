@@ -61,6 +61,7 @@ ui = Dict(
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
+        "pixels"=>(pixels, "pxs"),
         "feet"=>(feet, "ft"),
         "meters"=>(meters, "m")), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
@@ -76,7 +77,7 @@ ui = Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "export_data_funcs"=>dropdown(OrderedDict(
         "Export Segment Data to CSV"=>(export_CSV, String),
-        "Export Training Data"=>(export_training_data, String)), attributes=Dict(
+        "Export Session Data"=>(export_session_data, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
     "draw_seeds"=>checkbox(value=true; label="Seeds"),
     "draw_labels"=>checkbox(value=false; label="Labels"),
@@ -91,9 +92,10 @@ ui = Dict(
         seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        pixels=>"Click two points on floorplan and enter distance in pixels above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         launch_space_editor=>"Enter the number of segments you want to export.",
         export_CSV=>"Exports segment data to CSV.",
-        export_training_data=>"Exports session training data. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
+        export_session_data=>"Exports session to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
 
