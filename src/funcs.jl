@@ -184,8 +184,8 @@ function export_session_data(w::Window, s::Vector{Dict{Any,Any}}, xd=Dict())
     img_name = split(s[end]["img_fln"][1:end-4], "\\")[end] # windows only?
     dt = string(now())[1:10]
     filename = "$(img_name)_$(dt).BSON"
-    BSON.@save filename s_exp
+    @save filename s_exp
     export_text = "Data exported to $(filename)!
 Please email to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'"
-    @js w alert($export_text);
+    @js_ w alert($export_text);
 end

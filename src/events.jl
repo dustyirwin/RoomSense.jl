@@ -93,7 +93,7 @@ handle(w, "go") do args
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
         else nothing end
         if launch_space_editor == ui["mod_segs_funcs"][][1]
-            launch_space_editor(s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
+            launch_space_editor(w, s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
             @js_ w document.getElementById("go").classList = ["button is-primary"]
         end end
 

@@ -1,5 +1,6 @@
 
 wi = 1  # work index
+
 s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
@@ -7,13 +8,8 @@ s = [Dict{Any,Any}(
     "segs_types"=>nothing,
     "selected_areas"=>Vector{Int64}())];
 
-# WEB SECURTY SET TO OFF, DO NOT DEPLOY APP TO ANY WEBSERVER !!!
-try close(w) catch end
-w = Window(async=true)  # Dict("webPreferences"=>Dict("webSecurity"=>false)))
-title(w, "SpaceCadet.jl v0.1"); size(w, 1100, 700);
 
-
-function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String)
+function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_fln::String)
     sdw = Window()
     size(sdw, 750, 850); title(sdw, "Space Type Editor")
 
@@ -25,7 +21,7 @@ function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String)
         @js_ w document.getElementById("highlight_segment").hidden = false;
         @js_ w document.getElementById("highlight_segment").src = $hs; end
 
-    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], m) : nothing
+    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], sn_g50) : nothing
     s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
         s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
         parse_input(ui["input"][], "Modify Segments")[1])
@@ -173,5 +169,3 @@ ui["html"] = node(:div,
     node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative")));
 
 ui["img_tabs"][] = "Original"
-
-body!(w, ui["html"])

@@ -56,7 +56,8 @@ m = Chain(
 @save "./models/space_type_classifier.BSON" m
 """
 
-@load "./models/space_type_classifier.BSON" m
+
+@load "./models/squeeze_net_gray_50.bson" sn_g50
 
 detailed_space_types = OrderedDict{Int64,String}(
     1=>"Building Support - Other",                  2=>"Building Support - Mechanical Room",
