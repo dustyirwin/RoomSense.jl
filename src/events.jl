@@ -75,7 +75,10 @@ handle(w, "go") do args
                 s[wi]["img_fln"],
                 s[wi]["scale"][1],
                 s[wi]["scale"][2])
-            @js_ w alert($js_str); end
+            @js_ w alert($js_str);
+        elseif export_session_data == ui["export_data_funcs"][][1]
+            export_session_data(w, s)
+        end
 
     elseif ui["ops_tabs"][] == "Segment Image"
         if ui["segs_funcs"][][1] == seeded_region_growing
@@ -96,7 +99,7 @@ handle(w, "go") do args
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
         else nothing end
         if launch_space_editor == ui["mod_segs_funcs"][][1]
-            launch_space_editor(w, s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"])
+            launch_space_editor(w, s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"], sn_50g)
             @js_ w document.getElementById("go").classList = ["button is-primary"]
         end end
 
