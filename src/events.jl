@@ -1,6 +1,7 @@
 
 handle(w, "img_selected") do args
     global s, ui
+
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
 
     s[wi]["img_fln"] = ui["img_fln"][]
@@ -24,7 +25,9 @@ handle(w, "img_selected") do args
     ui["img_tabs"][] = "Original"
     @js_ w msg("img_tab_click", "")
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"] end
+    @js_ w document.getElementById("go").classList = ["button is-primary"]
+    @async include("./src/models.jl")
+end
 
 handle(w, "op_tab_change") do args
     global s, ui

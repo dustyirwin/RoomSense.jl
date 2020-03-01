@@ -1,35 +1,45 @@
+using Flux
+using Flux: crossentropy, train!, @epochs
+using CuArrays
+using Metalhead
 
-function make_segs_data(segs::SegmentedImage, img_fln::String, X=[], Y=[], img_slices=Dict())
-    img = Gray.(load(img_fln))
+@load "./models/SqueezeNet_50g.bson" sn_50g
+
+function make_segs_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[], img_slices=Dict())
     bs = get_segment_bounds(segs)
-    n = length(segment_labels(segs))
+    n = length(segs_types)
 
-    for i in keys(segment_labels(segs))
-        seg_type32 = Float32.(zeros(12))  # TODO: write func for csv space_type ground-truth data as a OHV
+    for i in keys(segs_types)
+        onehot = Flux.onehot(segs_types[i], collect(values(detailed_space_types)))
 
-        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; rand(128,128,1,1) end
-        img_slice = height(img_slice) > 1 && width(img_slice) > 1 ? imresize(img_slice, 128, 128) : rand(128,128,1)
-        img_slice32 = Float32.(img_slice)
-        img_slices[i] = reshape(img_slice32, 128,128,1,1)
+        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; continue end
+        img_slice32 = Float32.(imresize(img_slice, (128,128)))
+        img_slices[i] = img_slice32
 
         push!(X, img_slice32)
-        push!(Y, seg_type32) end
+        push!(Y, onehot) end
 
     X = reshape(vcat(X...), (128,128,1,n)) |> gpu
-    Y = reshape(vcat(Y...), (12,n)) |> gpu
+    Y = reshape(vcat(Y...), (50,1,n)) |> gpu
 
     return ([(X, Y)], img_slices) end
 
 function update_model(model, data::Tuple{Array{Float32,4},Array{Float32,2}}, epochs::Int64)
     data |> gpu
     model |> gpu
-    loss(x, y) = Flux.crossentropy(model(x), y)
-    @show @time Flux.@epochs epochs Flux.train!(loss, params(model), data, ADAM(0.001))
+    loss(x, y) = crossentropy(model(x), y)
+    @show @time @epochs epochs train!(loss, params(model), data, ADAM(0.001))
 
     return model end
 
-function get_segs_types(segs::SegmentedImage, img_fln::String, model::Chain, segs_types=Dict())
-    img_slices = make_segs_data(segs, img_fln)[2]
+function get_segs_types(segs::SegmentedImage, img_fln::String, model::Chain, segs_types=Dict(), img_slices=Dict())
+    bs = get_segment_bounds(segs)
+
+    for i in segment_labels(segs)
+        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; continue end
+        img_slice32 = Float32.(imresize(img_slice, (128,128)))
+        img_slices[i] = img_slice32 end
+
     model = model |> gpu
 
     for (label, img_slice) in img_slices
@@ -56,8 +66,6 @@ m = Chain(
 @save "./models/space_type_classifier.BSON" m
 """
 
-
-@load "./models/squeeze_net_gray_50.bson" sn_g50
 
 detailed_space_types = OrderedDict{Int64,String}(
     1=>"Building Support - Other",                  2=>"Building Support - Mechanical Room",

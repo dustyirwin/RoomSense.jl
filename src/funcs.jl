@@ -7,6 +7,7 @@ feet() = "ft"
 meters() = "m"
 pixels() = "pxs"
 
+
 # verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
