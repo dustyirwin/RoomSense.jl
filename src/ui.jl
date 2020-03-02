@@ -119,7 +119,7 @@ ui = Dict(
         pixels=>"Click two points on floorplan and enter distance in pixels above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         launch_space_editor=>"Enter the number of segments you want to export.",
         export_CSV=>"Exports segment data to CSV.",
-        export_session_data=>"Exports session to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
+        export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
     "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
 
