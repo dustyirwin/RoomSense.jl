@@ -103,7 +103,7 @@ ui = Dict(
         "Export Segment Data to CSV"=>(export_CSV, String),
         "Export Session Data"=>(export_session_data, String)), attributes=Dict(
             "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_seeds"=>checkbox(value=true; label="Seeds"),
+    "draw_seeds"=>checkbox(value=false; label="Seeds"),
     "draw_labels"=>checkbox(value=false; label="Labels"),
     "colorize"=>checkbox(value=false, label="Colorize"),
     "predict_space_type"=>checkbox(value=false, label="SpacePred"),
@@ -112,7 +112,7 @@ ui = Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
-        remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ... Leave blank reorder segments.",
+        remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ...",
         seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",

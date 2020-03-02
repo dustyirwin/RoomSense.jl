@@ -26,7 +26,6 @@ handle(w, "img_selected") do args
     @js_ w msg("img_tab_click", "")
 
     @js_ w document.getElementById("go").classList = ["button is-primary"]
-    @async include("./src/models.jl")
 end
 
 handle(w, "op_tab_change") do args
@@ -99,6 +98,7 @@ handle(w, "go") do args
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
         else nothing end
         if launch_space_editor == ui["mod_segs_funcs"][][1]
+            if ui["predict_space_type"][]; include("./src/models.jl") end
             launch_space_editor(w, s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"], sn_50g)
             @js_ w document.getElementById("go").classList = ["button is-primary"]
         end end
@@ -165,6 +165,17 @@ handle(w, "img_tab_click") do args
         @js_ w document.getElementById("segs_info").innerHTML = $segs_info
 
         if ui["draw_labels"][] && ui["img_tabs"][] != "Plots"
+            n_labels = length(s[wi]["segs"].segment_labels)
+
+            if n_labels > 500
+                warning_text = "           WARNING!
+                You are attempting to draw $n_labels labels.
+                Reduce segments below 500 and try again."
+
+                @js_ w alert($warning_text)
+                @js_ w document.getElementById("go").classList = ["button is-primary"]
+                return end
+
             if haskey(s[wi], "_labels.png") == false
                 s[wi]["_labels.png"] = make_labels_img(s[wi]["segs"], ui["draw_labels"][], ui["font"])
                 save(img_fln[1:end-4] * "_labels.png", s[wi]["_labels.png"])

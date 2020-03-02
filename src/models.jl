@@ -33,12 +33,10 @@ function make_segs_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[
     return ([(X, Y)], img_slices) end
 
 function update_model(model::Chain, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
-    model |> gpu
-
     for i in inds
     try
-        x = reshape(X[:,:,:,i], (128,128,1,1)) |> gpu
-        y = reshape(Y[:,:,i], (50,1,1)) |> gpu
+        x = reshape(X[:,:,:,i], (128,128,1,1))
+        y = reshape(Y[:,:,i], (50,1,1))
 
         loss(x, y) = Flux.mse(model(x), y)
         @epochs epochs train!(loss, params(model), [(x, y)], ADAM(0.001))
@@ -56,8 +54,6 @@ function get_segs_types(segs::SegmentedImage, img_fln::String, model::Chain, seg
         img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; continue end
         img_slice32 = Float32.(imresize(img_slice, (128,128)))
         img_slices[i] = img_slice32 end
-
-    model = model |> gpu
 
     for (label, img_slice) in img_slices
         img_slice = img_slice |> gpu
