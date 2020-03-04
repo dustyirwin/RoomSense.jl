@@ -98,7 +98,6 @@ handle(w, "go") do args
             remove_segments(s[wi]["segs"], parse_input(ui["input"][], ui["ops_tabs"][]))
         else nothing end
         if launch_space_editor == ui["mod_segs_funcs"][][1]
-            if ui["predict_space_type"][]; include("./src/models.jl") end
             launch_space_editor(w, s[wi]["segs"], s[wi]["user_img"], s[wi]["img_fln"], sn_50g)
             @js_ w document.getElementById("go").classList = ["button is-primary"]
         end end
@@ -215,7 +214,10 @@ handle(w, "img_click") do args
         s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end
 
     if haskey(s[wi], "segs") && ui["ops_tabs"][] != "Set Scale" && ui["img_tabs"][] != "Plots"
-        label = labels_map(s[wi]["segs"])[args[1], args[2]]
+        label = try labels_map(s[wi]["segs"])[args[1], args[2]] catch;
+            print("ERROR! Check log for info.");
+            @js_ w document.getElementById("go").classList = ["button is-primary"];
+            return end
         area = ceil(segment_pixel_count(s[wi]["segs"])[label] / s[wi]["scale"][1])
         img_deep = deepcopy(s[wi]["user_img"])
         s[wi]["segs_info"] = """$(s[wi]["scale"][1] != 1 ? "Area: ~$area $(s[wi]["scale"][2])²" : "Pxl Ct: $area")

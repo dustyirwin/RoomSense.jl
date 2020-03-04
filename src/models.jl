@@ -1,7 +1,3 @@
-using CuArrays
-using Flux
-using Flux: crossentropy, train!, @epochs
-using Metalhead
 
 @load "./models/SqueezeNet_50g.bson" sn_50g
 

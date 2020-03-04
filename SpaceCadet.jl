@@ -19,7 +19,15 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using ColorTypes
+using Metalhead  # not precompiled!
+using CuArrays
 using Interact
+using Interact: node
+using Logging  # not precompiled, not traced!
+using Zygote
+using Flux
+using Flux: crossentropy, train!, @epochs
+
 
 println("Packages loaded. Starting SpaceCadet v0.1, please wait...")
 
@@ -30,6 +38,7 @@ title(w, "SpaceCadet.jl v0.1"); size(w, 1200, 800);
 include("./src/funcs.jl")
 include("./src/ui.jl")
 include("./src/events.jl")
+include("./src/models.jl")
 
 body!(w, ui["html"])
 

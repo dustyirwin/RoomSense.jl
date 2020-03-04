@@ -2,7 +2,7 @@
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
-make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float64}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 feet() = "ft"
 meters() = "m"
 pixels() = "pxs"
@@ -33,7 +33,7 @@ function make_segs_img(segs::SegmentedImage, colorize::Bool)
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
 function make_labels_img(segs::SegmentedImage, draw_labels::Bool, font::Vector{Ptr{FreeType.FT_FaceRec}})
-    overlay_img = zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2])
+    overlay_img = Float16.(zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
     if draw_labels == true
         for (label, count) in collect(segs.segment_pixel_count)
             oneoverpxs = 1 / count

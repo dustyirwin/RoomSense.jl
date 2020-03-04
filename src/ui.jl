@@ -73,7 +73,8 @@ detailed_space_types = OrderedDict{Int64,String}(
     43=>"Common Areas - Restroom",                  44=>"Common Areas - Stairwell",
     45=>"Living Quarters - Other",                  46=>"Living Quarters - Dwelling Unit",
     47=>"Living Quarters - Guest Room",             48=>"Living Quarters - Patient Room",
-    49=>"Unknown - All",                            50=>"_Walls/Windows/Doors/Etc")
+    49=>"Unknown - All",                            50=>"_Walls/Windows/Doors/Etc"
+)
 
 dd_opts = Observable(collect(values(detailed_space_types)))
 
@@ -121,7 +122,8 @@ ui = Dict(
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
-    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])))
+    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"]))
+)
 
 
 ui["toolbox"] = hbox(
@@ -130,7 +132,8 @@ ui["toolbox"] = hbox(
     node(:div, ui["img_fln"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
         node(:div, "", attributes=Dict("id"=>"img_info")), hskip(0.25em),
-        node(:div, "", attributes=Dict("id"=>"scale_info")));
+        node(:div, "", attributes=Dict("id"=>"scale_info"))
+);
 
 ui["toolset"] = node(:div,
     vbox(
@@ -144,7 +147,8 @@ ui["toolset"] = node(:div,
             node(:strong, "", attributes=Dict("id"=>"segs_info")))),
         hbox(hskip(1em),
             node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text", "style"=>"buffer: 5px;")))),
-    attributes=Dict("id"=>"toolset", "hidden"=>false));
+    attributes=Dict("id"=>"toolset", "hidden"=>false)
+);
 
 ui["display_options"] = node(:div,
     hbox(ui["img_tabs"], hskip(0.5em), vbox(vskip(0.5em),
@@ -152,7 +156,8 @@ ui["display_options"] = node(:div,
         hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", [])""",
-        "id"=>"img_tabs", "hidden"=>true));
+        "id"=>"img_tabs", "hidden"=>true)
+);
 
 ui["display_imgs"] = vbox(
     node(:div,
@@ -184,7 +189,8 @@ ui["display_imgs"] = vbox(
                 event.ctrlKey,
                 event.shiftKey,
                 event.altKey]);""",
-            "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
+            "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"))
+);
 
 ui["tools"] = vbox(
     ui["toolbox"],
