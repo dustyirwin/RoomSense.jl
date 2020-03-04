@@ -8,7 +8,7 @@ s = [Dict{Any,Any}(
     "selected_areas"=>Vector{Int64}())];
 
 
-function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_fln::String, model)
+function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
     sdw = Window()
     size(sdw, 750, 850); title(sdw, "Space Type Editor")
 
@@ -20,7 +20,8 @@ function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_f
         @js_ w document.getElementById("highlight_segment").hidden = false;
         @js_ w document.getElementById("highlight_segment").src = $hs; end
 
-    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(s[wi]["segs"], s[wi]["img_fln"], model) : nothing
+    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(
+        s[wi]["segs"], s[wi]["user_img"], model) : nothing
     s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
         s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
         parse_input(ui["input"][], "Modify Segments")[1])

@@ -19,7 +19,7 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using ColorTypes
-using Metalhead  # not precompiled!
+using Metalhead
 using CuArrays
 using Interact
 using Interact: node
