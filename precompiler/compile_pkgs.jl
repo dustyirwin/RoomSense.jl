@@ -1,6 +1,7 @@
 using PackageCompiler
 
 
+# julia --trace-compile=space_cadet_trace.jl
 # PackageCompiler.restore_default_sysimage()
 
 compiled_symbols = [
@@ -20,5 +21,5 @@ end
 
 
 PackageCompiler.create_sysimage(
-    :Pkg; precompile_statements_file="./precompiler/precompile_trace.jl",
+    :Metalhead; precompile_statements_file="./precompiler/space_cadet_trace.jl",
     replace_default=true)

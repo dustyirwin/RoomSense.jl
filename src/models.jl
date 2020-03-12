@@ -1,45 +1,50 @@
 
-@load "./models/SqueezeNet_50g.bson" sn_50g
+@load "./models/SqueezeNet_50g.bson" model
 
-function make_segs_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[], img_slices=Dict())
+function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[])
     bs = get_segment_bounds(segs)
     n = length(segs_types)
     DSTs = collect(values(detailed_space_types))
+    img = img
 
     for i in collect(keys(segs_types))
         onehot = Flux.onehot(segs_types[i], DSTs)
-        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; n-= 1; continue end
-        img_slices[i] = img_slice
+
+        for k in 1:height(img)
+            for j in 1:width(img)
+                if segs.image_indexmap[k,j] !== i
+                    img[k,j] = 0
+                end end end
+
+        img_slice = img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]]
+
         diff = abs(width(img_slice) - height(img_slice))
 
         img_slice = if width(img_slice) > height(img_slice)
-            vcat(img_slice, zeros(diff, width(img_slice)))
-        elseif width(img_slice) < height(img_slice)
-            hcat(img_slice, zeros(height(img_slice), diff)) end
+                        vcat(img_slice, zeros(diff, width(img_slice)))
+                    elseif width(img_slice) < height(img_slice)
+                        hcat(img_slice, zeros(height(img_slice), diff)) end
 
-        try img_slice = imresize(img_slice, (128,128)) catch; n-=1; continue end
+        img_slice = imresize(img_slice, (128,128))
 
-        push!(X, img_slice)
-        push!(Y, onehot)
+        push!(X, Float32.(img_slice))
+        push!(Y, Float32.(onehot))
     end
 
     X = reshape(vcat(X...), (128,128,1,n))
     Y = reshape(vcat(Y...), (50,1,n))
 
-    return ([(X, Y)], img_slices) end
+    return (X, Y) end
 
 function update_model(model::Chain, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
     for i in inds
-    try
-        x = reshape(X[:,:,:,i], (128,128,1,1))
-        y = reshape(Y[:,:,i], (50,1,1))
+        x = X[:,:,:,i:i]
+        y = Y[:,:,i:i]
 
         loss(x, y) = Flux.mse(model(x), y)
         @epochs epochs train!(loss, params(model), [(x, y)], ADAM(0.001))
         print("Completed $epochs epochs of training on segment $i data.\n")
-    catch err
-        print("An error occured processing segment $(i)!\n")
-    end end
+    end
 
     return model end
 
