@@ -1,4 +1,3 @@
-
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
@@ -152,8 +151,6 @@ function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args
     save(img_fln[1:end-4] * "_highlight.png", ima)
     get_dummy("_highlight.png", img_fln, ima) end
 
-function error_wrapper() end
-
 function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
     df = DataFrame(
         segment_label=Int64[],
@@ -162,6 +159,7 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
         area_estimate_adjusted=Int64[],
         area_unit=String[],
         space_type=String[])
+
     csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
 
     for (label, px_ct) in collect(segment_pixel_count(segs))
@@ -187,6 +185,50 @@ function export_session_data(w::Window, s::Vector{Dict{Any,Any}}, xd=Dict())
     filename = "$(img_name)_$(dt).BSON"
     @save filename s_exp
     export_text = "Data exported to $(filename).
-Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!"
-    @js_ w alert($export_text);
-end
+ Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!"
+    @js_ w alert($export_text); end
+
+function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
+    sdw = Window()
+    size(sdw, 750, 850); title(sdw, "Space Type Editor")
+
+    handle(sdw, "click_stdd") do args
+        global s, w
+        @show args
+        img_deep = deepcopy(s[wi]["user_img"])
+        hs = highlight_segs(segs, img_deep, img_fln, [args])
+        @js_ w document.getElementById("highlight_segment").hidden = false;
+        @js_ w document.getElementById("highlight_segment").src = $hs; end
+
+    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(
+        s[wi]["segs"], s[wi]["user_img"], model) : nothing
+
+    if "segs_details_html" in collect(keys(s[wi])); else
+    s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
+        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
+        length(segment_labels(s[wi]["segs"]))) end
+
+    body!(sdw, s[wi]["segs_details_html"]) end
+
+function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
+    segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
+    segs_details = length(segs_details) > segs_limit ? segs_details[1:segs_limit] : segs_details  # restricted to the Top 100 elements by size
+
+    area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
+    summary_text = hbox(
+        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs))) (Top $segs_limit)")
+
+    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
+        $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(
+            "onclick"=>"""Blink.msg("click_stdd", $lbl)"""))
+        for (lbl, px_ct) in segs_details)
+    checks = OrderedDict(lbl => checkbox(label="Export?", value=true) for (lbl, px_ct) in segs_details)
+    spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
+
+    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
+        for (lbl, px_ct) in segs_details]
+
+    html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
+    return html, dds, checks, spins end
+
+function error_wrapper() end

@@ -25,7 +25,7 @@ try pkg"activate ." catch
 @time using Zygote
 @time using Flux
 @time using Flux: crossentropy, Conv, train!, @epochs
-#@time using Logging  # not precompiled, not traced!
+#@time using Logging  # not compiled, not traced!
 
 
 println("Packages loaded. Starting SpaceCadet v0.1, please wait...")

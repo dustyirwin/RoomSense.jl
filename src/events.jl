@@ -25,8 +25,7 @@ handle(w, "img_selected") do args
     ui["img_tabs"][] = "Original"
     @js_ w msg("img_tab_click", "")
 
-    @js_ w document.getElementById("go").classList = ["button is-primary"]
-end
+    @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
 handle(w, "op_tab_change") do args
     global s, ui
@@ -66,6 +65,11 @@ handle(w, "go") do args
 
     elseif ui["ops_tabs"][] == "Export Data" && haskey(s[wi], "segs")
         if export_CSV == ui["export_data_funcs"][][1]
+
+            s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
+                s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
+                length(segment_labels(s[wi]["segs"])))
+
             js_str = export_CSV(
                 s[wi]["segs"],
                 s[wi]["dds"],
