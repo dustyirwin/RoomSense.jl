@@ -231,4 +231,14 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
     return html, dds, checks, spins end
 
+
+function dropbox_img_fn(img_url::String)
+    fn = mktemp() do fn, f
+        img_url = replace(img_url, "0"=>"1")
+        fn = "." * fn * ".jpg"
+        download(img_url, fn)
+        return fn
+end end
+
+
 function error_wrapper() end

@@ -22,7 +22,6 @@ try pkg"activate ." catch
 @time using CuArrays
 @time using Interact
 @time using Interact: node
-@time using Zygote
 @time using Flux
 @time using Flux: crossentropy, Conv, train!, @epochs
 #@time using Logging  # not compiled, not traced!
