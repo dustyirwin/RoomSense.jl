@@ -44,7 +44,8 @@ dd_opts = Observable(collect(values(detailed_space_types)))
 ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
-    "img_fln" => filepicker("Load Image"),
+    "img_fln"=>filepicker("Load Image"),
+    "dropbox_url"=>textbox("Paste DropBox img link here"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
@@ -91,7 +92,7 @@ ui = Dict(
 ui["toolbox"] = hbox(
     node(:div, ui["ops_tabs"], attributes=Dict(
         "id"=>"operation_tabs", "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
-    node(:div, ui["img_fln"], attributes=Dict(
+    node(:div, ui["dropbox_url"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
         node(:div, "", attributes=Dict("id"=>"img_info")), hskip(0.25em),
         node(:div, "", attributes=Dict("id"=>"scale_info"))

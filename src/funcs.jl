@@ -79,7 +79,8 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
        c = length(segs.segment_labels)
        update = "alg:" * "$alg"[19:end] * "
            segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
-       @js_ w document.getElementById("segs_info").innerHTML = $update; end
+       #@js_ w document.getElementById("segs_info").innerHTML = $update;
+   end
        return segs end
 
 function parse_input(input::String, ops_tabs::String)
@@ -175,7 +176,7 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
     write(csv_fln, df)
     return "Data exported to $csv_fln" end
 
-function export_session_data(w::Window, s::Vector{Dict{Any,Any}}, xd=Dict())
+function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     s_exp = deepcopy(s[end])
     s_exp["dds"] = Dict(k=>v[] for (k,v) in s_exp["dds"])
     s_exp["spins"] = Dict(k=>v[] for (k,v) in s_exp["spins"])
@@ -186,19 +187,18 @@ function export_session_data(w::Window, s::Vector{Dict{Any,Any}}, xd=Dict())
     @save filename s_exp
     export_text = "Data exported to $(filename).
  Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!"
-    @js_ w alert($export_text); end
+    # @js_str ui["html"] alert($export_text);
+end
 
-function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
-    sdw = Window()
-    size(sdw, 750, 850); title(sdw, "Space Type Editor")
-
+function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
     handle(sdw, "click_stdd") do args
         global s, w
         @show args
         img_deep = deepcopy(s[wi]["user_img"])
         hs = highlight_segs(segs, img_deep, img_fln, [args])
-        @js_ w document.getElementById("highlight_segment").hidden = false;
-        @js_ w document.getElementById("highlight_segment").src = $hs; end
+        #@js_ w document.getElementById("highlight_segment").hidden = false;
+        #@js_ w document.getElementById("highlight_segment").src = $hs;
+    end
 
     s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(
         s[wi]["segs"], s[wi]["user_img"], model) : nothing
@@ -208,7 +208,8 @@ function launch_space_editor(w::Window, segs::SegmentedImage, img::Matrix, img_f
         s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
         length(segment_labels(s[wi]["segs"]))) end
 
-    body!(sdw, s[wi]["segs_details_html"]) end
+    #body!(sdw, s[wi]["segs_details_html"])
+end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)

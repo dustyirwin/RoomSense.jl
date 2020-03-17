@@ -1,10 +1,7 @@
-
-handle(w, "img_selected") do args
+img_selected_handler = on(ui["dropbox_url"]) do dropbox_url
     global s, ui
 
-    @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
-
-    s[wi]["img_fln"] = ui["img_fln"][]
+    s[wi]["img_fln"] = dropbox_img_fn(dropbox_url)
     s[wi]["user_img"] = load(ui["img_fln"][])
     s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"])
 
