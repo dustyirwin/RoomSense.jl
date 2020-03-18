@@ -4,7 +4,7 @@ handle(w, "img_selected") do args
 
     @js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
 
-    s[wi]["img_fln"] = ui["img_fln"][]
+    s[wi]["img_fln"] = dropbox_img_fn(ui["dropbox_url"][])
     s[wi]["user_img"] = load(ui["img_fln"][])
     s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"])
 

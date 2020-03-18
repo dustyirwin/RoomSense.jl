@@ -1,7 +1,6 @@
-wi = 1  # work index
+const wi = 1  # work index
 
-
-s = [Dict{Any,Any}(
+const s = [Dict{Any,Any}(
     "current_img_tab"=>"Original",
     "prev_op_tab"=>"Set Scale",
     "scale"=>(1.,"ft",""),
@@ -9,7 +8,7 @@ s = [Dict{Any,Any}(
     "selected_areas"=>Vector{Int64}())];
 
 
-detailed_space_types = OrderedDict{Int64,String}(
+const detailed_space_types = OrderedDict{Int64,String}(
     1=>"Building Support - Other",                  2=>"Building Support - Mechanical Room",
     3=>"Building Support - Garbage",                4=>"Building Support - Electrical",
     5=>"Building Support - Mechnical Mezzanine",    6=>"Process - Other",
@@ -38,13 +37,14 @@ detailed_space_types = OrderedDict{Int64,String}(
 )
 
 
-dd_opts = Observable(collect(values(detailed_space_types)))
+const dd_opts = Observable(collect(values(detailed_space_types)))
 
 
-ui = Dict(
+const ui = Dict(
     "font"=>newface("./fonts/OpenSans-Bold.ttf"),
     "font_size"=>30,
-    "img_fln" => filepicker("Load Image"),
+    "img_fln"=>filepicker("Load Image"),
+    "dropbox_url"=>textbox("Paste DropBox img link here"),
     "go" => button("Go!", attributes=Dict(
         "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
     "set_scale_funcs" => dropdown(OrderedDict(
@@ -88,17 +88,17 @@ ui = Dict(
 )
 
 
-ui["toolbox"] = hbox(
+const ui["toolbox"] = hbox(
     node(:div, ui["ops_tabs"], attributes=Dict(
         "id"=>"operation_tabs", "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
-    node(:div, ui["img_fln"], attributes=Dict(
+    node(:div, ui["dropbox_url"], attributes=Dict(
         "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
         node(:div, "", attributes=Dict("id"=>"img_info")), hskip(0.25em),
         node(:div, "", attributes=Dict("id"=>"scale_info"))
 );
 
 
-ui["toolset"] = node(:div,
+const ui["toolset"] = node(:div,
     vbox(
         hbox(hskip(0.6em),
             ui["go"], hskip(0.6em),
@@ -113,16 +113,16 @@ ui["toolset"] = node(:div,
     attributes=Dict("id"=>"toolset", "hidden"=>false));
 
 
-ui["display_options"] = node(:div,
+const ui["display_options"] = node(:div,
     hbox(ui["img_tabs"], hskip(0.5em), vbox(vskip(0.5em),
         node(:strong, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;"))), hskip(0.5em), vbox(vskip(0.5em),
         hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
     attributes=Dict(
         "onclick"=>"""Blink.msg("img_tab_click", [])""",
-        "id"=>"img_tabs", "hidden"=>true));
+        "id"=>"img_tabs", "hidden"=>false));
 
 
-ui["display_imgs"] = vbox(
+const ui["display_imgs"] = vbox(
     node(:div,
         node(:img, attributes=Dict(
             "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.9;")),
@@ -155,14 +155,14 @@ ui["display_imgs"] = vbox(
             "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
 
 
-ui["tools"] = vbox(
+const ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
     ui["toolset"],
     ui["display_options"]);
 
 
-ui["html"] = node(:div,
+const ui["html"] = node(:div,
     node(:div, ui["tools"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
     node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative")));
 

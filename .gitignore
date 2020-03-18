@@ -4,6 +4,7 @@
 /tmp
 /models
 scratch.jl
+scratch2.jl
 *.jld2
 *.png
 *.svg
