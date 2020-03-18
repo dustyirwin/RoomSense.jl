@@ -7,7 +7,6 @@ const s = [Dict{Any,Any}(
     "segs_types"=>nothing,
     "selected_areas"=>Vector{Int64}())];
 
-
 const detailed_space_types = OrderedDict{Int64,String}(
     1=>"Building Support - Other",                  2=>"Building Support - Mechanical Room",
     3=>"Building Support - Garbage",                4=>"Building Support - Electrical",
@@ -36,42 +35,70 @@ const detailed_space_types = OrderedDict{Int64,String}(
     49=>"Unknown - All",                            50=>"_Walls/Windows/Doors/Etc"
 )
 
-
 const dd_opts = Observable(collect(values(detailed_space_types)))
 
 
-const ui = Dict(
-    "font"=>newface("./fonts/OpenSans-Bold.ttf"),
-    "font_size"=>30,
-    "img_fln"=>filepicker("Load Image"),
-    "dropbox_url"=>textbox("Paste DropBox img link here"),
-    "go" => button("Go!", attributes=Dict(
-        "onclick"=>"""Blink.msg("go", null)""", "id"=>"go")),
-    "set_scale_funcs" => dropdown(OrderedDict(
-        "pixels"=>(pixels, "pxs"),
-        "feet"=>(feet, "ft"),
-        "meters"=>(meters, "m")), attributes=Dict(
-            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "segs_funcs"=>dropdown(OrderedDict(
-        "Fast Scanning"=>(fast_scanning, Float64),
-        "Felzenszwalb"=>(felzenszwalb, Int64),
-        "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
-            attributes=Dict("onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "mod_segs_funcs"=>dropdown(OrderedDict(
-        "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
-        "Prune Segment(s)"=>(remove_segments, String),
-        "Assign Space Types"=>(launch_space_editor, String)), attributes=Dict(
-            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "export_data_funcs"=>dropdown(OrderedDict(
-        "Export Segment Data to CSV"=>(export_CSV, String),
-        "Export Session Data"=>(export_session_data, String)), attributes=Dict(
-            "onblur"=>"""Blink.msg("dropdown_selected", null)""")),
-    "draw_seeds"=>checkbox(value=false; label="Seeds"),
-    "draw_labels"=>checkbox(value=false; label="Labels"),
-    "colorize"=>checkbox(value=false, label="Colorize"),
-    "predict_space_type"=>checkbox(value=false, label="SpacePred"),
-    "input"=>textbox("See instructions below...", attributes=Dict("size"=>"60")),
-    "help_text"=>Dict(
+ui = Dict(
+    "checkbox" => Dict(
+        "draw_seeds"=>checkbox(value=false; label="Seeds"),
+        "draw_labels"=>checkbox(value=false; label="Labels"),
+        "colorize"=>checkbox(value=false, label="Colorize"),
+        "predict_space_type"=>checkbox(value=false, label="SpacePred"),
+    ),
+    "dropdown" => Dict(
+        "set_scale_funcs"=>dropdown(
+            OrderedDict(
+                "pixels"=>(pixels, "pxs"),
+                "feet"=>(feet, "ft"),
+                "meters"=>(meters, "m")
+            ),
+            attributes=Dict("hidden"=>false)
+        ),
+        "segs_funcs"=>dropdown(
+            OrderedDict(
+                "Fast Scanning"=>(fast_scanning, Float64),
+                "Felzenszwalb"=>(felzenszwalb, Int64),
+                "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})
+            ),
+            attributes=Dict("hidden"=>false)
+        ),
+        "mod_segs_funcs"=>dropdown(
+            OrderedDict(
+                "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
+                "Prune Segment(s)"=>(remove_segments, String),
+                "Assign Space Types"=>(launch_space_editor, String)
+            ),
+            attributes=Dict("hidden"=>false)
+            ),
+        "export_data_funcs"=>dropdown(
+            OrderedDict(
+                "Export Segment Data to CSV"=>(export_CSV, String),
+                "Export Session Data"=>(export_session_data, String)
+            ),
+            attributes=Dict("hidden"=>false)
+        ),
+    ),
+    "imgs" => Dict(
+        "display"=>node(:img, attributes=Dict(
+            "hidden"=>false, "style"=>"opacity: 0.9;")),
+        "plot"=>node(:img, attributes=Dict(
+            "src"=>"", "alt"=>"", "style"=>"opacity: 1.0;")),
+        "overlay_alpha"=>node(:img, attributes=Dict(
+            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+        "overlay_labels"=>node(:img, attributes=Dict(
+            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+        "overlay_seeds"=>node(:img, attributes=Dict(
+            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+        "highlight_segment"=>node(:img, attributes=Dict(
+            "src"=>"", "alt"=>"", "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.75;")),
+    ),
+    "font" => newface("./fonts/OpenSans-Bold.ttf"),
+    "font_size" => 30,
+    "img_fln" => filepicker("Load Image"),
+    "dropbox_url" => textbox("Paste DropBox img link here"),
+    "go" => button("Go!"),
+    "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
+    "help_text" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
@@ -84,64 +111,61 @@ const ui = Dict(
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
-    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"]))
+    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])),
+    "img_info" => node(:p, ""),
+    "scale_info" => node(:p, ""),
+    "segs_info" => node(:strong, ""),
+    "wi" => node(:strong, "1", attributes=Dict("style"=>"buffer: 5px;")),
 )
 
 
-const ui["toolbox"] = hbox(
-    node(:div, ui["ops_tabs"], attributes=Dict(
-        "id"=>"operation_tabs", "onclick"=>"""Blink.msg("op_tab_change", null)""")), hskip(1em),
-    node(:div, ui["dropbox_url"], attributes=Dict(
-        "onchange"=>"""Blink.msg("img_selected", []);""")), hskip(1em),
-        node(:div, "", attributes=Dict("id"=>"img_info")), hskip(0.25em),
-        node(:div, "", attributes=Dict("id"=>"scale_info"))
-);
+ui["toolbox"] = hbox(
+    ui["ops_tabs"], hskip(1em),
+    ui["dropbox_url"], hskip(1em),
+    ui["img_info"], hskip(0.25em),
+    ui["scale_info"],
+)
 
-
-const ui["toolset"] = node(:div,
+ui["toolset"] = node(:div,
     vbox(
         hbox(hskip(0.6em),
             ui["go"], hskip(0.6em),
-            node(:div, ui["set_scale_funcs"], attributes=Dict("id"=>"Set Scale toolset")),
-            node(:div, ui["segs_funcs"], attributes=Dict("id"=>"Segment Image toolset", "hidden"=>true)),
-            node(:div, ui["mod_segs_funcs"], attributes=Dict("id"=>"Modify Segments toolset", "hidden"=>true)),
-            node(:div, ui["export_data_funcs"], attributes=Dict("id"=>"Export Data toolset", "hidden"=>true)), hskip(0.6em),
-            node(:div, ui["input"], attributes=Dict("id"=>"input")), hskip(0.6em), vbox(vskip(0.2em),
-            node(:strong, "", attributes=Dict("id"=>"segs_info")))),
+            ui["dropdown"]["set_scale_funcs"],
+            ui["dropdown"]["segs_funcs"],
+            ui["dropdown"]["mod_segs_funcs"],
+            ui["dropdown"]["export_data_funcs"], hskip(0.6em),
+            ui["input"], hskip(0.6em), vbox(vskip(0.2em),
+            ui["segs_info"])),
         hbox(hskip(1em),
-            node(:p, ui["help_text"][ui["segs_funcs"][][1]], attributes=Dict("id"=>"help_text", "style"=>"buffer: 5px;")))),
-    attributes=Dict("id"=>"toolset", "hidden"=>false));
+            node(:p, ui["help_text"][ui["dropdown"]["segs_funcs"][][1]], attributes=Dict("style"=>"buffer: 5px;")))
+    ),
+    attributes=Dict("hidden"=>false)
+)
+
+ui["display_options"] = node(:div,
+    hbox(
+        ui["img_tabs"], hskip(0.5em),
+        vbox(vskip(0.5em), ui["wi"]), hskip(0.5em),
+        vbox(vskip(0.5em), hbox(
+            ui["checkbox"]["draw_seeds"],
+            ui["checkbox"]["draw_labels"],
+            ui["checkbox"]["colorize"],
+            ui["checkbox"]["predict_space_type"])
+        ),
+    ),
+    attributes=Dict("hidden"=>false)
+)
 
 
-const ui["display_options"] = node(:div,
-    hbox(ui["img_tabs"], hskip(0.5em), vbox(vskip(0.5em),
-        node(:strong, "1", attributes=Dict("id"=>"wi", "style"=>"buffer: 5px;"))), hskip(0.5em), vbox(vskip(0.5em),
-        hbox(ui["draw_seeds"], ui["draw_labels"], ui["colorize"], ui["predict_space_type"]))),
-    attributes=Dict(
-        "onclick"=>"""Blink.msg("img_tab_click", [])""",
-        "id"=>"img_tabs", "hidden"=>false));
-
-
-const ui["display_imgs"] = vbox(
+ui["display_imgs"] = vbox(
     node(:div,
-        node(:img, attributes=Dict(
-            "id"=>"display_img", "src"=>"", "alt"=>"", "style"=>"opacity: 0.9;")),
-        node(:img, attributes=Dict(
-            "id"=>"plot", "src"=>"", "alt"=>"", "style"=>"opacity: 1.0;")),
-        node(:img, attributes=Dict(
-            "id"=>"overlay_alpha", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        node(:img, attributes=Dict(
-            "id"=>"overlay_labels", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        node(:img, attributes=Dict(
-            "id"=>"overlay_seeds", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        node(:img, attributes=Dict(
-            "id"=>"highlight_segment", "src"=>"", "alt"=>"",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.75;")),
+        ui["imgs"]["display"],
+        ui["imgs"]["plot"],
+        ui["imgs"]["overlay_alpha"],
+        ui["imgs"]["overlay_labels"],
+        ui["imgs"]["overlay_seeds"],
+        ui["imgs"]["highlight_segment"],
         attributes=Dict(
-            "id"=>"img_container",
             "onclick"=>"""Blink.msg("img_click", [
                 event.pageY - document.getElementById("img_container").offsetTop,
                 event.pageX,
@@ -152,19 +176,18 @@ const ui["display_imgs"] = vbox(
                 event.ctrlKey,
                 event.shiftKey,
                 event.altKey]);""",
-            "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;")));
+        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"))
+)
 
 
-const ui["tools"] = vbox(
+ui["tools"] = vbox(
     ui["toolbox"],
     vskip(0.5em),
     ui["toolset"],
-    ui["display_options"]);
+    ui["display_options"])
 
 
-const ui["html"] = node(:div,
+ui["html"] = node(:div,
     node(:div, ui["tools"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
-    node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative")));
-
-
-ui["img_tabs"][] = "Original"
+    node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative"))
+)
