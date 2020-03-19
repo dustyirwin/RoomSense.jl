@@ -1,28 +1,20 @@
-img_selected_handler = on(ui["dropbox_url"]) do dropbox_url
+img_selected_handler = on(ui["dropbox_url"]) do fn
     global s, ui
 
-    s[wi]["img_fln"] = dropbox_img_fn(dropbox_url)
+    s[wi]["img_fln"] = dropbox_img_fn(fn)
     s[wi]["user_img"] = load(ui["img_fln"][])
     s[wi]["_alpha.png"] = make_transparent(s[wi]["user_img"])
 
     save(s[wi]["img_fln"][1:end-4] * "_alpha.png", s[wi]["_alpha.png"])
 
     img_info = "height: $(height(s[wi]["user_img"]))  width: $(width(s[wi]["user_img"]))"
-    img_alpha = get_dummy("_alpha.png", s[wi]["img_fln"], s[wi]["_alpha.png"])
-
-    @js_ w document.getElementById("overlay_alpha").src = $img_alpha
-    @js_ w document.getElementById("img_info").innerHTML = $img_info
-    @js_ w document.getElementById("toolset").hidden = false
-    @js_ w document.getElementById("img_tabs").hidden = false
 
     if haskey(s[wi], "_pxplot.svg"); delete!(s[wi], "_pxplot.svg") end
     if haskey(s[wi], "_labels.png"); delete!(s[wi], "_labels.png") end
     if haskey(s[wi], "_seeds.png"); delete!(s[wi], "_seeds.png") end
 
     ui["img_tabs"][] = "Original"
-    @js_ w msg("img_tab_click", "")
-
-    @js_ w document.getElementById("go").classList = ["button is-primary"] end
+end
 
 handle(w, "op_tab_change") do args
     global s, ui
