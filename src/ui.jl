@@ -35,64 +35,56 @@ const detailed_space_types = OrderedDict{Int64,String}(
     49=>"Unknown - All",                            50=>"_Walls/Windows/Doors/Etc"
 )
 
-const dd_opts = Observable(collect(values(detailed_space_types)))
+const dd_opts = collect(values(detailed_space_types))
 
-
-ui = Dict(
+const ui = OrderedDict(
     "go" => button("Go!"),
-    "alert" => alert(""),
-    "checkboxes" => OrderedDict(
+    "checkboxes" => checkboxes(OrderedDict(
+        "overlay_alpha"=>checkbox(value=true; label="Overlay"),
         "draw_seeds"=>checkbox(value=false; label="Seeds"),
         "draw_labels"=>checkbox(value=false; label="Labels"),
         "colorize"=>checkbox(value=false, label="Colorize"),
         "predict_space_type"=>checkbox(value=false, label="SpacePred"),
+        )
     ),
     "dropdowns" => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(
                 "pixels"=>(pixels, "pxs"),
                 "feet"=>(feet, "ft"),
-                "meters"=>(meters, "m")
-            ),
+                "meters"=>(meters, "m")),
         ),
         "Segment Image"=>dropdown(
             OrderedDict(
                 "Fast Scanning"=>(fast_scanning, Float64),
                 "Felzenszwalb"=>(felzenszwalb, Int64),
-                "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})
-            ),
+                "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
         ),
         "Modify Segments"=>dropdown(
             OrderedDict(
                 "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
                 "Prune Segment(s)"=>(remove_segments, String),
-                "Assign Space Types"=>(launch_space_editor, String)
-            ),
+                "Assign Space Types"=>(launch_space_editor, String)),
         ),
         "Export Data"=>dropdown(
             OrderedDict(
                 "Export Segment Data to CSV"=>(export_CSV, String),
-                "Export Session Data"=>(export_session_data, String)
-            ),
+                "Export Session Data"=>(export_session_data, String)),
         ),
     ),
-    "imgs" => Dict(
-        "display"=>node(:img, attributes=Dict(
+    "imgs" => OrderedDict(
+        "original" => node(:img, attributes=Dict("src"=>"", "alt"=>"ERROR!",
             "style"=>"opacity: 0.9;")),
-        "plot"=>node(:img, attributes=Dict(
-            "src"=>"", "alt"=>"", "style"=>"opacity: 1.0;")),
-        "overlay_alpha"=>node(:img, attributes=Dict(
-            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        "overlay_labels"=>node(:img, attributes=Dict(
-            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        "overlay_seeds"=>node(:img, attributes=Dict(
-            "src"=>"", "alt"=>"","style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        "highlight_segment"=>node(:img, attributes=Dict(
-            "src"=>"", "alt"=>"", "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.75;")),
+        "segs" => node(:img, attributes=Dict("src"=>"", "alt"=>"ERROR!",
+            "style"=>"opacity: 0.9;")),
+        "plot" => node(:img, attributes=Dict("src"=>"", "alt"=>"ERROR!",
+            "style"=>"opacity: 1.0;")),
+        "overlay" => node(:img, attributes=Dict("src"=>"", "alt"=>"ERROR!",
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
-    "img_fln" => filepicker("Load Image"),
+    "img_fn" => filepicker("Load Image"),
     "dropbox_url" => textbox("Paste DropBox img link here"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_texts" => Dict(
@@ -107,16 +99,23 @@ ui = Dict(
         launch_space_editor=>"Enter the number of segments you want to assign space types to. Segments are sorted largest to smallest.",
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
-    "ops_tabs" => tabs(Observable(["Set Scale", "Segment Image", "Modify Segments", "Export Data"])),
-    "img_tabs" => tabs(Observable(["<<", "Original", "Segmented", "Overlayed", "Plots", ">>"])),
     "img_info" => node(:p, ""),
     "scale_info" => node(:p, ""),
     "segs_info" => node(:strong, ""),
     "work_index" => node(:strong, "1", attributes=Dict("style"=>"buffer: 5px;")),
+);
+
+
+
+ui["img_tabs"] = tabulator(
+    Observable(
+        OrderedDict(
+            "Original" => node(:div, ui["imgs"]["original"]),
+            "Segmented" => node(:div, ui["imgs"]["segs"]),
+            "Segs Plot" => node(:div, ui["imgs"]["plot"]),))
 )
 
-
-ui["tools"] = tabulator(
+ui["funcs"] = tabulator(
     Observable(
         OrderedDict(
             dropdown => node(:div,
@@ -128,51 +127,45 @@ ui["tools"] = tabulator(
                         vbox(
                             vskip(0.2em),
                             ui["segs_info"],
-                        )
-                    )
-                )
-        ) for dropdown in collect(keys(ui["dropdowns"])))
-    )
-)
-
-ui["display_options"] = node(:div,
-    hbox(
-        ui["img_tabs"], hskip(0.5em),
-        vbox(vskip(0.5em), ui["work_index"]), hskip(0.5em),
-        vbox(vskip(0.5em), hbox(collect(values(ui["checkboxes"]))...)
-        ),
-    ),
-)
+            )))) for dropdown in collect(keys(ui["dropdowns"]))))
+);
 
 ui["toolbox"] = vbox(
     hbox(
-        ui["tools"], hskip(1em),
+        ui["funcs"], hskip(1em),
         ui["dropbox_url"], hskip(1em),
         ui["img_info"], hskip(0.25em),
-        ui["scale_info"]),
-    vskip(0.5em),
-    ui["display_options"],
-)
+        ui["scale_info"],)
+);
 
-ui["display_imgs"] = vbox(
-    node(:div,
-        collect(values(ui["imgs"]))...,
-        attributes=Dict(
-            "onclick"=>"""Blink.msg("img_click", [
-                event.pageY - document.getElementById("img_container").offsetTop,
-                event.pageX,
-                document.getElementById("display_img").height,
-                document.getElementById("display_img").width,
-                document.getElementById("display_img").naturalHeight,
-                document.getElementById("display_img").naturalWidth,
-                event.ctrlKey,
-                event.shiftKey,
-                event.altKey]);""",
-        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"))
-)
+ui["image_display"] = node(:div,
+    hbox(ui["img_tabs"], hskip(1em),
+    vbox(vskip(0.5em), ui["work_index"]), hskip(1em),
+    checkboxes(ui["checkboxes"])),
+    attributes=Dict(
+        "id"=>"image_display",
+        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;",
+        "onclick"=>"""click = [
+            event.pageY - document.getElementById("img_container").offsetTop,
+            event.pageX,
+            document.getElementById("display_img").height,
+            document.getElementById("display_img").width,
+            document.getElementById("display_img").naturalHeight,
+            document.getElementById("display_img").naturalWidth,
+            event.ctrlKey,
+            event.shiftKey,
+            event.altKey];""")
+);
 
 ui["html"] = node(:div,
-    ui["alert"],
     node(:div, ui["toolbox"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
-    node(:div, ui["display_imgs"], attributes=Dict("position"=>"relative"))
+    node(:div, ui["image_display"], attributes=Dict("position"=>"relative"))
 )
+
+
+
+hbox(cb for cb in collect(values(ui["checkboxes"])))
+ui["checkboxes"]
+
+
+checkboxes()

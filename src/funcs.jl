@@ -240,5 +240,3 @@ function dropbox_img_fn(img_url::String)
         download(img_url, fn)
         return fn
 end end
-
-function error_wrapper() end

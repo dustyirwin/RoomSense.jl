@@ -27,15 +27,15 @@ try pkg"activate ." catch
 @time using Flux
 @time using Flux: crossentropy, Conv, train!, @epochs
 @time using Mux
+@time using AssetRegistry
 #@time using Logging  # not compiled, not traced!
+
 
 @time include("./src/funcs.jl")
 @time include("./src/ui.jl")
-# @time include("./src/events.jl")
+@time include("./src/events.jl")
 @time include("./src/models.jl")
-
-const port = rand(8000:8000)
-WebIO.webio_serve(page("/", req -> ui["html"]), port)
+@time include("./src/server.jl")
 
 
 println("...complete! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.\n
