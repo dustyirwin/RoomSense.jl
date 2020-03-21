@@ -1,5 +1,5 @@
 
-@load "./models/SqueezeNet_50g.bson" model
+model = load("./models/squeeze_net_gray_50.bson")[:sn_g50]
 
 function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[])
     bs = get_segment_bounds(segs)

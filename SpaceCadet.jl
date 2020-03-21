@@ -24,6 +24,7 @@ try pkg"activate ." catch
 @time using Interact: node
 @time using Flux
 @time using Flux: crossentropy, Conv, train!, @epochs
+@time using Metalhead
 #@time using Logging  # not compiled, not traced!
 
 
