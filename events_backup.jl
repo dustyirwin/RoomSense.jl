@@ -1,5 +1,4 @@
 
-
 handle(w, "go") do args
     global s, wi, ui
     println("!go clicked")

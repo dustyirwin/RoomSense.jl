@@ -20,6 +20,14 @@ end
 
 
 
+
+ui["dropbox_url"][] ="https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
+img_url_raw = "https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
+
+
+fn = get_dropbox_img(img_url_raw)
+
+
 # Diag tools
 # tools(w)
 # using Debugger
@@ -61,16 +69,18 @@ img_url = ui["dropbox_img_link"][]
 
 function dropbox_img_fn(img_url::String)
     fn = mktemp() do fn, f
-        global img_url
         img_url = replace(img_url, "0"=>"1")
         fn = "." * fn
         download(img_url, fn)
         return fn
 end end
 
-img = load(fn)
+img_url = "https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
 
-load(dropbox_img_fn(img_url))
+dropbox_img_fn(img_url)
+
+
+
 dblink = "https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
 dbimg = download(dblink)
 fn = "https://1drv.ms/u/s!AqpjBcixuEpcwkwGGrHWHsaFXjkd"
@@ -154,7 +164,7 @@ wdg[:options] = ["this is great"
 tabulator(OrderedDict("plot" => plot(rand(10)), "scatter" => scatter(rand(10))), key = "plot")
 
 
-h_img_click = on(ui["dropbox_url"]) do val
+dropbox = on(ui["dropbox_url"]) do val
     println("Got an update: ", val)
 end
 
@@ -162,14 +172,20 @@ end
 maskt = mask(Observable(["a","b","c"]))
 maskt[] = [2, 3]
 
-const Struct Pane
-    img::Matrix
+tt = textbox("ddkfjhg")
+tt[] = "8734534"
+tt_h = on(ui["dropbox_url"]) do fn
+    println("A message sire! $fn") end
 
-end
+
+ui["dropbox_url"]
+ = "lasdlkfj98439"
 
 fieldnames(typeof(ui["imgs"]["original"]))
+checkboxes(ui["checkboxes"])
 
 using Mux
+
 
 @app serve_imgs = (
   Mux.defaults,
@@ -189,10 +205,19 @@ r_img = ImgURL(ri)
 org = fieldnames(typeof(ui["imgs"]["original"]))
 fieldnames(typeof(ui["imgs"]["display"](0.9)))
 
+img_selected_handler = on(ui["dropbox_url"]) do fn
+    println("DropBox text: $fn")
+    println("length s:", length(s))
+    try
+        s[wi]["img_fln"] = dropbox_img_fn(fn)
+        s[wi]["user_img"] = load(ui["img_fln"][])
+    catch
+        println("Not a valid img link.")
+        return
+end end
 
-
-ri = ngrok * AssetRegistry.register("assets/astronaut.jpg")
-ui["imgs"]["original"].props[:src] = ri
+"https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
+ui["dropbox_url"][]
 
 ui["img_display"]
 riurl = ImgURL(ri)
@@ -222,14 +247,8 @@ ui["imgs"]["original"]
 
 
 
-ui["go"].components[Symbol("is-loading")].val = false
+ui["go"].components[Symbol("is-loading")].val = true
 ui["go"].components[Symbol("is-warning")].val = true
-
-
-route("/img/:fn::String") do
-    serve_static_file("/tmp/$(@params(:fn))")
-end
-
 
 
 
@@ -244,3 +263,74 @@ node(:img, attributes=Dict("src"=>"$tfn", "alt"=>"error!"))
 ui["imgs"]["original"]
 
 fieldnames(typeof(ui["imgs"]["original"]))
+
+
+butt = button("press me!")
+butt_h = on(butt) do args
+    println("button clicked $args times!")
+end
+
+
+ui["dropbox_url"][] = "testing"
+ui["go"][] = 1
+
+begin
+    ui["go"] = button("Go!")
+
+    end
+end
+
+
+using WebIO
+using JSExpr
+using Mux
+
+
+ui = build_ui()
+
+myscope = Scope(
+    dom=ui["html"],
+);
+
+WebIO.webio_serve(page("/", req -> myscope), 8000);
+
+
+go_h = on(ui["go"]) do args
+    println("go clicked $args times!")
+end
+
+input_h = on(ui["input"]) do args
+    println("Received an input message!: $args")
+end
+
+dropbox_h = on(ui["dropbox_url"]) do args
+    println("Received an dropbox message!: $args")
+end
+
+ui["checkboxes"]["draw_seeds"]
+
+ui["go"][] = 5
+
+
+ui["input"][] = "Hmmm both ways??"
+
+@js myscope alert("ehh??");
+
+
+include("./SpaceCadet.jl")
+
+include("./src/server.jl");
+
+include("./src/events.jl");
+
+butt = button();
+
+route("/test", ui["go"])
+
+
+ui["go"][]
+ri = ngrok * AssetRegistry.register("assets/astronaut.jpg")
+ui["imgs"]["original"].props[:src] = ri
+
+
+LiveServer.serve(ui["html"], port=8002)

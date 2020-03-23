@@ -1,81 +1,50 @@
-
 using WebIO
-
-
-fieldnames(typeof(ui["dropbox_url"]))
-
-ui["dropbox_url"].components[:value].val = "hello user!"
-
-segs_img = node(:img, attributes=Dict("alt"=>"segment image here", "src"=>""))
-
-tpage = node(:div,
-    node(:a, segs_img, attributes=Dict("href"=>"/")))
-
-segs_img.props[:attributes]["src"]
-tpage.children.tail[1].props[:attributes]["src"] = rfn1
-tpage
-fn1 = "/home/dusty/OneDrive/Documents/Personal_Projects/RoomSense.jl/tmp/1_test.png"
-fn2 = "/home/dusty/OneDrive/Documents/Personal_Projects/RoomSense.jl/tmp/fp1.jpg"
-
-img = load(fn)
-
-rfn1 = Observable("")
-rfn2 = Observable("")
-
-rfn1[] = register(fn1)
-rfn2[] = register(fn2)
-
-webio_serve(page("/",req->tpage), 8001)
-
-fieldnames(typeof(tpage.children.tail[1]))
-
-but = button();
-
-but = dom"button"(
-    "Greet",
-     events=Dict(
-        "click" => js"function() { alert('Hello, World!'); }",
-        ),
-)
-
-function myapp(req)
-    global but
-    segs_img.props[:attributes]["src"] = rand(Bool) ? rfn1 : rfn2
-    return but
-end
-
-using WebIO
-
-
-server = webio_serve(page("/", req -> stacked), 8003)
-
-stacked = Mux.stack(page("/", button("But 1")), page("/", button("But 2"))
-)
-``
-app = @app button("hallo")
-serve(button())
-
-
-Observables.@on println(&rfn1, &rfn2)
-
-butt = dom"button"(
-    "Greet",
-     events=Dict(
-        "click" => js"function() { alert('Hello, World!'); }",
-        ))
-
+using JSExpr # you may need to install this package
 using Mux
 
-im load()
+function counter(start=0)
+    scope = Scope()
 
-@app test = (
-  Mux.defaults,
-  page(respond("<h1>Hello World!</h1>")),
-  page("/about",
-       probabilty(0.1, respond("<h1>Boo!</h1>")),
-       respond("<h1>About Me</h1>")),
-  page("/user/:user", req -> "<h1>Hello, $(req[:params][:user])!</h1>"),
-  page("/butts", respond(butt)),
-  Mux.notfound())
+    # updates to this update the UI
+    count = Observable(scope, "count", start)
 
-serve(test, 8050)
+    onjs(count, # listen on JavaScript
+         JSExpr.@js x->this.dom.querySelector("#count").src = x)
+
+    on(count) do n # listen on Julia
+        println(n > 0 ? "+"^n : "-"^abs(n))
+    end
+
+    btn(label, d) = dom"button"(
+        label,
+        events=Dict(
+            "click" => JSExpr.@js () -> $count[] = $count[] + $d
+        )
+    )
+
+    scope.dom = dom"div"(
+        btn("increment", 1),
+        btn("decrement", -1),
+        dom"div#count"(string(count[])),
+    )
+
+    scope
+end
+
+# Display in whatever frontend is avalaible
+function main()
+    if @isdefined(IJulia) || @isdefined(Juno)
+        return counter(1)
+    elseif @isdefined(Blink)
+        #win = Window()
+        #body!(win, counter(1))
+    elseif @isdefined(Mux)
+        @sync webio_serve(page("/", req -> counter(1)), 8001)
+    else
+        error("do one of using Mux, using Blink before running the
+               example, or run it from within IJulia or Juno")
+    end
+end
+
+
+@sync webio_serve(page("/", req -> counter(1)), 8001)

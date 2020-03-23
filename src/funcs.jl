@@ -1,3 +1,4 @@
+
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
@@ -230,13 +231,14 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
         for (lbl, px_ct) in segs_details]
 
     html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
-    return html, dds, checks, spins end
+    return html, dds, checks, spins
+end
 
 
-function dropbox_img_fn(img_url::String)
-    fn = mktemp() do fn, f
-        img_url = replace(img_url, "0"=>"1")
-        fn = "." * fn * ".jpg"
-        download(img_url, fn)
-        return fn
-end end
+function get_dropbox_img(img_url_raw::String)
+    img_url_cleaned = img_url_raw[1:length(img_url_raw)-1] * "1"
+    fn = "assets/" * split(img_url_cleaned, "/")[end][1:end-5]
+    download(img_url_cleaned, fn)
+    println("download successful!")
+    return fn
+end

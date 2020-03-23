@@ -1,12 +1,6 @@
-/builddir
-*.jpg
 /fonts
 /tmp
 /models
-*.jld2
-*.png
-*.svg
-*.pdf
-*.BSON
-*.csv
 /resources
+/ngrok
+/assets
