@@ -34,6 +34,7 @@ try pkg"activate ." catch
 @time using Metalhead
 @time using AssetRegistry
 @time using Logging
+@time using JSExpr
 
 
 println("Loading codebase...\n")

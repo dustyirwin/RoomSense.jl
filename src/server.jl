@@ -11,7 +11,8 @@ const port = rand(8000:8000)
 function space_cadet(ui::OrderedDict{String,Any}, req::Dict{Any,Any})
 
     observs=ObsDict(
-        "go"=>(ui["go"], nothing),)
+        "go"=>(ui["go"], nothing),
+    )
 
     scope = Scope(
         dom=ui["/"](req),
@@ -37,8 +38,6 @@ function assetserve(dirs=true)
     req -> fresp(joinpath(absdir(req), req[:path]...)))
 end
 
-
-ui = build_ui()
 
 welcome_img = AssetRegistry.register("./assets/astronaut.jpg")
 
