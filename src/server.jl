@@ -8,23 +8,25 @@ const ngrok = "http://d0d0ca0b.ngrok.io"
 const port = rand(8000:8000)
 
 
+
 function space_cadet(ui::OrderedDict{String,Any}, req::Dict{Any,Any})
 
-    observs=ObsDict(
-        "go"=>(ui["go"], nothing),
-    )
+    observs=ObsDict("go"=>(ui["go"], nothing),)
 
     scope = Scope(
-        dom=ui["/"](req),
+        dom=ui["/"],
         observs=observs,
     )
 
-    WebIO.onjs(scope, "go",     # listen on JavaScript
-        JSExpr.@js src -> document.getElementById("original").src = src;
-    )
+    #WebIO.onjs(scope, "go",     # listen on JavaScript
+    #    JSExpr.@js src -> document.getElementById("original").src = ui["orig_src"];
+    #)
 
     on(scope, "go") do args     # listen on Julia
-        println("User pressed Go!")
+        fn = get_img_from_url(ui["img_url_input"][])
+        rfn = register(fn)
+        #ui["imgs"]["original"].props[:attributes]["src"] = ui["orig_src"]
+        JSExpr.@js src -> document.getElementById("original").src = $rfn;
     end
 
     return scope
@@ -37,11 +39,6 @@ function assetserve(dirs=true)
     validpath(absdir(req), joinpath(req[:path]...), dirs=dirs),
     req -> fresp(joinpath(absdir(req), req[:path]...)))
 end
-
-
-welcome_img = AssetRegistry.register("./assets/astronaut.jpg")
-
-ui["imgs"]["original"].props[:attributes]["src"] = welcome_img
 
 
 const assetserver = @isdefined(assetserver) ? assetserver :

@@ -235,8 +235,8 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
 end
 
 
-function get_dropbox_img(img_url_raw::String)
-    img_url_cleaned = img_url_raw[1:length(img_url_raw)-1] * "1"
+function get_img_from_url(img_url_raw::String)
+    img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw
     fn = "assets/" * split(img_url_cleaned, "/")[end][1:end-5]
     download(img_url_cleaned, fn)
     println("download successful!")

@@ -2,11 +2,10 @@
 ui = OrderedDict(
     "go" => button("Go!", href="/results"),
     "checkboxes" => OrderedDict(
-        "overlay_alpha"=>checkbox(value=true; label="Overlay"),
         "draw_seeds"=>checkbox(value=false; label="Seeds"),
         "draw_labels"=>checkbox(value=false; label="Labels"),
         "colorize"=>checkbox(value=false, label="Colorize"),
-        "predict_space_type"=>checkbox(value=false, label="SpacePred"),
+        "predict_space_type"=>checkbox(value=false, label="CadetPred"),
     ),
     "dropdowns" => OrderedDict(
         "Set Scale"=>dropdown(
@@ -46,7 +45,7 @@ ui = OrderedDict(
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
     "img_fn" => filepicker("Load Image"),
-    "dropbox_url" => textbox("Paste DropBox img link here"),
+    "img_url_input" => textbox("Paste http(s) img link here..."),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_texts" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
@@ -65,14 +64,15 @@ ui = OrderedDict(
     "segs_info" => node(:strong, ""),
     "work_index" => node(:strong, "1",
         attributes=Dict("style"=>"buffer: 5px;")),
-    );
+);
 
 ui["img_tabs"] = tabulator(
     Observable(
         OrderedDict(
             "Original" => node(:div, ui["imgs"]["original"]),
             "Segmented" => node(:div, ui["imgs"]["segs"]),
-            "Segs Plot" => node(:div, ui["imgs"]["plot"]),
+            "Overlay" => node(:div, ui["imgs"]["overlay"]),
+            "Plots" => node(:div, ui["imgs"]["plot"]),
         )
     )
 );
@@ -86,27 +86,21 @@ ui["func_panel"] = tabulator(
                         ui["go"], hskip(0.6em),
                         ui["dropdowns"][dropdown], hskip(0.6em),
                         ui["input"], hskip(1em),
-                        collect(values(ui["checkboxes"]))...)
-                    )
-                ) for dropdown in collect(keys(ui["dropdowns"]))
-            )
+                        vbox(vskip(0.25em), hbox(collect(values(ui["checkboxes"]))...,
+                        ui["work_index"]), hskip(1em),
+                        ui["img_url_input"]))
+                )
+            ) for dropdown in collect(keys(ui["dropdowns"]))
         )
-    );
-
-ui["toolbox"] = vbox(
-    hbox(
-        ui["func_panel"], hskip(1em),
-        vbox(vskip(0.5em),
-            ui["dropbox_url"]), hskip(1em),)
+    )
 );
 
 ui["image_display"] = Observable(node(:div,
     hbox(
-        ui["img_tabs"],
-        ui["work_index"], hskip(0.5em),
+        ui["img_tabs"], hskip(2em),
         ui["img_info"], hskip(0.5em),
         ui["scale_info"], hskip(0.5em),
-        ),
+    ),
     attributes=Dict(
         "id"=>"image_display",
         "align"=>"center",
@@ -123,11 +117,12 @@ ui["image_display"] = Observable(node(:div,
             event.altKey];"""))
 );
 
+ui["home_img"] = AssetRegistry.register("./assets/astronaut.jpg")
+
+ui["imgs"]["original"].props[:attributes]["src"] = ui["home_img"]
+
+
 ui["/"] = node(:div,
-    node(:div, ui["toolbox"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
+    node(:div, ui["func_panel"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
     node(:div, ui["image_display"], attributes=Dict("position"=>"relative"))
 )
-
-welcome_img = AssetRegistry.register("./assets/astronaut.jpg")
-
-ui["imgs"]["original"].props[:attributes]["src"] = welcome_img
