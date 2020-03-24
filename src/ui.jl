@@ -65,7 +65,7 @@ build_ui = (req=Dict()) -> begin
         "scale_info" => node(:p, ""),
         "segs_info" => node(:strong, ""),
         "work_index" => node(:strong, "1",
-         attributes=Dict("style"=>"buffer: 5px;")),
+            attributes=Dict("style"=>"buffer: 5px;")),
         );
 
     ui["img_tabs"] = tabulator(
@@ -114,10 +114,11 @@ build_ui = (req=Dict()) -> begin
                 event.shiftKey,
                 event.altKey];""")
     );
-    ui["html"] = node(:div,
+    ui["/"] = (req=nothing) -> node(:div,
         node(:div, ui["toolbox"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
         node(:div, ui["image_display"], attributes=Dict("position"=>"relative"))
     );
+    ui["/results"] = (req=nothing) -> node(:h1, "Results Page")
 
     return ui
 end

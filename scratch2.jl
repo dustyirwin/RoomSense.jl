@@ -2,6 +2,7 @@ using WebIO
 using JSExpr # you may need to install this package
 using Mux
 
+
 function counter(start=0)
     scope = Scope()
 
@@ -32,19 +33,5 @@ function counter(start=0)
 end
 
 # Display in whatever frontend is avalaible
-function main()
-    if @isdefined(IJulia) || @isdefined(Juno)
-        return counter(1)
-    elseif @isdefined(Blink)
-        #win = Window()
-        #body!(win, counter(1))
-    elseif @isdefined(Mux)
-        @sync webio_serve(page("/", req -> counter(1)), 8001)
-    else
-        error("do one of using Mux, using Blink before running the
-               example, or run it from within IJulia or Juno")
-    end
-end
-
 
 @sync webio_serve(page("/", req -> counter(1)), 8001)

@@ -1,51 +1,52 @@
+using WebIO
+using JSExpr # you may need to install this package
+using Mux
+
 
 const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
 const ngrok = "http://d0d0ca0b.ngrok.io"
 const port = rand(8000:8000)
 
-ui = build_ui()
 
-function space_cadet(ui)
-    observs = ObsDict(
+function space_cadet(ui::OrderedDict{String,Any}, req::Dict{Any,Any})
+
+    observs=ObsDict(
         "go"=>(ui["go"], nothing),)
 
-    scope  = Scope(
-        dom=ui["html"],
-        observs=observs)
+    scope = Scope(
+        dom=ui["/"](req),
+        observs=observs,
+    )
 
-    on(scope, "go") do args # listen on Julia#
-        println("User pressed Go!") end
+    WebIO.onjs(scope, "go",     # listen on JavaScript
+        JSExpr.@js src -> document.getElementById("original").src = src;
+    )
+
+    on(scope, "go") do args     # listen on Julia
+        println("User pressed Go!")
+    end
 
     return scope
 end
 
-@sync WebIO.webio_serve(page("/", req -> space_cadet(ui)), port)
+
+function assetserve(dirs=true)
+    absdir(req) = AssetRegistry.registry["/assetserver/" * req[:params][:key]]
+    branch(req -> (isfile(absdir(req)) && isempty(req[:path])) ||
+    validpath(absdir(req), joinpath(req[:path]...), dirs=dirs),
+    req -> fresp(joinpath(absdir(req), req[:path]...)))
+end
 
 
-#WebIO.webio_serve(page("/results", req -> space_cadet_server), 8006)
-
-
-# updates to this update the UI
+ui = build_ui()
 
 welcome_img = AssetRegistry.register("./assets/astronaut.jpg")
+
 ui["imgs"]["original"].props[:attributes]["src"] = welcome_img
 
-fieldnames(typeof(ui["imgs"]["original"]))
 
+const assetserver = @isdefined(assetserver) ? assetserver :
+    route("assetserver/:key", assetserve(), Mux.notfound())
 
-ui["imgs"]["original"].props[:attributes]["src"] = ""
-
-
-ui["imgs"]["original"].props[:attributes]["src"]
-
-@app space_cadet_server = (
-Mux.defaults,
-page(respond(ui["html"])),
-page("/results", respond("<h1>Results Page!</h1>")),
-page("/assign_spacetypes", req -> "<h1>space type editor here!</h1>"),
-Mux.notfound(),
-)
-
-on(ui["go"]) do args # listen on Julia#
-    println("User pressed Go!")
-end
+const webserver = @isdefined(webserver) ? webserver :
+    @sync WebIO.webio_serve(page("/", req -> space_cadet(ui, req)), 8000)

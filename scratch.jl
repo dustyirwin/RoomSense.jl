@@ -272,13 +272,7 @@ end
 
 
 ui["dropbox_url"][] = "testing"
-ui["go"][] = 1
 
-begin
-    ui["go"] = button("Go!")
-
-    end
-end
 
 
 using WebIO
@@ -288,49 +282,8 @@ using Mux
 
 ui = build_ui()
 
-myscope = Scope(
-    dom=ui["html"],
-);
-
 WebIO.webio_serve(page("/", req -> myscope), 8000);
 
-
 go_h = on(ui["go"]) do args
-    println("go clicked $args times!")
+    println("The user clicked Go!")
 end
-
-input_h = on(ui["input"]) do args
-    println("Received an input message!: $args")
-end
-
-dropbox_h = on(ui["dropbox_url"]) do args
-    println("Received an dropbox message!: $args")
-end
-
-ui["checkboxes"]["draw_seeds"]
-
-ui["go"][] = 5
-
-
-ui["input"][] = "Hmmm both ways??"
-
-@js myscope alert("ehh??");
-
-
-include("./SpaceCadet.jl")
-
-include("./src/server.jl");
-
-include("./src/events.jl");
-
-butt = button();
-
-route("/test", ui["go"])
-
-
-ui["go"][]
-ri = ngrok * AssetRegistry.register("assets/astronaut.jpg")
-ui["imgs"]["original"].props[:src] = ri
-
-
-LiveServer.serve(ui["html"], port=8002)
