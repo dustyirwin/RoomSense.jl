@@ -1,12 +1,13 @@
 
-function go_pressed(ui)
-    println("go pressed!")
+const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
 
-    fn = get_img_from_url(ui["img_url"][])
-    rfn = register(fn)
-    ui["imgs"]["original"].props[:attributes]["src"] = rfn
-end
+observs = ObsDict(
+    "img_url_input"=>(ui["obs"]["img_url_input"], true),
+    "img_click"=>(ui["obs"]["img_click"], true),
+    "go"=>(ui["obs"]["go"], true),
+)
 
-
-fn = get_img_from_url(ui["img_url"][])
-rfn = register(fn)
+events = Dict(
+    "img_click" => ("img_click", JSExpr.@js args -> console.log(args) ),
+    
+)

@@ -32,18 +32,13 @@ ui = OrderedDict(
         ),
     ),
     "imgs" => OrderedDict(
-        "original" => node(:img, attributes=Dict("id"=>"original",
-            "src"=>"", "alt"=>"Check ngrok?", "style"=>"opacity: 0.9;", )),
-        "segs" => node(:img, attributes=Dict("src"=>"", "alt"=>"Error!",
-            "style"=>"opacity: 0.9;")),
-        "plot" => node(:img, attributes=Dict("src"=>"", "alt"=>"Error!",
-            "style"=>"opacity: 1.0;")),
-        "overlay" => node(:img, attributes=Dict("src"=>"", "alt"=>"Error!",
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
+        "display" => node(:img, attributes=Dict("id"=>"display", "src"=>"",
+            "alt"=>"Error! Check image link...", "style"=>"opacity: 0.9;", )),
+        "overlay" => node(:img, attributes=Dict("id"=>"overlay", "src"=>"",
+            "alt"=>"Error!", "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
-    "img_fn" => filepicker("Load Image"),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_texts" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
@@ -57,25 +52,22 @@ ui = OrderedDict(
         launch_space_editor=>"Enter the number of segments you want to assign space types to. Segments are sorted largest to smallest.",
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
-    "img_info" => node(:p, ""),
-    "scale_info" => node(:p, ""),
-    "segs_info" => node(:strong, ""),
-    "work_index" => node(:strong, "1",
-        attributes=Dict("style"=>"buffer: 5px;")),
+    "information" => node(:strong, "", attributes=Dict("id"=>"console")),
     "obs" => Dict(
         "go" => button("Go!", attributes=Dict("id"=>"go", "classList"=>["button"])),
         "img_url_input" => textbox("Paste http(s) img link here..."),
         "img_click" => Observable([]),
+        "work_index" => Observable(1),
     )
 );
 
 ui["img_tabs"] = tabulator(
     Observable(
         OrderedDict(
-            "Original" => node(:div, ui["imgs"]["original"]),
-            "Segmented" => node(:div, ui["imgs"]["segs"]),
-            "Overlay" => node(:div, ui["imgs"]["overlay"]),
-            "Plots" => node(:div, ui["imgs"]["plot"]),
+            "Original" => node(:div, ui["imgs"]["display"]),
+            "Segmented" => node(:div, ui["imgs"]["display"]),
+            "Overlay" => node(:div, ui["imgs"]["display"]),
+            "Plots" => node(:div, ui["imgs"]["display"]),
         )
     )
 );
@@ -84,39 +76,47 @@ ui["func_panel"] = tabulator(
     Observable(
         OrderedDict(
             dropdown => node(:div,
-                vbox(
-                    hbox(hskip(0.6em),
-                        ui["obs"]["go"], hskip(0.6em),
-                        ui["dropdowns"][dropdown], hskip(0.6em),
-                        ui["input"], hskip(1em),
-                        vbox(vskip(0.25em), hbox(collect(values(ui["checkboxes"]))...,
-                        ui["work_index"]), hskip(1em),
-                        ui["obs"]["img_url_input"]))
+                hbox(hskip(0.6em),
+                    ui["obs"]["go"], hskip(0.6em),
+                    ui["dropdowns"][dropdown], hskip(0.6em),
+                    ui["input"], hskip(1em),
+                    vbox(vskip(0.3em), hbox(collect(values(ui["checkboxes"]))...,)), hskip(0.6em),
+                    ui["obs"]["img_url_input"], hskip(0.6em)
                 )
             ) for dropdown in collect(keys(ui["dropdowns"]))
         )
     )
 );
 
-ui["image_display"] = Observable(node(:div,
+ui["img_container"] = node(:div,
     hbox(
         ui["img_tabs"], hskip(2em),
-        ui["img_info"], hskip(0.5em),
-        ui["scale_info"], hskip(0.5em),
     ),
     attributes=Dict(
-        "id"=>"image_display",
+        "id"=>"img_container",
         "align"=>"center",
-        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;",
-        "onclick"=>"""click = []"""))
+        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"),
+    events=Dict("onclick"=> @js () -> observs["img_click"][] = [
+        event.pageY - document.getElementById("img_container").offsetTop,
+        event.pageX,
+        document.getElementById("display").height,
+        document.getElementById("display").width,
+        document.getElementById("display").naturalHeight,
+        document.getElementById("display").naturalWidth,
+        event.ctrlKey,
+        event.shiftKey,
+        event.altKey,
+        ];
+    )
 );
 
-ui["home_img"] = AssetRegistry.register("./assets/astronaut.jpg")
 
-ui["imgs"]["original"].props[:attributes]["src"] = ui["home_img"]
+ui["home_img"] = AssetRegistry.register("./assets/welcome.jpg")
+
+ui["imgs"]["display"].props[:attributes]["src"] = ui["home_img"]
 
 
 ui["/"] = node(:div,
     node(:div, ui["func_panel"], attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
-    node(:div, ui["image_display"], attributes=Dict("position"=>"relative"))
+    node(:div, ui["img_container"], attributes=Dict("position"=>"relative"))
 )

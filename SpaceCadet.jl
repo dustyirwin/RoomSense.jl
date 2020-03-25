@@ -28,13 +28,13 @@ using ColorTypes
 using CuArrays
 using Interact
 using Interact: node
+using JSExpr
 using Mux
 using Flux
 using Flux: crossentropy, Conv, train!, @epochs
 using Metalhead
 using AssetRegistry
 using Logging
-using JSExpr
 
 
 println("Loading codebase...\n")
@@ -51,8 +51,8 @@ const s = [Dict{Any,Any}(
 @time include("./src/funcs.jl")
 @time include("./src/models.jl")
 @time include("./src/ui.jl")
+@time include("./src/events.jl")
 @time include("./src/server.jl")
-#@time include("./src/events.jl")
 
 println("All finished! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 
