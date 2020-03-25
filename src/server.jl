@@ -11,26 +11,41 @@ const port = rand(8000:8000)
 
 function space_cadet(ui::OrderedDict{String,Any}, req::Dict{Any,Any})
 
-    observs=ObsDict("go"=>(ui["go"], nothing),)
+    observs=ObsDict(
+        "img_url_input"=>(ui["obs"]["img_url_input"], true),
+        "img_click"=>(ui["obs"]["img_click"], true),
+        "go"=>(ui["obs"]["go"], true),
+    )
 
     scope = Scope(
         dom=ui["/"],
         observs=observs,
     )
 
-    #WebIO.onjs(scope, "go",     # listen on JavaScript
-    #    JSExpr.@js src -> document.getElementById("original").src = ui["orig_src"];
-    #)
+    WebIO.onjs(scope, "img_url_input",       # listen on JavaScript
+        JSExpr.@js args -> document.getElementById("original").src = args;
+    )
 
-    on(scope, "go") do args     # listen on Julia
-        fn = get_img_from_url(ui["img_url_input"][])
-        rfn = register(fn)
-        #ui["imgs"]["original"].props[:attributes]["src"] = ui["orig_src"]
-        JSExpr.@js src -> document.getElementById("original").src = $rfn;
+    WebIO.onjs(scope, "go",
+        JSExpr.@js args -> document.getElementById("go").classList = ["button is-danger is-loading"];
+    )
+
+
+    on(scope, "img_url_input") do args          # listen on Julia
+        try fn = get_img_from_url(args)
+            ui["obs"]["img_orig_src"][] = register(fn)
+        catch err return end
+    end
+
+    on(scope, "go") do args
+        try
+            ui["obs"]["go"].components[Symbol("is-loading")] = true
+            println("run funcs!")
+        catch err return end
     end
 
     return scope
-end
+end #
 
 
 function assetserve(dirs=true)

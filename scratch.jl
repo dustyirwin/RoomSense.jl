@@ -31,7 +31,7 @@ fn = get_dropbox_img(img_url_raw)
 # Diag tools
 # tools(w)
 # using Debugger
-
+ui["imgs"]["original"].props[:attributes]["src"]
 
 rgb = @manipulate for r = 0:.05:1, g = 0:.05:1, b = 0:.05:1
     HTML(string("<div style='color:#", hex(RGB(r,g,b)), "'>Color me</div>"))
@@ -110,6 +110,9 @@ img_fn = dropbox_img_fn(ui["dropbox_url"][])
 ui["imgs"]["original"].props[:attributes]["src"] = img_fn
 
 
+scope = space_cadet(ui, Dict())
+
+JSExpr.@js document.getElementById("original").src = $rfn;
 
 
 
@@ -216,7 +219,6 @@ img_selected_handler = on(ui["dropbox_url"]) do fn
         return
 end end
 
-"https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
 ui["dropbox_url"][]
 
 ui["img_display"]
@@ -280,6 +282,8 @@ using JSExpr
 using Mux
 
 
+ui["obs"]["img_orig_src"][]
+
 ui = build_ui()
 
 WebIO.webio_serve(page("/", req -> myscope), 8000);
@@ -287,3 +291,34 @@ WebIO.webio_serve(page("/", req -> myscope), 8000);
 go_h = on(ui["go"]) do args
     println("The user clicked Go!")
 end
+
+ui["obs"]["img_orig_src"][]
+new_src = ui["obs"]["img_orig_src"][]
+fieldnames(typeof(ui["imgs"]["original"]))
+ui["imgs"]["original"].props[:attributes]["src"]
+
+https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=1
+
+fieldnames(typeof(ui["obs"]["go"]))
+
+ui["obs"]["go"].components[Symbol("is-loading")] = true
+
+scope = space_cadet(ui, Dict())
+
+ui["obs"]["img_orig_src"][]
+
+JSExpr.@js scope document.getElementById("original").src = new_src
+args->document.getElementById("original").src = args
+
+const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
+
+observs=ObsDict(
+    "img_orig_src"=>(ui["obs"]["img_orig_src"], true),
+    #"img_click"->("img_click", ui["obs"]["img_display"]),
+)
+
+
+
+
+
+ui["obs"]["img_orig_src"][]

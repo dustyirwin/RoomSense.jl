@@ -9,32 +9,32 @@ using Pkg
 try pkg"activate ." catch
      pkg"instantiate"; pkg"activate ." end
 
-@time using ImageSegmentation: fast_scanning, felzenszwalb,
+using ImageSegmentation: fast_scanning, felzenszwalb,
     seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
     segment_mean, segment_labels, SegmentedImage
-@time using FreeTypeAbstraction: renderstring!, newface, FreeType
-@time using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
+using FreeTypeAbstraction: renderstring!, newface, FreeType
+using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
-@time using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
+using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
     Scale.y_log10
-@time using ImageTransformations: imresize
-@time using DataFrames: DataFrame
-@time using AssetRegistry: register
-@time using BSON: @save, @load
-@time using Random: seed!
-@time using CSV: write
-@time using Dates: now
-@time using ColorTypes
-@time using CuArrays
-@time using Interact
-@time using Interact: node
-@time using Mux
-@time using Flux
-@time using Flux: crossentropy, Conv, train!, @epochs
-@time using Metalhead
-@time using AssetRegistry
-@time using Logging
-@time using JSExpr
+using ImageTransformations: imresize
+using DataFrames: DataFrame
+using AssetRegistry: register
+using BSON: @save, @load
+using Random: seed!
+using CSV: write
+using Dates: now
+using ColorTypes
+using CuArrays
+using Interact
+using Interact: node
+using Mux
+using Flux
+using Flux: crossentropy, Conv, train!, @epochs
+using Metalhead
+using AssetRegistry
+using Logging
+using JSExpr
 
 
 println("Loading codebase...\n")
@@ -46,7 +46,6 @@ const s = [Dict{Any,Any}(
     "scale"=>(1.,"ft",""),
     "segs_types"=>nothing,
     "selected_areas"=>Vector{Int64}())];
-
 
 
 @time include("./src/funcs.jl")

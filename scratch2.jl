@@ -35,3 +35,14 @@ end
 # Display in whatever frontend is avalaible
 
 @sync webio_serve(page("/", req -> counter(1)), 8001)
+
+
+event.pageY - document.getElementById("img_container").offsetTop,
+event.pageX,
+document.getElementById("display_img").height,
+document.getElementById("display_img").width,
+document.getElementById("display_img").naturalHeight,
+document.getElementById("display_img").naturalWidth,
+event.ctrlKey,
+event.shiftKey,
+event.altKey];

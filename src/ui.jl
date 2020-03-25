@@ -1,6 +1,5 @@
 
 ui = OrderedDict(
-    "go" => button("Go!", href="/results"),
     "checkboxes" => OrderedDict(
         "draw_seeds"=>checkbox(value=false; label="Seeds"),
         "draw_labels"=>checkbox(value=false; label="Labels"),
@@ -45,7 +44,6 @@ ui = OrderedDict(
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
     "img_fn" => filepicker("Load Image"),
-    "img_url_input" => textbox("Paste http(s) img link here..."),
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "help_texts" => Dict(
         fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
@@ -64,6 +62,11 @@ ui = OrderedDict(
     "segs_info" => node(:strong, ""),
     "work_index" => node(:strong, "1",
         attributes=Dict("style"=>"buffer: 5px;")),
+    "obs" => Dict(
+        "go" => button("Go!", attributes=Dict("id"=>"go", "classList"=>["button"])),
+        "img_url_input" => textbox("Paste http(s) img link here..."),
+        "img_click" => Observable([]),
+    )
 );
 
 ui["img_tabs"] = tabulator(
@@ -83,12 +86,12 @@ ui["func_panel"] = tabulator(
             dropdown => node(:div,
                 vbox(
                     hbox(hskip(0.6em),
-                        ui["go"], hskip(0.6em),
+                        ui["obs"]["go"], hskip(0.6em),
                         ui["dropdowns"][dropdown], hskip(0.6em),
                         ui["input"], hskip(1em),
                         vbox(vskip(0.25em), hbox(collect(values(ui["checkboxes"]))...,
                         ui["work_index"]), hskip(1em),
-                        ui["img_url_input"]))
+                        ui["obs"]["img_url_input"]))
                 )
             ) for dropdown in collect(keys(ui["dropdowns"]))
         )
@@ -105,16 +108,7 @@ ui["image_display"] = Observable(node(:div,
         "id"=>"image_display",
         "align"=>"center",
         "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;",
-        "onclick"=>"""click = [
-            event.pageY - document.getElementById("img_container").offsetTop,
-            event.pageX,
-            document.getElementById("display_img").height,
-            document.getElementById("display_img").width,
-            document.getElementById("display_img").naturalHeight,
-            document.getElementById("display_img").naturalWidth,
-            event.ctrlKey,
-            event.shiftKey,
-            event.altKey];"""))
+        "onclick"=>"""click = []"""))
 );
 
 ui["home_img"] = AssetRegistry.register("./assets/astronaut.jpg")
