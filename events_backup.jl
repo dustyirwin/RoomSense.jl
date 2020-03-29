@@ -126,12 +126,11 @@ end end
 
 @js_ w document.getElementById("go").classList = ["button is-primary"] end
 
-handle(w, "img_click") do args
-global s, wi, ui
-@js_ w document.getElementById("go").classList = ["button is-danger is-loading"]
-args[1] = Int64(ceil(args[1] * (args[5] / args[3])))
-args[2] = Int64(ceil(args[2] * (args[6] / args[4])))
-println(args)
+
+function img_clicked(args)
+    args[1] = Int64(ceil(args[1] * (args[5] / args[3])))
+    args[2] = Int64(ceil(args[2] * (args[6] / args[4])))
+    println(args)
 
 if ui["img_tabs"][] != "Plots"
     s[wi]["segs_info"] = "y: $(args[1]) x: $(args[2])" end

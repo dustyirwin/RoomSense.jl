@@ -86,6 +86,7 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
 
 function parse_input(input::String, ops_tabs::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
+
     if ops_tabs in ["Set Scale", "Segment Image"]
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
@@ -94,6 +95,7 @@ function parse_input(input::String, ops_tabs::String)
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
         catch; var = [parse(Int64, var) for var in split(input, ',')]
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
+
     elseif ops_tabs in ["Modify Segments"]
         type = '.' in input ? Float64 : Int64
         args = Vector{type}()
@@ -187,9 +189,7 @@ function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     filename = "$(img_name)_$(dt).BSON"
     @save filename s_exp
     export_text = "Data exported to $(filename).
- Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!"
-    # @js_str ui["html"] alert($export_text);
-end
+ Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
 
 function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
     handle(sdw, "click_stdd") do args
@@ -197,8 +197,6 @@ function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String,
         @show args
         img_deep = deepcopy(s[wi]["user_img"])
         hs = highlight_segs(segs, img_deep, img_fln, [args])
-        #@js_ w document.getElementById("highlight_segment").hidden = false;
-        #@js_ w document.getElementById("highlight_segment").src = $hs;
     end
 
     s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(

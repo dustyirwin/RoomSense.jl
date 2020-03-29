@@ -15,33 +15,37 @@ ui = OrderedDict(
         ),
         "Segment Image"=>dropdown(
             OrderedDict(
-                "Fast Scanning"=>(fast_scanning, Float64),
+                "Fast Scanning"=>(fast_scanning, Int64),
                 "Felzenszwalb"=>(felzenszwalb, Int64),
                 "Seeded Region Growing"=>(seeded_region_growing, Vector{Tuple{CartesianIndex,Int64}})),
         ),
         "Modify Segments"=>dropdown(
             OrderedDict(
-                "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Float64),
-                "Prune Segment(s)"=>(remove_segments, String),
-                "Assign Space Types"=>(launch_space_editor, String)),
+                "Prune Segments by MGS"=>(prune_min_size, Vector{Int64}, Int64),
+                "Prune Segment(s)"=>(remove_segments, Vector{Int64}),
+            ),
         ),
         "Export Data"=>dropdown(
             OrderedDict(
                 "Export Segment Data to CSV"=>(export_CSV, String),
-                "Export Session Data"=>(export_session_data, String)),
-        ),
+                "Assign Space Types"=>(launch_space_editor, String),
+        ))
     ),
     "imgs" => OrderedDict(
         "display" => node(:img, attributes=Dict("id"=>"display", "src"=>"",
             "alt"=>"Error! Check image link...", "style"=>"opacity: 0.9;", )),
-        "overlay" => node(:img, attributes=Dict("id"=>"overlay", "src"=>"",
-            "alt"=>"Error! Could not display overlay image...", "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.9;"))
+        "overlay" => node(:img, attributes=Dict("id"=>"overlay", "src"=>"/assets/empty.jpg",
+            "alt"=>"Error! Could not display overlay image...",
+            "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.9;")),
+        "highlight" => node(:img, attributes=Dict("id"=>"highlight", "src"=>"/assets/empty.jpg",
+            "alt"=>"Error! Could not display highlight image...",
+            "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.4;")),
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
     "input" => textbox("See instructions below...", attributes=Dict("size"=>"65")),
     "help_texts" => Dict(
-        fast_scanning=>"Input is the threshold value, range in {0, 1}. Recursive: max_segs, mgs. e.g. '50, 2000'",
+        fast_scanning=>"Input is the threshold value, range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         prune_min_size=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
         remove_segments=>"Remove segment(s) by label and merge with most similar neighbor, separated by commas. e.g. 1, 3, 10, ...",
@@ -62,17 +66,6 @@ ui = OrderedDict(
 );
 
 
-ui["img_tabs"] = tabulator(
-    Observable(
-        OrderedDict(
-            "Original" => node(:div, ui["imgs"]["display"]),
-            "Segmented" => node(:div, ui["imgs"]["display"]),
-            "Overlay" => node(:div, ui["imgs"]["display"], ui["imgs"]["overlay"]),
-            "Plots" => node(:div, ui["imgs"]["display"]),
-        )
-    )
-);
-
 ui["funcs"] = tabulator(
     Observable(
         OrderedDict(
@@ -81,7 +74,7 @@ ui["funcs"] = tabulator(
                     ui["dropdowns"][dropdown], hskip(0.5em),
                     ui["input"], hskip(1em)),
             ) for dropdown in collect(keys(ui["dropdowns"]))))
-)
+);
 
 ui["func_panel"] = vbox(
     ui["funcs"],
@@ -90,7 +83,16 @@ ui["func_panel"] = vbox(
         vbox(vskip(0.5em), hbox(collect(values(ui["checkboxes"]))...)),
         ui["obs"]["img_url_input"], hskip(0.5em),
         ui["information"])
-)
+);
+
+ui["img_tabs"] = tabulator(
+    Observable(
+        OrderedDict(
+            "Original" => node(:div, ui["imgs"]["display"]),
+            "Segmented" => node(:div, ui["imgs"]["display"]),
+            "Overlay" => node(:div, ui["imgs"]["display"], ui["imgs"]["overlay"]),
+            "Plots" => node(:div, ui["imgs"]["display"]),))
+);
 
 ui["home_img"] = AssetRegistry.register("./assets/welcome.jpg")
 

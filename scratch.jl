@@ -322,3 +322,16 @@ observs=ObsDict(
 
 
 ui["obs"]["img_orig_src"][]
+
+
+using Dates
+timestr() = Dates.format(now(), "HH:MM:SS")
+
+time = Observable(timestr())
+@async while true
+    sleep(1)
+    time[] = timestr()
+end
+
+
+WebIO.webio_serve(page("/", node(:div,time)), 8003)

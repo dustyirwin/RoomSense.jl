@@ -4,18 +4,16 @@ const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing
 observs = ObsDict(
     "img_url_input"=>(ui["obs"]["img_url_input"], nothing),
     "go"=>(ui["obs"]["go"], nothing),
+    "img_tabs"=>(ui["img_tabs"], nothing),
 )
 
 function space_cadet(ui::AbstractDict, observs::ObsDict)
-    scope = Scope(
-        dom=node(:div),
-        observs=observs)
+    scope = Scope(observs=observs)
 
     img_click = Observable(scope, "img_click", [])
 
     ui["img_container"] = node(:div,
-        hbox(hskip(1em), ui["img_tabs"], hskip(1em),
-        ),
+        ui["img_tabs"],
         attributes=Dict(
             "id"=>"img_container",
             "align"=>"center",
@@ -41,34 +39,53 @@ function space_cadet(ui::AbstractDict, observs::ObsDict)
 
     scope.dom = ui["/"]
 
+
     # listen on JavaScript
 
-    WebIO.onjs(scope, "img_url_input",
-        JSExpr.@js args -> document.getElementById("display").src = args;
-    )
+    onjs(scope, "img_url_input",
+        @js args -> document.getElementById("display").src = args;)
+
+    onjs(scope, "overlay_src",
+        @js args -> document.getElementById("overlay").src = args;)
 
 
     # listen on Julia
 
     on(scope, "img_url_input") do args
-        try fn = get_img_from_url(args)
-            ui["obs"]["img_orig_src"][] = register(fn)
-            println("User image registered as $(ui["obs"]["img_orig_src"][]).")
-        catch err return end
-    end
+        ui["obs"]["go"]["is-loading"][] = true
+
+        try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
+            download(args, fn)
+            s[wi]["user_img"] = load(fn)
+            s[wi]["overlay_img"] = make_transparent(s[wi]["user_img"])
+            save(fn[1:end-4] * "_overlay.jpg", s[wi]["overlay_img"])
+            observs["overlay_src"][] = register(fn[1:end-4] * "_overlay.jpg")
+
+            println("img_url_input operations complete! overlay rfn: $(observs["overlay_src"][1][])")
+
+        catch err return
+
+        finally ui["obs"]["go"]["is-loading"][] = false end end
 
     on(scope, "go") do args
-        try
-            ui["obs"]["go"]["is-loading"][] = true
-            println("run funcs!")
-        catch err return end
-    end
+        ui["obs"]["go"]["is-loading"][] = true
+
+        try println("run funcs!")
+
+        catch err return
+
+        finally ui["obs"]["go"]["is-loading"][] = false
+        end end
 
     on(scope, "img_click") do args
         try
             println("img clicked! js returned: $args")
-        catch err return end
-    end
+        catch err return end end
+
+    on(scope, "img_tabs") do args
+        try
+            println("img tabs clicked! js returned: $args")
+        catch err return end end
 
     return scope
-end #
+end
