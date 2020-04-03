@@ -2,9 +2,9 @@ println(
 "\nStarting SpaceCadet v0.1! Please wait...\n
 Loading packages...\n")
 
-@time begin
-
 using Pkg
+
+@time begin
 
 try pkg"activate ." catch
      pkg"instantiate"; pkg"activate ." end
@@ -12,27 +12,27 @@ try pkg"activate ." catch
 using ImageSegmentation: fast_scanning, felzenszwalb,
     seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
     segment_mean, segment_labels, SegmentedImage
-using Interact: node, OrderedDict, checkbox, dropdown, textbox, button, Observable, em,
+using Interact: Widgets, node, OrderedDict, checkbox, dropdown, textbox, button, Observable, em,
     hbox, hskip, vbox, vskip, tabulator, Observables
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
     Scale.y_log10
 using FreeTypeAbstraction: renderstring!, newface, FreeType
-using Flux: NNlib, crossentropy, Conv, Chain, train!, @epochs
 using ImageTransformations: imresize
-using Mux: branch, route, page
-using AssetRegistry: register
 using DataFrames: DataFrame
 using BSON: @save, @load
 using JSExpr: @js, Scope
-using WebIO: onjs, on
+using AssetRegistry: register
 using Random: seed!
 using CSV: write
 using Dates: now
-#using ColorTypes
+using Metalhead
+using WebIO
+using Flux
+using Mux
 #using CuArrays
-#using Metalhead
+#using ColorTypes
 #using Logging
 
 end

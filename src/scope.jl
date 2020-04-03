@@ -1,11 +1,9 @@
 
 const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
 
-observs = ObsDict(
-    "img_url_input"=>(ui["obs"]["img_url_input"], nothing),
-    "go"=>(ui["obs"]["go"], nothing),
-    "img_tabs"=>(ui["img_tabs"], nothing),
-)
+observs = ObsDict(key=>(value, nothing) for (key, value) in collect(ui["obs"]))
+observs["funcs"] => (ui["funcs"], nothing)
+observs["img_tabs"] => (ui["img_tabs"], nothing)
 
 function space_cadet(ui::AbstractDict, observs::ObsDict)
     scope = Scope(observs=observs)
@@ -78,14 +76,20 @@ function space_cadet(ui::AbstractDict, observs::ObsDict)
         end end
 
     on(scope, "img_click") do args
-        try
-            println("img clicked! js returned: $args")
-        catch err return end end
+        try println("img clicked! key: $args")
+        catch end
+    end
 
     on(scope, "img_tabs") do args
-        try
-            println("img tabs clicked! js returned: $args")
-        catch err return end end
+        key = ui["img_tabs"].components[:key][]
+        println("img tabs clicked! key: $key")
+    end
+
+    on(scope, "funcs") do args
+        key = ui["funcs"].components[:key][]
+        ui["information"]
+        println("funcs clicked! key: $key")
+    end
 
     return scope
 end

@@ -15,7 +15,7 @@ compile_list = []
 
 
 for pkg in compiled_symbols
-    print("Compiling package: $pkg\n")
+    print("\nCompiling package: $pkg\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",
         replace_default=true)
@@ -24,4 +24,4 @@ end
 
 PackageCompiler.create_sysimage(
     :Metalhead; precompile_statements_file="./precompiler/space_cadet_trace.jl",
-    replace_default=true)-+*9
+    replace_default=true)

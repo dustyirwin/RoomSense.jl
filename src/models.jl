@@ -1,5 +1,5 @@
 
-@load "./models/SqueezeNet_50g.bson" model
+#@load "./models/SqueezeNet_50g.bson" model
 
 function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[])
     bs = get_segment_bounds(segs)
@@ -42,7 +42,7 @@ function update_model(model::Chain, X::Array{Float32,4}, Y::Array{Float32,3}, in
         y = Y[:,:,i:i]
 
         loss(x, y) = Flux.mse(model(x), y)
-        @epochs epochs train!(loss, params(model), [(x, y)], ADAM(0.001))
+        Flux.Optimise.@epochs epochs train!(loss, params(model), [(x, y)], ADAM(0.001))
         print("Completed $epochs epochs of training on segment $i data.\n")
     end
 

@@ -15,11 +15,22 @@ if @js w proceed
 else @js_ w document.getElementById("go").classList = ["button is-primary"];
 end
 
-@js w proceed
-@js_ w document.getElementById("go").classList = ["button is-primary"];
+
+f() = println("User said yes!")
 
 
 
+wdg = Interact.Widgets.confirm("")
+
+wdg[]
+
+wdg("Are you suuure about that?") do resp
+    resp ? println("YES!") : println("NO!")
+end
+
+
+observe(wdg)
+collect(keys(ui["funcs"][:options]))
 
 ui["dropbox_url"][] ="https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
 img_url_raw = "https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
