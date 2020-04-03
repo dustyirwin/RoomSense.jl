@@ -19,6 +19,14 @@ end
 f() = println("User said yes!")
 
 
+ui["dropdowns"]
+
+
+fieldnames(typeof(ui["funcs"]))
+
+
+
+collect(keys(ui["funcs"][:options]))
 
 wdg = Interact.Widgets.confirm("")
 

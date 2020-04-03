@@ -87,7 +87,6 @@ function space_cadet(ui::AbstractDict, observs::ObsDict)
 
     on(scope, "funcs") do args
         key = ui["funcs"].components[:key][]
-        ui["information"]
         println("funcs clicked! key: $key")
     end
 
