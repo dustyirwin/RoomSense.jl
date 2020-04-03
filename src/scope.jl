@@ -5,6 +5,7 @@ observs = ObsDict(
     "img_url_input"=>(ui["obs"]["img_url_input"], nothing),
     "go"=>(ui["obs"]["go"], nothing),
     "img_tabs"=>(ui["img_tabs"], nothing),
+    "funcs"=>(ui["funcs"], nothing),
 )
 
 function space_cadet(ui::AbstractDict, observs::ObsDict)
@@ -78,14 +79,19 @@ function space_cadet(ui::AbstractDict, observs::ObsDict)
         end end
 
     on(scope, "img_click") do args
-        try
-            println("img clicked! js returned: $args")
-        catch err return end end
+        try println("img clicked! js returned: $args")
+        catch end
+    end
 
     on(scope, "img_tabs") do args
-        try
-            println("img tabs clicked! js returned: $args")
-        catch err return end end
+        key = ui["img_tabs"].components[:key][]
+        println("img tabs clicked! js returned key: $key")
+    end
+
+    on(scope, "funcs") do args
+        key = ui["funcs"].components[:key][]
+        println("funcs clicked! key: $key")
+    end
 
     return scope
 end

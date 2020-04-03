@@ -9,7 +9,6 @@ ui = OrderedDict(
     "dropdowns" => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(
-                "pixels"=>(pixels, "pxs"),
                 "feet"=>(feet, "ft"),
                 "meters"=>(meters, "m")),
         ),
@@ -52,13 +51,12 @@ ui = OrderedDict(
         seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         feet=>"Click two points on floorplan and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         meters=>"Click two points on floorplan and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        pixels=>"Click two points on floorplan and enter distance in pixels above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         launch_space_editor=>"Enter the number of segments you want to assign space types to. Segments are sorted largest to smallest.",
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
     "information" => node(:strong, "", attributes=Dict("id"=>"console")),
     "obs" => Dict(
-        "go" => button("Go!", attributes=Dict("id"=>"go", "classList"=>["button is-loading"])),
+        "go" => button("Go!", attributes=Dict("id"=>"go")),
         "img_url_input" => textbox("Paste http(s) img link here..."),
         "img_click" => Observable([]),
         "work_index" => Observable(1),
@@ -94,6 +92,6 @@ ui["img_tabs"] = tabulator(
             "Plots" => node(:div, ui["imgs"]["display"]),))
 );
 
-ui["home_img"] = AssetRegistry.register("./assets/welcome.jpg")
+ui["home_img"] = AssetRegistry.register("./assets/space_monkey.jpg")
 
 ui["imgs"]["display"].props[:attributes]["src"] = ui["home_img"]

@@ -2,9 +2,9 @@ println(
 "\nStarting SpaceCadet v0.1! Please wait...\n
 Loading packages...\n")
 
-@time begin
-
 using Pkg
+
+@time begin
 
 try pkg"activate ." catch
      pkg"instantiate"; pkg"activate ." end
@@ -19,20 +19,20 @@ using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
     Scale.y_log10
 using FreeTypeAbstraction: renderstring!, newface, FreeType
-using Flux: NNlib, crossentropy, Conv, Chain, train!, @epochs
 using ImageTransformations: imresize
-using Mux: branch, route, page
-using AssetRegistry: register
 using DataFrames: DataFrame
 using BSON: @save, @load
 using JSExpr: @js, Scope
-using WebIO: onjs, on
+using AssetRegistry
 using Random: seed!
 using CSV: write
 using Dates: now
-#using ColorTypes
+using Metalhead
+using WebIO
+using Flux
+using Mux
 #using CuArrays
-#using Metalhead
+#using ColorTypes
 #using Logging
 
 end

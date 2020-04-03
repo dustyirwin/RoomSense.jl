@@ -20,6 +20,14 @@ end
 
 
 
+ui["dropdowns"]
+
+
+fieldnames(typeof(ui["funcs"]))
+
+
+
+collect(keys(ui["funcs"][:options]))
 
 ui["dropbox_url"][] ="https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
 img_url_raw = "https://www.dropbox.com/s/tbyrfc68iwenq5w/1st_Flr_cleaned.JPG?dl=0"
