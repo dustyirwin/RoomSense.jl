@@ -1,10 +1,10 @@
 
 ui = OrderedDict(
     "checkboxes" => OrderedDict(
-        "draw_seeds"=>checkbox(value=false; label="Seeds"),
-        "draw_labels"=>checkbox(value=false; label="Labels"),
-        "colorize"=>checkbox(value=false, label="Colorize"),
-        "predict_space_type"=>checkbox(value=false, label="PredType"),
+        "Seeds"=>checkbox(value=false; label="Seeds"),
+        "Labels"=>checkbox(value=false; label="Labels"),
+        "Colorize"=>checkbox(value=false, label="Colorize"),
+        "CadetPred"=>checkbox(value=false, label="CadetPred"),
     ),
     "dropdowns" => OrderedDict(
         "Set Scale"=>dropdown(
@@ -31,18 +31,21 @@ ui = OrderedDict(
         ))
     ),
     "imgs" => OrderedDict(
-        "display" => node(:img, attributes=Dict("id"=>"display", "src"=>"",
-            "alt"=>"Error! Check image link...", "style"=>"opacity: 0.9;", )),
-        "overlay" => node(:img, attributes=Dict("id"=>"overlay", "src"=>"/assets/empty.jpg",
+        "Original" => node(:img, attributes=Dict("id"=>"Original", "src"=>"",
+            "alt"=>"Error! Check original image link...", "style"=>"opacity: 0.9;", )),
+        "Segmented" => node(:img, attributes=Dict("id"=>"Segmented", "src"=>register("assets/space_monkey.jpg"),
+            "alt"=>"Error! Check segs image link...", "style"=>"opacity: 0.9;", )),
+        "Plots" => node(:img, attributes=Dict("id"=>"Plots", "src"=>register("assets/space_monkey.jpg"),
+            "alt"=>"Error! Check plots  image link...", "style"=>"opacity: 1.0;", )),
+        "Overlay" => node(:img, attributes=Dict("id"=>"Overlay", "src"=>register("assets/space_monkey.jpg"),
             "alt"=>"Error! Could not display overlay image...",
             "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.9;")),
-        "highlight" => node(:img, attributes=Dict("id"=>"highlight", "src"=>"/assets/empty.jpg",
+        "Highlight" => node(:img, attributes=Dict("id"=>"Highlight", "src"=>"/assets/empty.jpg",
             "alt"=>"Error! Could not display highlight image...",
             "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.4;")),
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
-    "input" => textbox("See instructions below...", attributes=Dict("size"=>"65")),
     "help_texts" => Dict(
         fast_scanning=>"Input is the threshold value, range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
         felzenszwalb=>"Input is the k-value, typical range in {5, 500}. Recursive: max_segs, mgs. e.g. '50, 2000'",
@@ -54,45 +57,36 @@ ui = OrderedDict(
         launch_space_editor=>"Enter the number of segments you want to assign space types to. Segments are sorted largest to smallest.",
         export_CSV=>"Exports segment data to CSV.",
         export_session_data=>"Exports latest session data to file. Please send .BSON file to dustin.irwin@cadmusgroup.com. Thanks!"),
-    "information" => node(:strong, "Information / instructions here...", attributes=Dict("id"=>"console")),
+    "information" => node(:strong, "Information / instructions here..."),
 )
 
-ui["funcs"] = tabulator(
-    Observable(
-        OrderedDict(
-            dropdown => node(:div,
-                hbox(hskip(1em),
-                    ui["dropdowns"][dropdown], hskip(0.5em),
-                    ui["input"], hskip(1em)),
-            ) for dropdown in collect(keys(ui["dropdowns"]))))
-);
-
-ui["img_tabs"] = tabulator(
-    Observable(
-        OrderedDict(
-            "Original" => node(:div, ui["imgs"]["display"]),
-            "Segmented" => node(:div, ui["imgs"]["display"]),
-            "Overlay" => node(:div, ui["imgs"]["display"], ui["imgs"]["overlay"]),
-            "Plots" => node(:div, ui["imgs"]["display"]),))
-);
-
-ui["home_img"] = register("./assets/space_monkey.jpg")
-
-ui["imgs"]["display"].props[:attributes]["src"] = ui["home_img"]
 
 ui["obs"] = Dict(
     "go" => button("Go!"),
+    "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
     "img_url_input" => textbox("Paste http(s) img link here..."),
     "img_click" => Observable([]),
     "work_index" => Observable(1),
     "confirm" => Widgets.confirm(""),
+    "func_tabs" => tabs([k for k in keys(ui["dropdowns"])]),
+    "dropdown_mask" => mask(ui["dropdowns"]),
+    "img_tabs" => tabulator(Observable(
+        OrderedDict(
+            "Original" => ui["imgs"]["Original"],
+            "Segmented" => ui["imgs"]["Segmented"],
+            "Overlay" => node(:div, ui["imgs"]["Segmented"], ui["imgs"]["Overlay"]),
+            "Plots" => ui["imgs"]["Plots"])))
 )
 
+merge!(ui["obs"], Dict(
+    "$(key)_src" => Observable(value.props[:attributes]["src"]) for (key, value) in collect(ui["imgs"]))
+    )
+
 ui["func_panel"] = vbox(
-    ui["funcs"],
+    ui["obs"]["func_tabs"],
+    hbox(ui["obs"]["go"], hskip(0.5em), ui["obs"]["input"], hskip(0.5em), ui["obs"]["dropdown_mask"]),
+    hbox(hskip(1em), ui["information"]),
     hbox(hskip(1em),
-        ui["obs"]["go"], hskip(0.5em),
         vbox(vskip(0.5em), hbox(collect(values(ui["checkboxes"]))...)),
-        ui["obs"]["img_url_input"], hskip(0.5em),
-        ui["information"])
-);
+        ui["obs"]["img_url_input"], hskip(0.5em))
+)

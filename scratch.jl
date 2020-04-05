@@ -19,11 +19,12 @@ end
 f() = println("User said yes!")
 
 
-ui["dropdowns"]
+ui["imgs"]["display"]
+fieldnames(typeof(ui["imgs"]["display"]))
 
+ui["imgs"]["display"].props[:attributes]["src"]
 
-fieldnames(typeof(ui["funcs"]))
-
+ui["input"]
 
 
 collect(keys(ui["funcs"][:options]))
@@ -336,11 +337,13 @@ observs=ObsDict(
     #"img_click"->("img_click", ui["obs"]["img_display"]),
 )
 
+observs["Original_src"][1][] = register("./assets/space_monkey.jpg")
+observs["Plots_src"][1][] = register("./assets/astro.jpg")
 
 
+ui["obs"]["Original_src"][]
 
 
-ui["obs"]["img_orig_src"][]
 
 
 using Dates
@@ -354,3 +357,13 @@ end
 
 
 WebIO.webio_serve(page("/", node(:div,time)), 8003)
+
+
+fieldnames(typeof(ui["funcs"]))
+
+
+fieldnames(typeof(ui["funcs"].components[:content]))
+
+ui["funcs"].components[:content]
+
+ui["funcs"].

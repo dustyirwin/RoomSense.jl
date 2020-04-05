@@ -12,8 +12,8 @@ try pkg"activate ." catch
 using ImageSegmentation: fast_scanning, felzenszwalb,
     seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
     segment_mean, segment_labels, SegmentedImage
-using Interact: Widgets, node, OrderedDict, checkbox, dropdown, textbox, button, Observable, em,
-    hbox, hskip, vbox, vskip, tabulator, Observables
+using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox, dropdown,
+    textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator, mask
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
@@ -49,9 +49,10 @@ const s = [Dict{Any,Any}(
     ];
 
 @time include("./src/funcs.jl")
-@time include("./src/models.jl")
 @time include("./src/ui.jl")
+@time include("./src/models.jl")
 @time include("./src/scope.jl")
+@time include("./src/events.jl")
 @time include("./src/server.jl")
 
 println("All finished! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
