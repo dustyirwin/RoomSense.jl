@@ -1,5 +1,5 @@
 
-ui = OrderedDict(
+const ui = OrderedDict(
     "checkboxes" => OrderedDict(
         "Seeds"=>checkbox(value=false; label="Seeds"),
         "Labels"=>checkbox(value=false; label="Labels"),
@@ -31,16 +31,20 @@ ui = OrderedDict(
         ))
     ),
     "imgs" => OrderedDict(
-        "Original" => node(:img, attributes=Dict("id"=>"Original", "src"=>"",
+        "Original" => node(:img, attributes=Dict(
+            "id"=>"Original", "src"=>register("assets/space_monkey.jpg"),
             "alt"=>"Error! Check original image link...", "style"=>"opacity: 0.9;", )),
-        "Segmented" => node(:img, attributes=Dict("id"=>"Segmented", "src"=>register("assets/space_monkey.jpg"),
+        "Segmented" => node(:img, attributes=Dict(
+            "id"=>"Segmented", "src"=>"",
             "alt"=>"Error! Check segs image link...", "style"=>"opacity: 0.9;", )),
-        "Plots" => node(:img, attributes=Dict("id"=>"Plots", "src"=>register("assets/space_monkey.jpg"),
+        "Plots" => node(:img, attributes=Dict(
+            "id"=>"Plots", "src"=>register("assets/space_monkey.jpg"),
             "alt"=>"Error! Check plots  image link...", "style"=>"opacity: 1.0;", )),
-        "Overlay" => node(:img, attributes=Dict("id"=>"Overlay", "src"=>register("assets/space_monkey.jpg"),
-            "alt"=>"Error! Could not display overlay image...",
-            "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.9;")),
-        "Highlight" => node(:img, attributes=Dict("id"=>"Highlight", "src"=>"/assets/empty.jpg",
+        "Overlay" => node(:img, attributes=Dict(
+            "id"=>"Overlay", "src"=>register("assets/space_monkey.jpg"),
+            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
+        "Highlight" => node(:img, attributes=Dict(
+            "id"=>"Highlight", "src"=>"/assets/empty.jpg",
             "alt"=>"Error! Could not display highlight image...",
             "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.4;")),
     ),
@@ -60,33 +64,38 @@ ui = OrderedDict(
     "information" => node(:strong, "Information / instructions here..."),
 )
 
-
 ui["obs"] = Dict(
     "go" => button("Go!"),
-    "input" => textbox("See instructions below...", attributes=Dict("size"=>"60")),
+    "input" => textbox("See instructions below...", attributes=Dict("size"=>"50")),
     "img_url_input" => textbox("Paste http(s) img link here..."),
-    "img_click" => Observable([]),
     "work_index" => Observable(1),
     "confirm" => Widgets.confirm(""),
     "func_tabs" => tabs([k for k in keys(ui["dropdowns"])]),
-    "dropdown_mask" => mask(ui["dropdowns"]),
-    "img_tabs" => tabulator(Observable(
-        OrderedDict(
-            "Original" => ui["imgs"]["Original"],
-            "Segmented" => ui["imgs"]["Segmented"],
-            "Overlay" => node(:div, ui["imgs"]["Segmented"], ui["imgs"]["Overlay"]),
-            "Plots" => ui["imgs"]["Plots"])))
+    "func_mask" => mask(ui["dropdowns"], key="Set Scale"),
+    "img_tabs" => tabs(["<<", "Original", "Segmented", "Overlay", "Plots", ">>"], value="Original"),
+    "img_mask" => mask(OrderedDict(
+        "Original" => ui["imgs"]["Original"],
+        "Segmented" => ui["imgs"]["Segmented"],
+        "Overlay" => node(:div, ui["imgs"]["Segmented"], ui["imgs"]["Overlay"]),
+        "Plots" => ui["imgs"]["Plots"]), key="Original"),
+    "information" => Observable(ui["information"]),
 )
 
-merge!(ui["obs"], Dict(
-    "$(key)_src" => Observable(value.props[:attributes]["src"]) for (key, value) in collect(ui["imgs"]))
-    )
+merge!(ui["obs"],
+    Dict("$(key)_src" => Observable(value) for (key, value) in collect(ui["imgs"])))
 
 ui["func_panel"] = vbox(
-    ui["obs"]["func_tabs"],
-    hbox(ui["obs"]["go"], hskip(0.5em), ui["obs"]["input"], hskip(0.5em), ui["obs"]["dropdown_mask"]),
-    hbox(hskip(1em), ui["information"]),
+    hbox(ui["obs"]["func_tabs"], hskip(0.5em),
+        ui["obs"]["img_url_input"], hskip(0.5em),
+        node(:strong, "<-- Paste img link here")),
+    vskip(0.5em),
     hbox(hskip(1em),
-        vbox(vskip(0.5em), hbox(collect(values(ui["checkboxes"]))...)),
-        ui["obs"]["img_url_input"], hskip(0.5em))
+        ui["obs"]["go"], hskip(0.5em),
+        ui["obs"]["func_mask"], hskip(0.5em),
+        ui["obs"]["input"], hskip(0.5em),
+        vbox(vskip(0.2), hbox(collect(values(ui["checkboxes"]))...))),
+    hbox(hskip(1em), ui["obs"]["information"]),
+    ui["obs"]["img_tabs"],
 )
+
+ui["obs"]["img_tabs"][] = "Original"

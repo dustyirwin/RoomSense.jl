@@ -1,14 +1,14 @@
 
 const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
 
-observs = ObsDict(key=>(value, nothing) for (key, value) in collect(ui["obs"]))
+const observs = ObsDict(key=>(value, nothing) for (key, value) in collect(ui["obs"]))
 
-scope = Scope(observs=observs)
+const scope = Scope(observs=observs)
 
-img_click = Observable(scope, "img_click", [])
+const img_click = Observable(scope, "img_click", [])
 
 ui["img_container"] = node(:div,
-    observs["img_tabs"][1],
+    observs["img_mask"][1],
     attributes=Dict(
         "id"=>"img_container",
         "align"=>"center",
