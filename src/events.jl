@@ -17,7 +17,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
                 "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
 
-            w.observs["img_info"][1][] = node(:strong,
+            w.observs["img_info"][1][] = node(:p,
                 "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))")
 
         catch err return
@@ -37,7 +37,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
         finally w.observs["go"][1]["is-loading"][] = false end end
 
     on(w, "img_click") do args
-        w.observs["information"][1][] = node(:strong, "x: $(args[1]) y: $(args[2])")
+        w.observs["information"][1][] = node(:p, "x: $(args[1]) y: $(args[2])")
         try println("img clicked! args: $args")
         catch end end
 
@@ -52,7 +52,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
     on(w, "func_tabs") do args
         w.observs["funcs_mask"][1][:key][] = args
         f = ui["funcs"][args][]
-        w.observs["information"][1][] = node(:strong, ui["help_texts"][f])
+        w.observs["information"][1][] = node(:p, ui["help_texts"][f])
 
         i = ui["funcs"][args].components[:index][]
         op_name = [keys(ui["funcs"][args].components[:options][])...][i]
@@ -61,18 +61,16 @@ function space_cadet(ui::AbstractDict, w::Scope)
         println("func tab clicked! key: $args")
     end
 
-    on(w, [keys(ui["inputs"])...]) do args
+    on(w, [collect(keys(ui["inputs"]))...]) do func
+        w.observs["information"][1][] = node(:p, ui["information"][func])
+
         dd_name = w.observs["funcs_mask"][1][:key][]
         i = ui["funcs"][dd_name].components[:index][]
         op_name = [keys(ui["funcs"][dd_name].components[:options][])...][i]
         w.observs["inputs_mask"][1][:key][] = op_name
-        func = ui["funcs"][ w.observs["func_tabs"][1][] ][]
-        w.observs["information"][1][] = node(:strong, ui["information"][op_name])
 
         println("$op_name selected!")
     end
 
     return w
 end
-
-ui["funcs"]["Set Scale"][]

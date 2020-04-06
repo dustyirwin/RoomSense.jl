@@ -228,7 +228,7 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
         for (lbl, px_ct) in segs_details]
 
-    html = hbox(hskip(0.75em), vbox(node(:strong, summary_text) , vbox(details)))
+    html = hbox(hskip(0.75em), vbox(node(:p, summary_text) , vbox(details)))
     return html, dds, checks, spins
 end
 
