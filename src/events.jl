@@ -51,8 +51,13 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "func_tabs") do args
         w.observs["funcs_mask"][1][:key][] = args
-        f = w.observs["inputs_mask"][1][:key][] = ui["funcs"][args][]
+        f = ui["funcs"][args][]
         w.observs["information"][1][] = node(:strong, ui["help_texts"][f])
+
+        i = ui["funcs"][args].components[:index][]
+        op_name = [keys(ui["funcs"][args].components[:options][])...][i]
+        w.observs["inputs_mask"][1][:key][] = op_name
+
         println("func tab clicked! key: $args")
     end
 
