@@ -13,7 +13,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb,
     seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
     segment_mean, segment_labels, SegmentedImage
 using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox, dropdown,
-    textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator, mask
+    textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator, mask, widget
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
@@ -31,9 +31,9 @@ using Metalhead
 using WebIO
 using Flux
 using Mux
-#using CuArrays
+using CuArrays
+using Logging
 #using ColorTypes
-#using Logging
 
 end
 
@@ -41,7 +41,7 @@ end
 
 println("\nComplete. Loading codebase...\n")
 
-const wi = 1  # work index
+const wi = Observable(1)  # work index
 const s = [Dict{Any,Any}(
     "scale"=>(1.,"ft",""),
     "segs_types"=>nothing,

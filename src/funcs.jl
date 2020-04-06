@@ -20,11 +20,11 @@ function get_random_color(seed::Int64)
     seed!(seed)
     rand(RGB{N0f8}) end
 
-function prune_min_size(segs::SegmentedImage, min_size::Vector{Int64}, scale::Float64, prune_list=Vector{Int64}())
+function prune_min_size(segs::SegmentedImage, min_size::Int64, scale::Float64, prune_list=Vector{Int64}())
     for (k, v) in segs.segment_pixel_count
         if scale != 1;
-            v / scale < min_size[1] ? push!(prune_list, k) : continue
-        elseif v < min_size[1]
+            v / scale < min_size ? push!(prune_list, k) : continue
+        elseif v < min_size
             push!(prune_list, k) end end
     return prune_segments(segs, prune_list, diff_fn_wrapper(segs)) end
 
@@ -232,10 +232,13 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
     return html, dds, checks, spins
 end
 
-
 function get_img_from_url(img_url_raw::String)
     img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw
     fn = "assets/" * split(img_url_cleaned, "/")[end][1:end-5]
     download(img_url_cleaned, fn)
     return fn
 end
+
+const funcs = Dict(
+    "Fast Scanning"=>fast_scanning,
+)

@@ -14,5 +14,4 @@ end
 const assetserver = @isdefined(assetserver) ? assetserver :
     route("assetserver/:key", assetserve(), Mux.notfound())
 
-const webserver = @isdefined(webserver) ? webserver :
-    @sync WebIO.webio_serve(page("/", req -> space_cadet(ui, scope)), 8000)
+const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui, scope)), 8000)

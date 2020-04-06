@@ -8,7 +8,7 @@ const scope = Scope(observs=observs)
 const img_click = Observable(scope, "img_click", [])
 
 ui["img_container"] = node(:div,
-    observs["img_mask"][1],
+    scope.observs["imgs_mask"][1],
     attributes=Dict(
         "id"=>"img_container",
         "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"),
@@ -25,10 +25,10 @@ ui["img_container"] = node(:div,
     ];)
 )
 
-ui["/"] = node(:div,
+ui["/"] = () -> node(:div,
     node(:div, ui["func_panel"], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
     node(:div, ui["img_container"], attributes=Dict(
         "position"=>"relative")))
 
-scope.dom = ui["/"]
+scope.dom = ui["/"]()
