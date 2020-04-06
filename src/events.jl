@@ -1,13 +1,5 @@
+
 function space_cadet(ui::AbstractDict, scope::Scope)
-    # listen on JavaScript
-
-    onjs(scope, "img_url_input",
-        @js args -> document.getElementById("Original").src = args;)
-
-    onjs(scope, "Overlay_src",
-        @js args -> document.getElementById("Overlay").src = args;)
-
-    # listen on Julia
 
     on(scope, "img_url_input") do args
         scope.observs["go"][1]["is-loading"][] = true
@@ -17,7 +9,13 @@ function space_cadet(ui::AbstractDict, scope::Scope)
             s[wi]["Original_img"] = load(fn)
             s[wi]["Overlay_img"] = make_transparent(s[wi]["Original_img"])
             save(fn[1:end-4] * "_Overlay.jpg", s[wi]["Overlay_img"])
-            scope.observs["Overlay"][1][].props[:attributes]["src"] = register(fn[1:end-4] * "_Overlay.jpg")
+
+            scope.observs["display"][1][] = node(:img, attributes=Dict(
+                "src"=>register(fn), "style"=>"opacity: 1.0;"))
+
+            scope.observs["overlay"][1][] = node(:img, attributes=Dict(
+                "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
+                "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
 
         catch err return
 

@@ -31,22 +31,9 @@ const ui = OrderedDict(
         ))
     ),
     "imgs" => OrderedDict(
-        "Original" => node(:img, attributes=Dict(
-            "id"=>"Original", "src"=>register("assets/space_monkey.jpg"),
-            "alt"=>"Error! Check original image link...", "style"=>"opacity: 0.9;", )),
-        "Segmented" => node(:img, attributes=Dict(
-            "id"=>"Segmented", "src"=>"",
-            "alt"=>"Error! Check segs image link...", "style"=>"opacity: 0.9;", )),
-        "Plots" => node(:img, attributes=Dict(
-            "id"=>"Plots", "src"=>register("assets/space_monkey.jpg"),
-            "alt"=>"Error! Check plots  image link...", "style"=>"opacity: 1.0;", )),
-        "Overlay" => node(:img, attributes=Dict(
-            "id"=>"Overlay", "src"=>register("assets/space_monkey.jpg"),
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")),
-        "Highlight" => node(:img, attributes=Dict(
-            "id"=>"Highlight", "src"=>"/assets/empty.jpg",
-            "alt"=>"Error! Could not display highlight image...",
-            "style"=>"position: absolute; top: 50px; left: 0px; opacity: 0.4;")),
+        "display" => Observable(node(:img,attributes=Dict("src"=>"", "style"=>"opacity: 0.9;", ))),
+        "overlay" => Observable(node(:img,attributes=Dict("src"=>"", "style"=> "opacity: 0.9;"))),
+        "highlight" => Observable(node(:img, attributes=Dict("src"=>"", "style"=>"opacity: 0.4;"))),
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
@@ -74,15 +61,15 @@ ui["obs"] = Dict(
     "func_mask" => mask(ui["dropdowns"], key="Set Scale"),
     "img_tabs" => tabs(["<<", "Original", "Segmented", "Overlay", "Plots", ">>"], value="Original"),
     "img_mask" => mask(OrderedDict(
-        "Original" => ui["imgs"]["Original"],
-        "Segmented" => ui["imgs"]["Segmented"],
-        "Overlay" => node(:div, ui["imgs"]["Segmented"], ui["imgs"]["Overlay"]),
-        "Plots" => ui["imgs"]["Plots"]), key="Original"),
+        "Original" => node(:div, ui["imgs"]["display"], ui["imgs"]["highlight"]),
+        "Segmented" => node(:div, ui["imgs"]["display"], ui["imgs"]["highlight"]),
+        "Overlay" => node(:div, ui["imgs"]["display"], ui["imgs"]["overlay"], ui["imgs"]["highlight"]),
+        "Plots" => ui["imgs"]["display"],
+        ), key="Original"),
     "information" => Observable(ui["information"]),
 )
 
-merge!(ui["obs"],
-    Dict("$(key)_src" => Observable(value) for (key, value) in collect(ui["imgs"])))
+merge!(ui["obs"], Dict(key => value for (key, value) in collect(ui["imgs"])))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(0.5em),

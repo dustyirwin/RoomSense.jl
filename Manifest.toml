@@ -44,9 +44,9 @@ version = "2.6.2"
 
 [[ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra"]
-git-tree-sha1 = "bc779df8d73be70e4e05a63727d3a4dfb4c52b1f"
+git-tree-sha1 = "41956a49a8a4fefa1bf6664bca4a3035aba4c3a0"
 uuid = "4c555306-a7a7-4459-81d9-ec55ddd5c99a"
-version = "0.1.5"
+version = "0.2.3"
 
 [[AssetRegistry]]
 deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
@@ -1070,10 +1070,10 @@ uuid = "3161d3a3-bdf6-5164-811a-617609db77b4"
 version = "1.4.4+0"
 
 [[Zygote]]
-deps = ["ArrayLayouts", "DiffRules", "FFTW", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "9688fce24bd8a9468fed12f3d5206099a39054dc"
+deps = ["AbstractFFTs", "ArrayLayouts", "DiffRules", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NNlib", "NaNMath", "Random", "Requires", "SpecialFunctions", "Statistics", "ZygoteRules"]
+git-tree-sha1 = "1ccbfbe8930376e31752b812daa2532c723dc332"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.4.12"
+version = "0.4.13"
 
 [[ZygoteRules]]
 deps = ["MacroTools"]
