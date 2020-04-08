@@ -50,41 +50,28 @@ function space_cadet(ui::AbstractDict, w::Scope)
         println("img tabs clicked! key: $key") end
 
     on(w, "func_tabs") do args
+        println("func_tabs clicked! key: $args")
         func_name = ui["funcs"][args][]
+        println("func_name: $func_name")
         w.observs["funcs_mask"][1][:key][] = args
-        w.observs["information"][1][] = node(:p, ui["help_texts"][func_name])
-        w.observs["inputs_mask"][1][:key][] = func_name
+        w.observs["inputs_mask"][1][:key][] = func_name end
 
-        println("func tab clicked! key: $args")
-    end
+    on(w, "inputs_mask") do args
+        println("inputs_mask changed! args: $args")
+        w.observs["information"][1][] = node(:p,
+            ui["help_texts"][ w.observs["inputs_mask"][1][:key][] ]) end
 
     on(w, "Set Scale") do args
-
-        w.observs["inputs_mask"][1][:key][] = args
-        w.observs["information"][1][] = node(:p, ui["help_texts"][args])
-        println("dropdown changed! args: $args")
-    end
+        w.observs["inputs_mask"][1][:key][] = args end
 
     on(w, "Segment Image") do args
-
-        w.observs["inputs_mask"][1][:key][] = args
-        w.observs["information"][1][] = node(:p, ui["help_texts"][args])
-        println("dropdown changed! args: $args")
-    end
+        w.observs["inputs_mask"][1][:key][] = args end
 
     on(w, "Modify Segments") do args
-
-        w.observs["inputs_mask"][1][:key][] = args
-        w.observs["information"][1][] = node(:p, ui["help_texts"][args])
-        println("dropdown changed! args: $args")
-    end
+        w.observs["inputs_mask"][1][:key][] = args end
 
     on(w, "Export Data") do args
-
-        w.observs["inputs_mask"][1][:key][] = args
-        w.observs["information"][1][] = node(:p, ui["help_texts"][args])
-        println("dropdown changed! args: $args")
-    end
+        w.observs["inputs_mask"][1][:key][] = args end
     #w.observs["information"][1][] = node(:p, ui["information"][func])
 
     #dd_name = w.observs["funcs_mask"][1][:key][]

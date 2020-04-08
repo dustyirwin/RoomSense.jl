@@ -2,13 +2,17 @@
 const ui = OrderedDict(
     "funcs" => OrderedDict(
         "Set Scale"=>dropdown(
-            ["Feet", "Meters"]),
+            OrderedDict(k=>k for k in [
+                "Feet", "Meters"])),
         "Segment Image"=>dropdown(
-            ["Fast Scanning", "Felzenszwalb", "Seeded Region Growing"]),  #Vector{Tuple{CartesianIndex,Int64}}
+            OrderedDict(k=>k for k in [
+                "Fast Scanning", "Felzenszwalb", "Seeded Region Growing"])),  #Vector{Tuple{CartesianIndex,Int64}}
         "Modify Segments"=>dropdown(
-            ["Prune Segments by MGS", "Prune Segment"]),
+            OrderedDict(k=>k for k in [
+                "Prune Segments by MGS", "Prune Segment"])),
         "Export Data"=>dropdown(
-            ["Assign Space Types", "Export Data to CSV"]),
+            OrderedDict(k=>k for k in [
+                "Assign Space Types", "Export Data to CSV"])),
     ),
     "inputs" => Dict(
         "Fast Scanning"=>widget(5:250),
@@ -53,7 +57,7 @@ ui["obs"] = Dict(
     "funcs_mask" => mask(ui["funcs"]),
     "img_url_input" => textbox("Paste http(s) img link here..."),
     "img_info" => Observable(node(:p, "<-- paste image weblink here")),
-    "inputs_mask" => mask(ui["inputs"]),
+    "inputs_mask" => mask(ui["inputs"], key="Feet"),
     "go" => button("Go!"),
     "wi" => Observable(1),
     "information" => Observable(node(:p, "Information / instructions here...")),
