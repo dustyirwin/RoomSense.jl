@@ -114,10 +114,6 @@ function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
     avg_pxs_per_unit_length = sum(pxs_per_unit_lengths) / length(pxs_per_unit_lengths)
     return avg_pxs_per_unit_length^2 end
 
-function get_dummy(img_type::String, img_fln::String, img::Any)
-    save(img_fln[1:end-4] * img_type, img)
-    img = register(img_fln[1:end-4] * img_type) * "?dummy=$(now())" end
-
 function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
     for label in segment_labels(segs)
         x_range = []
@@ -239,6 +235,17 @@ function get_img_from_url(img_url_raw::String)
     return fn
 end
 
-const funcs = Dict(
-    "Fast Scanning"=>fast_scanning,
+
+
+
+const f = Dict(
+    "fast_scanning" => fast_scanning,
+    "feet" => feet,
+    "meters" => meters,
+    "felzenszwalb" => felzenszwalb,
+    "seeded_region_growing" => seeded_region_growing,
+    "prune_min_size" => prune_min_size,
+    "prune_segments" => prune_segments,
+    "launch_space_editor" => launch_space_editor,
+    "export_CSV" => export_CSV,
 )

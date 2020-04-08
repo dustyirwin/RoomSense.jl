@@ -1,23 +1,14 @@
 
 const ui = OrderedDict(
     "funcs" => OrderedDict(
-        "Set Scale"=>dropdown(OrderedDict(
-            "feet"=>feet,
-            "meters"=>meters,
-        )),
-        "Segment Image"=>dropdown(OrderedDict(
-            "Fast Scanning"=>fast_scanning,
-            "Felzenszwalb"=>felzenszwalb,
-            "Seeded Region Growing"=>seeded_region_growing, #Vector{Tuple{CartesianIndex,Int64}}
-        )),
-        "Modify Segments"=>dropdown(OrderedDict(
-            "Prune Segments by MGS"=>prune_min_size,
-            "Prune Segment"=>prune_segments,
-        )),
-        "Export Data"=>dropdown(OrderedDict(
-            "Assign Space Types"=>launch_space_editor,
-            "Export Data to CSV"=>export_CSV,
-        )),
+        "Set Scale"=>dropdown(
+            ["Feet", "Meters"]),
+        "Segment Image"=>dropdown(
+            ["Fast Scanning", "Felzenszwalb", "Seeded Region Growing"]),  #Vector{Tuple{CartesianIndex,Int64}}
+        "Modify Segments"=>dropdown(
+            ["Prune Segments by MGS", "Prune Segment"]),
+        "Export Data"=>dropdown(
+            ["Assign Space Types", "Export Data to CSV"]),
     ),
     "inputs" => Dict(
         "Fast Scanning"=>widget(5:250),
@@ -25,8 +16,8 @@ const ui = OrderedDict(
         "Seeded Region Growing"=>widget("help text?"),
         "Prune Segments by MGS"=>widget(10),
         "Prune Segment"=>widget(0),
-        "feet"=>widget("help text?"),
-        "meters"=>widget("help text?"),
+        "Feet"=>widget("help text?"),
+        "Meters"=>widget("help text?"),
         "Assign Space Types"=>Observable(node(:div)),
         "Export Data to CSV"=>Observable(node(:div)),
     ),
@@ -43,15 +34,15 @@ const ui = OrderedDict(
         "highlight" => Observable(node(:img, attributes=Dict("src"=>"", "style"=>"opacity: 0.4;"))),
     ),
     "help_texts" => Dict(
-        fast_scanning=>"Select the threshold value above, higher values generates fewer pixel groups.",
-        felzenszwalb=>"Select the threshold value above, higher values generatea fewer pixel groups.",
-        prune_min_size=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
-        remove_segments=>"Remove segment by label and merge with most similar neighbor.",
-        seeded_region_growing=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
-        feet=>"Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        meters=>"Click two points on image below and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        launch_space_editor=>"Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
-        export_CSV=>"Exports segment data to CSV.",
+        "Fast Scanning"=>"Select the threshold value above, higher values generates fewer pixel groups.",
+        "Felzenszwalb"=>"Select the threshold value above, higher values generatea fewer pixel groups.",
+        "Seeded Region Growing"=>"Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
+        "Prune Segments by MGS"=>"Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
+        "Prune Segment"=>"Remove segment by label and merge with most similar neighbor.",
+        "Feet"=>"Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        "Meters"=>"Click two points on image below and enter distance in whole meters above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        "Assign Space Types"=>"Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
+        "Export Data to CSV"=>"Exports segment data to CSV.",
     ),
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
     "font_size" => 30,
@@ -78,7 +69,7 @@ ui["obs"] = Dict(
 
 merge!(ui["obs"], Dict(collect(ui["imgs"])...))
 
-merge!(ui["obs"], Dict(collect(ui["inputs"])...))
+merge!(ui["obs"], Dict(collect(ui["funcs"])...))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
