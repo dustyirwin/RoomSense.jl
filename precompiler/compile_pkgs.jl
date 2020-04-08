@@ -7,11 +7,11 @@ using PackageCompiler
 compiled_symbols = [
     :BSON, :Random, :Images, :ImageSegmentation, :Gadfly, :ImageMagick,
     :CuArrays, :Dates, :CSV, :FreeTypeAbstraction, :DataFrames, :Flux,
-    :Metalhead, :Pkg, :AssetRegistry, :Interact, :Logging, :Mux, :ColorTypes,
+    :Metalhead, :Pkg, :AssetRegistry, :Interact, :Mux, :ColorTypes,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :Distances,
 ]
 
-compile_list = []
+compile_list = [:InteractBulma]
 
 
 for pkg in compiled_symbols

@@ -1,4 +1,8 @@
 
+variables_file = joinpath(examplefolder, "minty", "_variables.scss") # here you would use your own style
+mytheme = compile_theme(variables = variables_file)
+Interact.settheme!(mytheme)
+
 const ui = OrderedDict(
     "funcs" => OrderedDict(
         "Set Scale"=>dropdown(
@@ -62,7 +66,8 @@ ui["obs"] = Dict(
     "func_tabs" => tabs([keys(ui["funcs"])...]),
     "funcs_mask" => mask(ui["funcs"]),
     "img_url_input" => textbox("Paste http(s) img link here..."),
-    "img_info" => Observable(node(:p, "<-- paste image weblink here")),
+    "img_info" => Observable(node(:strong, "<-- paste image weblink here")),
+    "click_info" => Observable(node(:p,"")),
     "inputs_mask" => mask(ui["inputs"], key="Feet"),
     "go" => button("Go!"),
     "wi" => Observable(1),
@@ -86,9 +91,9 @@ merge!(ui["obs"], Dict(collect(ui["funcs"])...))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
-        vbox(vskip(0.3em), node(:strong, "Rev: $(ui["obs"]["wi"][])")), hskip(1em),
-        ui["obs"]["img_url_input"], hskip(0.5em),
-        vbox(vskip(0.3em), ui["obs"]["img_info"]),
+        vbox(vskip(0.5em), node(:strong, "Rev: $(ui["obs"]["wi"][])")), hskip(1em),
+        vbox(vskip(0.3em), ui["obs"]["img_url_input"]), hskip(0.5em),
+        vbox(vskip(0.5em), ui["obs"]["img_info"]),
     ), vskip(0.3em),
     hbox(hskip(1em),
         ui["obs"]["go"], hskip(0.5em),
@@ -97,5 +102,6 @@ ui["func_panel"] = vbox(
         vbox(vskip(0.3em), hbox(collect(values(ui["checkboxes"]))...))
     ),
     hbox(hskip(1em), ui["obs"]["information"]), vskip(0.7em),
-    hbox(hskip(1em), ui["obs"]["<<"], ui["obs"]["img_tabs"], ui["obs"][">>"]), vskip(0.5em),
+    hbox(hskip(1em), ui["obs"]["<<"], ui["obs"]["img_tabs"], ui["obs"][">>"],
+        hskip(1em), vbox(vskip(0.5em), ui["obs"]["click_info"])),
 )

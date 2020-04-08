@@ -19,6 +19,7 @@ using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
 using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
     Scale.y_log10
 using FreeTypeAbstraction: renderstring!, newface, FreeType
+using InteractBulma: compile_theme, examplefolder
 using ImageTransformations: imresize
 using DataFrames: DataFrame
 using BSON: @save, @load
@@ -47,6 +48,8 @@ const s = [Dict{Any,Any}(
     "segs_types"=>nothing,
     "selected_areas"=>Vector{Int64}())
     ];
+
+Interact.settheme!(:nativehtml)
 
 @time include("./src/funcs.jl")
 @time include("./src/ui.jl")

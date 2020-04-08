@@ -37,7 +37,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
         finally w.observs["go"][1]["is-loading"][] = false end end
 
     on(w, "img_click") do args
-        w.observs["information"][1][] = node(:p, "x: $(args[1]) y: $(args[2])")
+        w.observs["click_info"][1][] = node(:p, "x: $(args[1]) y: $(args[2])")
+
         try println("img clicked! args: $args")
         catch end end
 
