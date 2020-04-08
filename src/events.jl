@@ -20,7 +20,6 @@ function space_cadet(ui::AbstractDict, w::Scope)
             w.observs["img_info"][1][] = node(:p,
                 "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))")
 
-            w.observs["funcs_tabs"][1][] = "Set Scale" 
         catch err return
 
         finally w.observs["go"][1]["is-loading"][] = false end end
@@ -71,6 +70,12 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "Export Data") do args
         w.observs["inputs_mask"][1][:key][] = args end
+
+    on(w, "<<") do args
+        println("<< pressed! args: $args") end
+
+    on(w, ">>") do args
+        println(">> pressed! args: $args") end
 
     return w
 end

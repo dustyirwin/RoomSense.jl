@@ -66,7 +66,7 @@ ui["obs"] = Dict(
     "inputs_mask" => mask(ui["inputs"], key="Feet"),
     "go" => button("Go!"),
     "wi" => Observable(1),
-    "information" => Observable(node(:p, "Information / instructions here...")),
+    "information" => Observable(node(:p, ui["help_texts"]["Feet"])),
     "imgs_mask" => mask(OrderedDict(
         "Original" => node(:div, ui["imgs"]["display"], ui["imgs"]["highlight"]),
         "Segmented" => node(:div, ui["imgs"]["display"], ui["imgs"]["highlight"]),
@@ -86,7 +86,7 @@ merge!(ui["obs"], Dict(collect(ui["funcs"])...))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
-        node(:strong, "Rev: $(ui["obs"]["wi"][])"), hskip(1em),
+        vbox(vskip(0.3em), node(:strong, "Rev: $(ui["obs"]["wi"][])")), hskip(1em),
         ui["obs"]["img_url_input"], hskip(0.5em),
         vbox(vskip(0.3em), ui["obs"]["img_info"]),
     ), vskip(0.3em),
