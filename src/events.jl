@@ -20,6 +20,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             w.observs["img_info"][1][] = node(:p,
                 "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))")
 
+            w.observs["funcs_tabs"][1][] = "Set Scale" 
         catch err return
 
         finally w.observs["go"][1]["is-loading"][] = false end end
@@ -42,10 +43,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
         catch end end
 
     on(w, "img_tabs") do args
-        if args in ["<<",">>"] return
-        else
-            key = w.observs["img_tabs"][1][]
-            w.observs["imgs_mask"][1][:key][] = key end
+        key = w.observs["img_tabs"][1][]
+        w.observs["imgs_mask"][1][:key][] = key
 
         println("img tabs clicked! key: $key") end
 
@@ -72,14 +71,6 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "Export Data") do args
         w.observs["inputs_mask"][1][:key][] = args end
-    #w.observs["information"][1][] = node(:p, ui["information"][func])
-
-    #dd_name = w.observs["funcs_mask"][1][:key][]
-    #i = ui["funcs"][dd_name].components[:index][]
-    #op_name = [keys(ui["funcs"][dd_name].components[:options][])...][i]
-    #w.observs["inputs_mask"][1][:key][] = op_name
-
-    #println("$op_name selected!")
 
     return w
 end
