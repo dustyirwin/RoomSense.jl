@@ -9,9 +9,10 @@ compiled_symbols = [
     :CuArrays, :Dates, :CSV, :FreeTypeAbstraction, :DataFrames, :Flux,
     :Metalhead, :Pkg, :AssetRegistry, :Interact, :Mux, :ColorTypes,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :Distances,
+    :InteractBulma, :JSON,
 ]
 
-compile_list = [:InteractBulma]
+compile_list = []
 
 
 for pkg in compiled_symbols

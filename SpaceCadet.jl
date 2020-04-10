@@ -31,6 +31,7 @@ using Dates: now
 using Metalhead
 using WebIO
 using Flux
+using JSON
 using Mux
 using CuArrays
 using Logging
@@ -49,6 +50,7 @@ const s = [Dict{Any,Any}(
     "selected_areas"=>Vector{Int64}())]
 
 @time include("./src/secrets.jl")
+@time include("./src/maps.jl")
 @time include("./src/funcs.jl")
 @time include("./src/ui.jl")
 @time include("./src/models.jl")

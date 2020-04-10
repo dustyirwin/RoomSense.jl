@@ -15,10 +15,17 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
             w.observs["overlay"][1][] = node(:img, attributes=Dict(
                 "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
-                "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;"))
+                "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.9;")
+            )
 
             w.observs["img_info"][1][] = node(:p,
-                "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))")
+                "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))"
+            )
+
+            w.observs["map"][1][] = map(
+                width=width(s[wi[]]["Original_img"]),
+                height=height(s[wi[]]["Original_img"])
+            )
 
         catch err return
 
