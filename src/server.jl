@@ -1,6 +1,4 @@
 
-const ngrok = "http://d0d0ca0b.ngrok.io"
-
 const port = rand(8000:8000)
 
 function assetserve(dirs=true)

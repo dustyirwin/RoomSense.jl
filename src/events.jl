@@ -39,6 +39,12 @@ function space_cadet(ui::AbstractDict, w::Scope)
     on(w, "img_click") do args
         w.observs["click_info"][1][] = node(:p, "x: $(args[1]) y: $(args[2])")
 
+        func_key = w.observs["funcs_mask"][1][:key][]
+
+        if func_key in ["Feet", "Meters"]
+            ui["inputs"][func_key][] = ui["inputs"][func_key][] * "$(args[7] ? args[1] : args[2]),"
+        end
+
         try println("img clicked! args: $args")
         catch end end
 

@@ -46,11 +46,9 @@ const wi = Observable(1)  # work index
 const s = [Dict{Any,Any}(
     "scale"=>(1.,"ft",""),
     "segs_types"=>nothing,
-    "selected_areas"=>Vector{Int64}())
-    ];
+    "selected_areas"=>Vector{Int64}())]
 
-Interact.settheme!(:nativehtml)
-
+@time include("./src/secrets.jl")
 @time include("./src/funcs.jl")
 @time include("./src/ui.jl")
 @time include("./src/models.jl")

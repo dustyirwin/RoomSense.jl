@@ -1,5 +1,5 @@
 
-variables_file = joinpath(examplefolder, "minty", "_variables.scss") # here you would use your own style
+variables_file = joinpath(examplefolder, "darkly", "_variables.scss") # here you would use your own style
 mytheme = compile_theme(variables = variables_file)
 Interact.settheme!(mytheme)
 
@@ -18,7 +18,6 @@ const ui = OrderedDict(
             OrderedDict(k=>k for k in [
                 "Assign Space Types", "Export Data to CSV"])),
     ),
-
     "inputs" => Dict(
         "Fast Scanning"=>widget(5:250),
         "Felzenszwalb"=>widget(5:250),
@@ -30,21 +29,18 @@ const ui = OrderedDict(
         "Assign Space Types"=>Observable(node(:div)),
         "Export Data to CSV"=>Observable(node(:div)),
     ),
-
     "checkboxes" => OrderedDict(
         "Seeds"=>checkbox(value=false; label="Seeds"),
         "Labels"=>checkbox(value=false; label="Labels"),
         "Colorize"=>checkbox(value=false, label="Colorize"),
         "CadetPred"=>checkbox(value=false, label="CadetPred"),
     ),
-
     "imgs" => Dict(
         "display" => Observable(node(:img,attributes=Dict("src"=>"", "style"=>"opacity: 1.0;", ))),
         "overlay" => Observable(node(:img,attributes=Dict("src"=>"", "style"=> "opacity: 0.9;"))),
         "seeds" => Observable(node(:img, attributes=Dict("src"=>"", "style"=>"opacity: 0.9;"))),
         "highlight" => Observable(node(:img, attributes=Dict("src"=>"", "style"=>"opacity: 0.4;"))),
     ),
-
     "help_texts" => Dict(
         "Fast Scanning"=>"Select the threshold value above, higher values generates fewer pixel groups.",
         "Felzenszwalb"=>"Select the threshold value above, higher values generatea fewer pixel groups.",
@@ -56,9 +52,7 @@ const ui = OrderedDict(
         "Assign Space Types"=>"Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
         "Export Data to CSV"=>"Exports segment data to CSV.",
     ),
-
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
-
     "font_size" => 30,
 )
 
@@ -79,8 +73,8 @@ ui["obs"] = Dict(
         "Plots" => ui["imgs"]["display"],
         ), key="Original"),
     "img_tabs" => tabs(["Original", "Segmented", "Overlay", "Plots"], value="Original"),
-    "<<" => button("<<"),
-    ">>" => button(">>"),
+    "<<" => button("<<", attributes=Dict("class"=>"is-small is-default")),
+    ">>" => button(">>", attributes=Dict("class"=>"is-small is-default")),
     "confirm" => Widgets.confirm(""),
 
 )
@@ -92,14 +86,14 @@ merge!(ui["obs"], Dict(collect(ui["funcs"])...))
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
         vbox(vskip(0.5em), node(:strong, "Rev: $(ui["obs"]["wi"][])")), hskip(1em),
-        vbox(vskip(0.3em), ui["obs"]["img_url_input"]), hskip(0.5em),
-        vbox(vskip(0.5em), ui["obs"]["img_info"]),
-    ), vskip(0.3em),
+        vbox(vskip(0.3em), ui["obs"]["img_url_input"]), hskip(1em),
+        vbox(vskip(0.5em), ui["obs"]["img_info"])),
+    vskip(1em),
     hbox(hskip(1em),
         ui["obs"]["go"], hskip(0.5em),
         ui["obs"]["funcs_mask"], hskip(0.5em),
         ui["obs"]["inputs_mask"], hskip(0.5em),
-        vbox(vskip(0.3em), hbox(collect(values(ui["checkboxes"]))...))
+        vbox(vskip(0.5em), hbox(collect(values(ui["checkboxes"]))...))
     ),
     hbox(hskip(1em), ui["obs"]["information"]), vskip(0.7em),
     hbox(hskip(1em), ui["obs"]["<<"], ui["obs"]["img_tabs"], ui["obs"][">>"],
