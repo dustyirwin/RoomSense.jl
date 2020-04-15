@@ -11,3 +11,15 @@ const assetserver = @isdefined(assetserver) ? assetserver :
     route("assetserver/:key", assetserve(), Mux.notfound())
 
 const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui, scope)), 8000)
+
+
+"""
+Mux App hosting
+
+@app sc = (
+    Mux.defaults,
+    page("/", space_cadet(ui, scope)),
+    Mux.notfound())
+
+Mux.serve(sc, port)
+"""

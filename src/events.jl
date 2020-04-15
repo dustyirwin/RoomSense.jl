@@ -10,8 +10,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
             s[ wi[] ]["Overlay_img"] = make_transparent(s[ wi[] ]["Original_img"])
             save(fn[1:end-4] * "_Overlay.jpg", s[ wi[] ]["Overlay_img"])
 
-            w.observs["display"][1][] = node(:img, attributes=Dict(
-                "src"=>register(fn), "style"=>"opacity: 1.0;"))
+            w.observs["original"][1][] = node(:img, attributes=Dict(
+                "src"=>register(fn), "style"=>"opacity: 0.9;"))
 
             w.observs["overlay"][1][] = node(:img, attributes=Dict(
                 "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
@@ -22,10 +22,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))"
             )
 
-            w.observs["map"][1][] = map(
-                width=width(s[wi[]]["Original_img"]),
-                height=height(s[wi[]]["Original_img"])
-            )
+            println("User uploaded a valid img url! user img rfn: $(register(fn))")
 
         catch err return
 

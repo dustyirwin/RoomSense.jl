@@ -5,3 +5,4 @@
 /ngrok
 /assets
 secrets.jl
+*.json
