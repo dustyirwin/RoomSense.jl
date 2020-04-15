@@ -236,16 +236,14 @@ function get_img_from_url(img_url_raw::String)
 end
 
 
-
-
-const f = Dict(
-    "fast_scanning" => fast_scanning,
-    "feet" => feet,
-    "meters" => meters,
-    "felzenszwalb" => felzenszwalb,
-    "seeded_region_growing" => seeded_region_growing,
-    "prune_min_size" => prune_min_size,
-    "prune_segments" => prune_segments,
-    "launch_space_editor" => launch_space_editor,
-    "export_CSV" => export_CSV,
+const funcs = Dict(
+    "Google Maps" => update_map,
+    "Fast Scanning" => fast_scanning,
+    "User Image" => feet,
+    "Felzenszwalb" => felzenszwalb,
+    "Seeded Region Growing" => seeded_region_growing,
+    "Prune Segments by MGS" => prune_min_size,
+    "Prune Segment" => prune_segments,
+    "Assign Space Types" => launch_space_editor,
+    "Export Data to CSV" => export_CSV,
 )

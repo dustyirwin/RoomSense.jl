@@ -18,18 +18,16 @@ const ui = OrderedDict(
             OrderedDict(k=>k for k in [
                 "Assign Space Types", "Export Data to CSV"])),
     ),
-    "inputs" => Dict(
+    "inputs" => OrderedDict(
         "Fast Scanning" => widget(5:250),
         "Felzenszwalb" => widget(5:250),
         "Seeded Region Growing" => widget("help text?"),
         "Prune Segments by MGS" => widget(10),
         "Prune Segment" => widget(0),
-        "User Image" => widget("help text?"),
+        "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
         "Export Data to CSV" => Observable(node(:div)),
-        "Google Maps" => textbox("Enter site address here...",
-            value="Nike World Campus Beaverton OR",
-            size=40),
+        "Google Maps" => textbox("eg Nike World Campus Beaverton, OR", size=40),
     ),
     "checkboxes" => OrderedDict(
         k => checkbox(value=false; label=k)
@@ -48,7 +46,7 @@ const ui = OrderedDict(
         "User Image" => "Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         "Assign Space Types" => "Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
         "Export Data to CSV" => "Exports segment data to CSV.",
-        "Google Maps" => "Enter longitude and latitude, scale map to floorplan overlay and press Go!.",
+        "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
     "font_size" => 30,
     "font" => newface("./fonts/OpenSans-Bold.ttf"),
@@ -61,7 +59,9 @@ ui["obs"] = Dict(
         "Original" => node(:div, ui["imgs"]["original"], ui["imgs"]["highlight"]),
         "Segmented" => node(:div, ui["imgs"]["segs"], ui["imgs"]["overlay"], ui["imgs"]["highlight"]),
         "Plots" => ui["imgs"]["plot"],
-        "Google Maps" => node(:div, ui["imgs"]["overlay"], ui["imgs"]["map"]),
+        "Google Maps" => vbox(
+            node(:div, ui["imgs"]["overlay"], ui["imgs"]["map"]),
+            hbox(values(map_controls)...)),
         ), key="Original"),
     "img_tabs" => tabs(["Original", "Google Maps"], value="Original"),
     "img_info" => Observable(node(:strong, "<-- paste image weblink here")),

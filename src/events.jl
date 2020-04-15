@@ -22,6 +22,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 "height: $(height(s[ wi[] ]["Original_img"])) px width: $(width(s[ wi[] ]["Original_img"]))"
             )
 
+            update_map()
+
             println("User uploaded a valid img url! user img rfn: $(register(fn))")
 
         catch err return
@@ -32,9 +34,9 @@ function space_cadet(ui::AbstractDict, w::Scope)
         w.observs["go"][1]["is-loading"][] = true
 
         try
-            println("run funcs!")
-            sleep(2)
-            println("done!")
+            input = w.observs["inputs_mask"][1][:key][]
+            #funcs[input](ui["inputs"][input][])
+            println("go pressed, reached end of instructions! input: $input")
 
         catch err return
 
