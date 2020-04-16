@@ -9,10 +9,14 @@ map_url_from_latlng(lat, lng, zoom, w, h) =
     "maptype=satellite&"*
     "key=$maps_api_key"
 
-function update_map(; scope=scope, lat=45.5051, lng=-122.6750, zoom=5, w=600, h=400, rotation=0.)
-    buffer = 20
-    try w = width(s[ wi[] ]["Original_img"]) catch end
-    try h = height(s[ wi[] ]["Original_img"]) catch end
+function update_map(; scope=scope, lat=45.5051, lng=-122.6750, zoom=5, rotation=0.)
+    # free acct maps up to 640x640, premium acct maps up to 2048x2048
+
+    w = width(s[ wi[] ]["Original_img"])
+    h = height(s[ wi[] ]["Original_img"])
+
+
+
     dirty_url = map_url_from_latlng(lat, lng, zoom, w, h)
     clean_url = replace(dirty_url, [" "=>"+",]...)
     download(clean_url, "./tmp/gmap.jpg")
@@ -39,7 +43,7 @@ address_from_latlng_url(; lat=45, lng=150) =
     "latlng=$(lat),$(lng)&"*
     "key=$map_api_key"
 
-map(w=600, h=450, zoom=17, lat=45.3463, lng=-122.5931) = node(:iframe,
+map(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931) = node(:iframe,
     width="$w",
     height="$h",
     frameborder="0",

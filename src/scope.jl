@@ -9,6 +9,8 @@ const img_click = Observable(scope, "img_click", [])
 
 ui["img_container"] = node(:div,
     scope.observs["imgs_mask"][1],
+    ui["imgs"]["overlay"],
+    ui["imgs"]["highlight"],
     attributes=Dict(
         "id"=>"img_container",
         "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"),

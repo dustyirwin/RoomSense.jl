@@ -31,7 +31,7 @@ const ui = OrderedDict(
     ),
     "checkboxes" => OrderedDict(
         k => checkbox(value=false; label=k)
-        for k in ["Seeds", "Labels", "Colorize", "CadetPred"]
+        for k in ["Overlay", "Seeds", "Labels", "Colorize", "CadetPred"]
     ),
     "imgs" => Dict(
         k => Observable(node(:img, src="", style=Dict("opacity"=>"0.9")))
@@ -56,29 +56,27 @@ ui["obs"] = Dict(
     "img_url_input" => textbox("Paste http(s) img link here..."),
     "inputs_mask" => mask(ui["inputs"], key="User Image"),
     "imgs_mask" => mask(OrderedDict(
-        "Original" => node(:div, ui["imgs"]["original"], ui["imgs"]["highlight"]),
-        "Segmented" => node(:div, ui["imgs"]["segs"], ui["imgs"]["overlay"], ui["imgs"]["highlight"]),
+        "Original" => ui["imgs"]["original"],
+        "Segmented" => ui["imgs"]["segs"],
         "Plots" => ui["imgs"]["plot"],
-        "Google Maps" => vbox(
-            node(:div, ui["imgs"]["overlay"], ui["imgs"]["map"]),
-            hbox(values(map_controls)...)),
+        "Google Maps" => ui["imgs"]["map"],
         ), key="Original"),
-    "img_tabs" => tabs(["Original", "Google Maps"], value="Original"),
+    "img_tabs" => tabs([], value="Original"),
     "img_info" => Observable(node(:strong, "<-- paste image weblink here")),
     "func_tabs" => tabs([keys(ui["funcs"])...]),
     "funcs_mask" => mask(ui["funcs"]),
     "click_info" => Observable(node(:p,"")),
-    "information" => Observable(node(:p, ui["help_texts"]["User Image"])),
+    "information" => Observable(node(:p, "")),
     "checkboxes_mask" => mask(ui["checkboxes"], index=0),
     "go" => button("Go!"),
     "wi" => Observable(1),
-    "<<" => button("<<", attributes=Dict("class"=>"is-small is-default")),
-    ">>" => button(">>", attributes=Dict("class"=>"is-small is-default")),
     )
 
 merge!(ui["obs"], Dict(collect(ui["imgs"])...))
 
 merge!(ui["obs"], Dict(collect(ui["funcs"])...))
+
+merge!(ui["obs"], Dict(collect(ui["checkboxes"])...))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
@@ -90,9 +88,8 @@ ui["func_panel"] = vbox(
         ui["obs"]["go"], hskip(0.5em),
         ui["obs"]["funcs_mask"], hskip(0.5em),
         ui["obs"]["inputs_mask"], hskip(0.5em),
-        vbox(vskip(0.5em), ui["obs"]["checkboxes_mask"])
+        vbox(vskip(0.5em), hbox(ui["obs"]["checkboxes_mask"], hskip(0.5em), ui["obs"]["click_info"]))
     ),
     hbox(hskip(1em), ui["obs"]["information"]), vskip(0.7em),
-    hbox(hskip(1em), ui["obs"]["<<"], ui["obs"]["img_tabs"], ui["obs"][">>"],
-        hskip(1em), vbox(vskip(0.5em), ui["obs"]["click_info"])),
+    ui["obs"]["img_tabs"],
     )
