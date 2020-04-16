@@ -10,4 +10,8 @@ function assetserve(dirs=true)
 const assetserver = @isdefined(assetserver) ? assetserver :
     route("assetserver/:key", assetserve(), Mux.notfound())
 
-const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui, scope)), 8000)
+if @isdefined webserver
+    const webserver = webserver
+else
+    const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui, scope)), 8000)
+end

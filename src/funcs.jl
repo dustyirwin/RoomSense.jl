@@ -84,10 +84,10 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
    end
        return segs end
 
-function parse_input(input::String, ops_tabs::String)
+function parse_input(input::String, funcs_tab::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
 
-    if ops_tabs in ["Set Scale", "Segment Image"]
+    if funcs_tab in ["Set Scale", "Segment Image"]
         args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
         try for vars in split(input[end] == ';' ? input : input * ';', ';')
@@ -96,7 +96,7 @@ function parse_input(input::String, ops_tabs::String)
         catch; var = [parse(Int64, var) for var in split(input, ',')]
             push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
 
-    elseif ops_tabs in ["Modify Segments"]
+    elseif funcs_tab in ["Modify Segments"]
         type = '.' in input ? Float64 : Int64
         args = Vector{type}()
 
@@ -201,10 +201,7 @@ function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String,
     if "segs_details_html" in collect(keys(s[wi])); else
     s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
         s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
-        length(segment_labels(s[wi]["segs"]))) end
-
-    #body!(sdw, s[wi]["segs_details_html"])
-end
+        length(segment_labels(s[wi]["segs"]))) end end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
@@ -225,21 +222,23 @@ function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing
         for (lbl, px_ct) in segs_details]
 
     html = hbox(hskip(0.75em), vbox(node(:p, summary_text) , vbox(details)))
-    return html, dds, checks, spins
-end
+    return html, dds, checks, spins end
 
 function get_img_from_url(img_url_raw::String)
     img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw
     fn = "assets/" * split(img_url_cleaned, "/")[end][1:end-5]
     download(img_url_cleaned, fn)
-    return fn
-end
+    return fn end
 
 
 const funcs = Dict(
     "Google Maps" => update_map,
     "Fast Scanning" => fast_scanning,
-    "User Image" => feet,
+    "User Image" => (w, input) -> begin
+        scale = ceil(calc_scale(input))
+        s[wi[]]["scale"][1] = scale
+        w.observs["img_info"][1][] = node(:p, "width: $(s[wi[]]["Original_width"]) height: $(s[wi[]]["Original_height"]) scale: $scale px / ft^2")
+    end,
     "Felzenszwalb" => felzenszwalb,
     "Seeded Region Growing" => seeded_region_growing,
     "Prune Segments by MGS" => prune_min_size,

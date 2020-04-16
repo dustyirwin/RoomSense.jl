@@ -11,8 +11,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
             save(fn[1:end-4] * "_Overlay.jpg", s[ wi[] ]["Overlay_img"])
             s[ wi[] ]["Overlay_rfn"] = register(fn[1:end-4] * "_Overlay.jpg")
 
-            _w = width(s[ wi[] ]["Original_img"])
-            _h = height(s[ wi[] ]["Original_img"])
+            _w = s[wi[]]["Original_width"] = width(s[ wi[] ]["Original_img"])
+            _h = s[wi[]]["Original_height"] = height(s[ wi[] ]["Original_img"])
 
             w.observs["original"][1][] = node(:img, attributes=Dict(
                 "src"=>register(fn), "style"=>"opacity: 0.9;"))
@@ -37,8 +37,9 @@ function space_cadet(ui::AbstractDict, w::Scope)
         w.observs["go"][1]["is-loading"][] = true
 
         try
-            input = w.observs["inputs_mask"][1][:key][]
-            #funcs[input](ui["inputs"][input][])
+            input_name = w.observs["inputs_mask"][1][:key][]
+            funcs_tab = w.observs["funcs_mask"][1][:key][]
+            funcs[input_name](w, parse_input(ui["inputs"][input_name][], funcs_tab))
             println("go pressed, reached end of instructions! input: $input")
 
         catch err return

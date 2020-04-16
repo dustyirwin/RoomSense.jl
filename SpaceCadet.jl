@@ -45,10 +45,12 @@ end
 println("\nComplete. Loading codebase...\n")
 
 const wi = Observable(1)  # work index
-const s = [Dict{Any,Any}(
-    "scale"=>(1.,"ft",""),
+
+if @isdefined s
+else const s = [Dict{Any,Any}(
+    "scale"=>[1.,"ft",""],
     "segs_types"=>nothing,
-    "selected_areas"=>Vector{Int64}())]
+    "selected_areas"=>Vector{Int64}())] end
 
 @time include("./src/secrets.jl")
 @time include("./src/maps.jl")
