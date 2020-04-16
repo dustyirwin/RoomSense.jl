@@ -6,6 +6,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
         try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
+            s[ wi[] ]["Original_fn"] = fn
             s[ wi[] ]["Original_img"] = load(fn)
             s[ wi[] ]["Overlay_img"] = make_transparent(s[ wi[] ]["Original_img"])
             save(fn[1:end-4] * "_Overlay.jpg", s[ wi[] ]["Overlay_img"])
@@ -64,11 +65,18 @@ function space_cadet(ui::AbstractDict, w::Scope)
         println("img tabs clicked! key: $key") end
 
     on(w, "func_tabs") do args
-        println("func_tabs clicked! key: $args")
-        func_name = ui["funcs"][args][]
-        println("func_name: $func_name")
+        println("funcs_tabs pressed! args: $args")
         w.observs["funcs_mask"][1][:key][] = args
-        w.observs["inputs_mask"][1][:key][] = func_name end
+
+        func_name = ui["funcs"][args][]
+        w.observs["inputs_mask"][1][:key][] = func_name 
+
+        if args == "Set Scale"
+            w.observs["img_tabs"][1][:options][] = ["Original", "Google Maps"]
+        elseif args == "Segment Image"
+            w.observs["img_tabs"][1][:options][] = ["Original", "Segmented", "Plots"]
+        end
+    end
 
     on(w, "inputs_mask") do args
         println("inputs_mask changed! args: $args")

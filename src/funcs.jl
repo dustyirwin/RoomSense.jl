@@ -233,7 +233,12 @@ function get_img_from_url(img_url_raw::String)
 
 const funcs = Dict(
     "Google Maps" => update_map,
-    "Fast Scanning" => fast_scanning,
+    "Fast Scanning" => (w, input) -> begin
+        segs = fast_scanning(Gray.(s[wi[]]["Original_img"]), input)
+        segs_fn = s[wi[]]["Original_fn"][1:end-4] * "_segs.jpg"
+        save(segs_fn, segs)
+        w.observs["segs"][1][] = node(:img, src=register(segs_fn))
+    end,
     "User Image" => (w, input) -> begin
         scale = ceil(calc_scale(input))
         s[wi[]]["scale"][1] = scale
@@ -245,4 +250,4 @@ const funcs = Dict(
     "Prune Segment" => prune_segments,
     "Assign Space Types" => launch_space_editor,
     "Export Data to CSV" => export_CSV,
-)
+    )
