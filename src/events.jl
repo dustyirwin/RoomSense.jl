@@ -18,7 +18,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             w.observs["original"][1][] = node(:img, attributes=Dict(
                 "src"=>register(fn), "style"=>"opacity: 0.9;"))
 
-            w.observs["map"][1][] = node(:div, map(_w+20, _h+20))
+            w.observs["gmap"][1][] = node(:div, gmap(_w, _h))
 
             w.observs["img_info"][1][] = node(:p, "width: $_w px height: $_h px")
 
@@ -40,7 +40,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
         try
             input_name = w.observs["inputs_mask"][1][:key][]
             funcs_tab = w.observs["funcs_mask"][1][:key][]
-            funcs[input_name](w, parse_input(ui["inputs"][input_name][], funcs_tab))
+            funcs[input_name](w, ui["inputs"][input_name][])
             println("go pressed, reached end of instructions! input: $input")
 
         catch err return
@@ -69,7 +69,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
         w.observs["funcs_mask"][1][:key][] = args
 
         func_name = ui["funcs"][args][]
-        w.observs["inputs_mask"][1][:key][] = func_name 
+        w.observs["inputs_mask"][1][:key][] = func_name
 
         if args == "Set Scale"
             w.observs["img_tabs"][1][:options][] = ["Original", "Google Maps"]

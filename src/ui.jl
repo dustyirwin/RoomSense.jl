@@ -19,8 +19,8 @@ const ui = OrderedDict(
                 "Assign Space Types", "Export Data to CSV"])),
     ),
     "inputs" => OrderedDict(
-        "Fast Scanning" => widget(5:250),
-        "Felzenszwalb" => widget(5:250),
+        "Fast Scanning" => widget(0.05:0.01:0.25),
+        "Felzenszwalb" => widget(25:5:250),
         "Seeded Region Growing" => widget("help text?"),
         "Prune Segments by MGS" => widget(10),
         "Prune Segment" => widget(0),
@@ -35,7 +35,7 @@ const ui = OrderedDict(
     ),
     "imgs" => Dict(
         k => Observable(node(:img, src="", style=Dict("opacity"=>"0.9")))
-        for k in ["original", "highlight", "overlay", "seeds", "segs", "map", "plot"]
+        for k in ["original", "highlight", "overlay", "seeds", "segs", "gmap", "plot"]
     ),
     "help_texts" => Dict(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
@@ -59,7 +59,7 @@ ui["obs"] = Dict(
         "Original" => ui["imgs"]["original"],
         "Segmented" => ui["imgs"]["segs"],
         "Plots" => ui["imgs"]["plot"],
-        "Google Maps" => ui["imgs"]["map"],
+        "Google Maps" => ui["imgs"]["gmap"],
         ), key="Original"),
     "img_tabs" => tabs([], value="Original"),
     "img_info" => Observable(node(:strong, "<-- paste image weblink here")),
@@ -72,11 +72,10 @@ ui["obs"] = Dict(
     "wi" => Observable(1),
     )
 
-merge!(ui["obs"], Dict(collect(ui["imgs"])...))
+for collection in ["imgs", "funcs", "checkboxes", "inputs"]
+    merge!(ui["obs"], Dict(collect(ui[collection])...))
+end
 
-merge!(ui["obs"], Dict(collect(ui["funcs"])...))
-
-merge!(ui["obs"], Dict(collect(ui["checkboxes"])...))
 
 ui["func_panel"] = vbox(
     hbox(ui["obs"]["func_tabs"], hskip(1em),
