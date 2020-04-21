@@ -8,6 +8,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             download(args, fn)
             println("User uploaded an img! \n args: $args \n fn: $fn")
 
+            s[i]["Original_fn"] = fn
             s[i]["Original_img"] = load(fn)
             _w = s[i]["Original_width"] = width(s[i]["Original_img"])
             _h = s[i]["Original_height"] = height(s[i]["Original_img"])
@@ -26,8 +27,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             ui[:img_info][] = node(:p, "width: $_w  height: $_h")
             ui[:information][] = node(:p, ui[:help_texts]["User Image"])
 
-        catch err return
-
+        catch err
         finally ui[:go]["is-loading"][] = false end end
 
     on(w, "go") do args
@@ -35,11 +35,12 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
         try
             input_name = ui[:inputs_mask][:key][]
-            funcs_tab = ui[:funcs_mask][:key][]
-            funcs[input_name](w, ui[:inputs][input_name][])
 
-        catch err return
+            println("User clicked Go! input_name: $input_name")
 
+            go_funcs[input_name](ui, ui[:inputs][input_name][])
+
+        catch err; println(err); return
         finally ui[:go]["is-loading"][] = false  end end
 
     on(w, "img_click") do args
@@ -69,6 +70,8 @@ function space_cadet(ui::AbstractDict, w::Scope)
         println("funcs_tabs pressed! args: $args")
         ui[:funcs_mask][:key][] = args
         ui[:inputs_mask][:key][] = ui[:funcs][args][]
+
+        ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
 
         if args == "Set Scale"
             ui[:img_tabs][:options][] = ["Original", "Google Maps"]

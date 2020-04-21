@@ -12,9 +12,9 @@ try pkg"activate ." catch
 using ImageSegmentation: fast_scanning, felzenszwalb,
     seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
     segment_mean, segment_labels, SegmentedImage
-using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox, dropdown,
-    textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator, mask, widget,
-    Widgets.radiobuttons, Widgets.confirm
+using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox,
+    dropdown, textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator,
+    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!, alert
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 #using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
@@ -37,7 +37,7 @@ using JSON
 using Mux
 using CuArrays
 using Logging
-#using ColorTypes
+# using ColorTypes
 
 end
 

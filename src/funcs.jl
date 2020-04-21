@@ -1,20 +1,15 @@
 
 # terse funcs
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
+
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
+
 make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
-feet() = "ft"
-meters() = "m"
-pixels() = "pxs"
 
 
 # verbose funcs
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
-
-function segment_img(img_fln::String, args::Union{Int64,Float64,Tuple{CartesianIndex,Int64}}, alg::Function)
-    img = Gray.(load(img_fln))
-    segs = alg(img, args) end
 
 function get_random_color(seed::Int64)
     seed!(seed)
@@ -84,24 +79,17 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
    end
        return segs end
 
-function parse_input(input::String, funcs_tab::String)
+function parse_input_str(input::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
+    args = Vector{Tuple{CartesianIndex{2},Int64}}()
 
-    if funcs_tab in ["Set Scale", "Segment Image"]
-        args = Vector{Tuple{CartesianIndex{2},Int64}}()
+    try for vars in split(input[end] == ';' ? input : input * ';', ';')
+        var = length(vars) > 2 ? [parse(Int64, var) for var in split(vars, ',')] : continue
+        push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
+    catch; var = [parse(Int64, var) for var in split(input, ',')]
+        push!(args, (CartesianIndex(var[1], var[2]), var[3]))
+    end
 
-        try for vars in split(input[end] == ';' ? input : input * ';', ';')
-            var = length(vars) > 2 ? [parse(Int64, var) for var in split(vars, ',')] : continue
-            push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
-        catch; var = [parse(Int64, var) for var in split(input, ',')]
-            push!(args, (CartesianIndex(var[1], var[2]), var[3])) end
-
-    elseif funcs_tab in ["Modify Segments"]
-        type = '.' in input ? Float64 : Int64
-        args = Vector{type}()
-
-        for i in unique!(split(input, ','))
-            push!(args, parse(type, i)) end end
     return args end
 
 function calc_scale(scales::Vector{Tuple{CartesianIndex{2},Int64}})
@@ -265,28 +253,38 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
             "key=$maps_api_key&"
     ) end
 
-const funcs = Dict(
-    "User Image" => (w, args) -> begin
-        scale = ceil(calc_scale(parse_input(args, "Set Scale")))
-        s[i]["scale"][1] = scale
-        ui[:img_info][] = node(:p, "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $scale px / ft²")
-    end,
-    "Google Maps" => (w, args) -> println("Pay Google da monies!"),
-    "Fast Scanning" => (w, args) -> begin
-        s[i]["segs"] = fast_scanning(Gray.(s[i]["Original_img"]), args)
-        s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
-        segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
-        save(segs_fn, s[i]["segs_img"])
-        ui["segs"][] = node(:img, src=register(segs_fn)) end,
-    "Felzenszwalb" => (w, args) -> begin
-        s[i]["segs"] = felzenszwalb(Gray.(s[i]["Original_img"]), args)
-        s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
-        segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
-        save(segs_fn, s[i]["segs_img"])
-        ui["segs"][] = node(:img, src=register(segs_fn)) end,
-    "Seeded Region Growing" => (w, args) -> seeded_region_growing,
-    "Prune Segments by MGS" => (w, args) -> prune_min_size,
-    "Prune Segment" => (w, args) -> prune_segments,
-    "Assign Space Types" => (w, args) -> launch_space_editor,
-    "Export Data to CSV" => (w, args) -> export_CSV,
-    )
+function go_seg_img(ui::Dict, args::Any, alg::Function)
+    println("creating segs img! alg: $alg args: $args")
+
+    s[i]["segs"] = alg(Gray.(s[i]["Original_img"]), args)
+    s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
+    segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
+    save(segs_fn, s[i]["segs_img"])
+    ui[:segs_img][] = make_clickable_img("segs_img", ui[:img_click], register(segs_fn)*"?dummy=$(now())")
+    ui[:img_tabs][] = "Segmented" end
+
+
+const go_funcs = Dict(
+    "User Image" => (ui::Dict, args::String) -> begin
+            s[i]["scale"][1] = ceil(calc_scale(parse_input_str(args)))
+            ui[:img_info][] = node(:p,
+                "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $(s[i]["scale"][1]) px / ft²")
+        end,
+    "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
+    "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
+        ui, args, fast_scanning),
+    "Felzenszwalb" => (ui::Dict, args::Int64) -> go_seg_img(
+        ui, args, felzenszwalb),
+    "Seeded Region Growing" => (ui::Dict, args::Any) -> go_seg_img(
+        ui, parse_input_str(args), seeded_region_growing),
+    "Prune Segments by MGS" => (ui, args::Any) -> go_seg_img(
+        ui, args, prune_min_size),
+    "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
+        ui, args, prune_segments),
+    "Assign Space Types" => (ui::Dict, args::Any) -> begin
+            launch_space_editor()
+        end,
+    "Export Data to CSV" => (ui::Dict, args::Any) -> begin
+            export_CSV()
+        end,
+)

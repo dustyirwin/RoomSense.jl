@@ -1,7 +1,7 @@
 
 variables_file = joinpath(examplefolder, "darkly", "_variables.scss")
 mytheme = compile_theme(variables = variables_file)
-Interact.settheme!(mytheme)
+settheme!(mytheme)
 
 const ui = Dict{Union{Symbol,String},Any}(
     :img_syms => [:original, :overlay, :segs, :highlight, :seeds, :labels, :plots, :gmap],
@@ -51,7 +51,9 @@ const ui = Dict{Union{Symbol,String},Any}(
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),
     :click_info => Observable(node(:p,"")),
     :information => Observable(node(:p, "")),
-    :go => button("Go!"))
+    :alert => alert(""),
+    :go => button("Go!"),
+    )
 
 
 ui[:imgs] = OrderedDict(

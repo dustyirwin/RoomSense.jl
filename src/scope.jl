@@ -7,7 +7,6 @@ ui[:scope] = Scope(
 
 ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[])
 
-
 for k in [:original_img, :segs_img]
     img_name = "$k"
     ui[:imgs][k][] = make_clickable_img(img_name, ui[:img_click])

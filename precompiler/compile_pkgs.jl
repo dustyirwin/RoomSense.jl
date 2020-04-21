@@ -15,7 +15,7 @@ compiled_symbols = [
 compile_list = [:ImageSegmentation]
 
 
-@async for pkg in compile_list
+for pkg in compiled_symbols
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",
