@@ -1,36 +1,44 @@
 
 const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing,Bool}}}
 
-const observs = ObsDict(key=>(value, nothing) for (key, value) in collect(ui["obs"]))
+ui[:scope] = Scope(
+    observs=ObsDict("$k"=>(v, nothing)
+        for (k,v) in ui if v isa Observables.AbstractObservable))
 
-const scope = Scope(observs=observs)
+ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[])
 
-const img_click = Observable(scope, "img_click", [])
 
-ui["img_container"] = node(:div,
-    scope.observs["imgs_mask"][1],
-    ui["imgs"]["overlay"],
-    ui["imgs"]["highlight"],
-    attributes=Dict(
-        "id"=>"img_container",
-        "style"=>"position: relative; padding: 0px; border: 0px; margin: 0px;"),
-    events=Dict("click" => @js () -> $img_click[] = [
-        event.pageY - document.getElementById("img_container").offsetTop,
-        event.pageX,
-        document.getElementById("img_container").height,
-        document.getElementById("img_container").width,
-        document.getElementById("img_container").naturalHeight,
-        document.getElementById("img_container").naturalWidth,
-        event.ctrlKey,
-        event.shiftKey,
-        event.altKey,
-    ];)
-)
+for k in [:original_img, :segs_img]
+    img_name = "$k"
+    ui[:imgs][k][] = make_clickable_img(img_name, ui[:img_click])
+end
 
-ui["/"] = () -> node(:div,
-    node(:div, ui["func_panel"], attributes=Dict(
+
+ui[:func_panel] = vbox(
+    hbox(ui[:func_tabs], hskip(1em),
+        vbox(vskip(0.5em), node(:strong, "Rev: $i")), hskip(1em),
+        vbox(vskip(0.3em), ui[:img_url_input]), hskip(1em),
+        vbox(vskip(0.5em), ui[:img_info])),
+    vskip(1em),
+    hbox(hskip(1em),
+        ui[:go], hskip(0.5em),
+        ui[:funcs_mask], hskip(0.5em),
+        ui[:inputs_mask], hskip(0.5em),
+        vbox(vskip(0.5em), hbox(values(ui[:checkbox_masks])..., hskip(0.5em), ui[:click_info]))
+    ),
+    hbox(hskip(1em), ui[:information]), vskip(0.7em),
+    ui[:img_tabs],
+    );
+
+ui[:img_masks][:original_mask][:index][] = 1
+
+
+ui[:/] = () -> node(:div,
+    node(:div, ui[:func_panel], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
-    node(:div, ui["img_container"], attributes=Dict(
-        "position"=>"relative")))
+    [node(:div, v, style=Dict("position"=>"absolute"))
+        for v in values(ui[:img_masks])]...,
+    );
 
-scope.dom = ui["/"]()
+
+ui[:scope].dom = ui[:/]()

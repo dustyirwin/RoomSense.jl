@@ -230,24 +230,63 @@ function get_img_from_url(img_url_raw::String)
     download(img_url_cleaned, fn)
     return fn end
 
+function make_clickable_img(
+        img_name::String,
+        img_click::Observable{Array{Union{Int,Bool},1}},
+        src="https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg")
+
+    node(:img,
+        attributes=Dict(
+            "id"=>img_name,
+            "src"=>src,
+            "style"=>"padding: 0px; border: 0px; margin: 0px;"),
+        events=Dict("click" => @js () -> $img_click[] = [
+            event.pageY - document.getElementById($img_name).offsetTop,
+            event.pageX,
+            document.getElementById($img_name).height,
+            document.getElementById($img_name).width,
+            document.getElementById($img_name).naturalHeight,
+            document.getElementById($img_name).naturalWidth,
+            event.ctrlKey,
+            event.shiftKey,
+            event.altKey,
+            ];
+    )) end
+
+function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
+    node(:iframe,
+        width="$w",
+        height="$h",
+        frameborder="0",
+        style=Dict("border"=>"0"),
+        src="https://www.google.com/maps/embed/v1/view?"*
+            "zoom=$zoom&"*
+            "center=$lat,$lng&"*
+            "key=$maps_api_key&"
+    ) end
+
 const funcs = Dict(
-    "Google Maps" => update_map,
-    "Fast Scanning" => (w, args) -> begin
-        s[wi[]]["segs"] = fast_scanning(Gray.(s[wi[]]["Original_img"]), args)
-        s[wi[]]["segs_img"] = make_segs_img(s[wi[]]["segs"], w.observs["Colorize"][1][])
-        segs_fn = s[wi[]]["Original_fn"][1:end-4] * "_segs.jpg"
-        save(segs_fn, s[wi[]]["segs_img"])
-        w.observs["segs"][1][] = node(:img, src=register(segs_fn))
-    end,
     "User Image" => (w, args) -> begin
         scale = ceil(calc_scale(parse_input(args, "Set Scale")))
-        s[wi[]]["scale"][1] = scale
-        w.observs["img_info"][1][] = node(:p, "width: $(s[wi[]]["Original_width"]) height: $(s[wi[]]["Original_height"]) scale: $scale px / ft^2")
+        s[i]["scale"][1] = scale
+        ui[:img_info][] = node(:p, "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $scale px / ft²")
     end,
-    "Felzenszwalb" => felzenszwalb,
-    "Seeded Region Growing" => seeded_region_growing,
-    "Prune Segments by MGS" => prune_min_size,
-    "Prune Segment" => prune_segments,
-    "Assign Space Types" => launch_space_editor,
-    "Export Data to CSV" => export_CSV,
+    "Google Maps" => (w, args) -> println("Pay Google da monies!"),
+    "Fast Scanning" => (w, args) -> begin
+        s[i]["segs"] = fast_scanning(Gray.(s[i]["Original_img"]), args)
+        s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
+        segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
+        save(segs_fn, s[i]["segs_img"])
+        ui["segs"][] = node(:img, src=register(segs_fn)) end,
+    "Felzenszwalb" => (w, args) -> begin
+        s[i]["segs"] = felzenszwalb(Gray.(s[i]["Original_img"]), args)
+        s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
+        segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
+        save(segs_fn, s[i]["segs_img"])
+        ui["segs"][] = node(:img, src=register(segs_fn)) end,
+    "Seeded Region Growing" => (w, args) -> seeded_region_growing,
+    "Prune Segments by MGS" => (w, args) -> prune_min_size,
+    "Prune Segment" => (w, args) -> prune_segments,
+    "Assign Space Types" => (w, args) -> launch_space_editor,
+    "Export Data to CSV" => (w, args) -> export_CSV,
     )

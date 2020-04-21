@@ -1,10 +1,11 @@
 
-variables_file = joinpath(examplefolder, "darkly", "_variables.scss") # here you would use your own style
+variables_file = joinpath(examplefolder, "darkly", "_variables.scss")
 mytheme = compile_theme(variables = variables_file)
 Interact.settheme!(mytheme)
 
-const ui = OrderedDict(
-    "funcs" => OrderedDict(
+const ui = Dict{Union{Symbol,String},Any}(
+    :img_syms => [:original, :overlay, :segs, :highlight, :seeds, :labels, :plots, :gmap],
+    :funcs => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(k=>k for k in [
                 "User Image", "Google Maps"])),
@@ -18,26 +19,21 @@ const ui = OrderedDict(
             OrderedDict(k=>k for k in [
                 "Assign Space Types", "Export Data to CSV"])),
     ),
-    "inputs" => OrderedDict(
+    :inputs => OrderedDict(
         "Fast Scanning" => widget(0.05:0.01:0.25),
-        "Felzenszwalb" => widget(25:5:250),
+        "Felzenszwalb" => widget(25:5:125),
         "Seeded Region Growing" => widget("help text?"),
-        "Prune Segments by MGS" => widget(10),
+        "Prune Segments by MGS" => widget(0),
         "Prune Segment" => widget(0),
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
         "Export Data to CSV" => Observable(node(:div)),
         "Google Maps" => textbox("eg Nike World Campus Beaverton, OR", size=40),
     ),
-    "checkboxes" => OrderedDict(
-        k => checkbox(value=false; label=k)
-        for k in ["Overlay", "Seeds", "Labels", "Colorize", "CadetPred"]
-    ),
-    "imgs" => Dict(
-        k => Observable(node(:img, src="", style=Dict("opacity"=>"0.9")))
-        for k in ["original", "highlight", "overlay", "seeds", "segs", "gmap", "plot"]
-    ),
-    "help_texts" => Dict(
+    :checkboxes => OrderedDict(
+        k => checkbox(value=false; label=k) for k in
+            ["Overlay", "Seeds", "Labels", "Colorize", "CadetPred"]),
+    :help_texts => Dict(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
         "Felzenszwalb" => "Select the threshold value above, higher values generatea fewer pixel groups.",
         "Seeded Region Growing" => "Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
@@ -48,47 +44,27 @@ const ui = OrderedDict(
         "Export Data to CSV" => "Exports segment data to CSV.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
-    "font_size" => 30,
-    "font" => newface("./fonts/OpenSans-Bold.ttf"),
-    )
+    :font_size => 30,
+    :font => newface("./fonts/OpenSans-Bold.ttf"),
+    :img_url_input => textbox("Paste http(s) img link here..."),
+    :img_tabs => tabs([], value="Original"),
+    :img_info => Observable(node(:strong, "<-- paste image weblink here")),
+    :click_info => Observable(node(:p,"")),
+    :information => Observable(node(:p, "")),
+    :go => button("Go!"))
 
-ui["obs"] = Dict(
-    "img_url_input" => textbox("Paste http(s) img link here..."),
-    "inputs_mask" => mask(ui["inputs"], key="User Image"),
-    "imgs_mask" => mask(OrderedDict(
-        "Original" => ui["imgs"]["original"],
-        "Segmented" => ui["imgs"]["segs"],
-        "Plots" => ui["imgs"]["plot"],
-        "Google Maps" => ui["imgs"]["gmap"],
-        ), key="Original"),
-    "img_tabs" => tabs([], value="Original"),
-    "img_info" => Observable(node(:strong, "<-- paste image weblink here")),
-    "func_tabs" => tabs([keys(ui["funcs"])...]),
-    "funcs_mask" => mask(ui["funcs"]),
-    "click_info" => Observable(node(:p,"")),
-    "information" => Observable(node(:p, "")),
-    "checkboxes_mask" => mask(ui["checkboxes"], index=0),
-    "go" => button("Go!"),
-    "wi" => Observable(1),
-    )
 
-for collection in ["imgs", "funcs", "checkboxes", "inputs"]
-    merge!(ui["obs"], Dict(collect(ui[collection])...))
+ui[:imgs] = OrderedDict(
+    Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
+ui[:imgs][:gmap_img] = Observable(gmap());
+ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
+ui[:funcs_mask] = mask(ui[:funcs]);
+ui[:inputs_mask] = mask(ui[:inputs], key="User Image");
+ui[:checkbox_masks] = Dict("$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
+ui[:img_masks] = Dict(Symbol("$(k)_mask")=>mask(Observable(
+    [ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
+
+
+for collection in [:imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]
+    merge!(ui, Dict(ui[collection]...))
 end
-
-
-ui["func_panel"] = vbox(
-    hbox(ui["obs"]["func_tabs"], hskip(1em),
-        vbox(vskip(0.5em), node(:strong, "Rev: $(ui["obs"]["wi"][])")), hskip(1em),
-        vbox(vskip(0.3em), ui["obs"]["img_url_input"]), hskip(1em),
-        vbox(vskip(0.5em), ui["obs"]["img_info"])),
-    vskip(1em),
-    hbox(hskip(1em),
-        ui["obs"]["go"], hskip(0.5em),
-        ui["obs"]["funcs_mask"], hskip(0.5em),
-        ui["obs"]["inputs_mask"], hskip(0.5em),
-        vbox(vskip(0.5em), hbox(ui["obs"]["checkboxes_mask"], hskip(0.5em), ui["obs"]["click_info"]))
-    ),
-    hbox(hskip(1em), ui["obs"]["information"]), vskip(0.7em),
-    ui["obs"]["img_tabs"],
-    )

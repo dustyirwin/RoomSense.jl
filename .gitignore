@@ -6,3 +6,4 @@
 /assets
 secrets.jl
 *.json
+secrets

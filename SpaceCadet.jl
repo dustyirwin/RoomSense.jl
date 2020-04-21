@@ -17,8 +17,8 @@ using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox, d
     Widgets.radiobuttons, Widgets.confirm
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
-using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
-    Scale.y_log10
+#using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
+#    Scale.y_log10
 using FreeTypeAbstraction: renderstring!, newface, FreeType
 using InteractBulma: compile_theme, examplefolder
 using ImageTransformations: imresize
@@ -30,6 +30,7 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using Metalhead
+using PlotlyJS
 using WebIO
 using Flux
 using JSON
@@ -44,19 +45,18 @@ end
 
 println("\nComplete. Loading codebase...\n")
 
-const wi = Observable(1)  # work index
+const i = 1  # work index
 
 if @isdefined s
 else const s = [Dict{Any,Any}(
-    "scale"=>[1.,"ft",""],
-    "segs_types"=>nothing,
-    "selected_areas"=>Vector{Int64}())] end
+    "scale" => [1.,"ft",""],
+    "segs_types" => nothing,
+    "selected_areas" => Vector{Int64}())] end
 
-@time include("./src/secrets.jl")
-@time include("./src/maps.jl")
+@time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")
-@time include("./src/ui.jl")
 @time include("./src/models.jl")
+@time include("./src/ui.jl")
 @time include("./src/scope.jl")
 @time include("./src/events.jl")
 @time include("./src/server.jl")
@@ -64,8 +64,3 @@ else const s = [Dict{Any,Any}(
 println("All finished! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
 
 end  # begin
-
-
-# Diag tools
-# tools(w)
-# @time using Debugger

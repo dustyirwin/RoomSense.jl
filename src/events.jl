@@ -2,108 +2,99 @@
 function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "img_url_input") do args
-        w.observs["go"][1]["is-loading"][] = true
+        ui[:go]["is-loading"][] = true
 
         try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
-            s[ wi[] ]["Original_fn"] = fn
-            s[ wi[] ]["Original_img"] = load(fn)
-            s[ wi[] ]["Overlay_img"] = make_transparent(s[ wi[] ]["Original_img"])
-            save(fn[1:end-4] * "_Overlay.jpg", s[ wi[] ]["Overlay_img"])
-            s[ wi[] ]["Overlay_rfn"] = register(fn[1:end-4] * "_Overlay.jpg")
+            println("User uploaded an img! \n args: $args \n fn: $fn")
 
-            _w = s[wi[]]["Original_width"] = width(s[ wi[] ]["Original_img"])
-            _h = s[wi[]]["Original_height"] = height(s[ wi[] ]["Original_img"])
+            s[i]["Original_img"] = load(fn)
+            _w = s[i]["Original_width"] = width(s[i]["Original_img"])
+            _h = s[i]["Original_height"] = height(s[i]["Original_img"])
+            s[i]["Overlay_img"] = make_transparent(s[i]["Original_img"])
+            save(fn[1:end-4] * "_Overlay.jpg", s[i]["Overlay_img"])
 
-            w.observs["original"][1][] = node(:img, attributes=Dict(
-                "src"=>register(fn), "style"=>"opacity: 0.9;"))
+            ui[:original_img][] = make_clickable_img("original", ui[:img_click], register(fn))
+            ui[:overlay_img][] = node(:img, attributes=Dict(
+                "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
+                "style"=>"top: 0px; left: 0px; opacity:0.7;"))
 
-            w.observs["gmap"][1][] = node(:div, gmap(_w, _h))
+            ui[:img_tabs][:options][] = ["Original", "Google Maps"]
 
-            w.observs["img_info"][1][] = node(:p, "width: $_w px height: $_h px")
+            ui["Overlay_mask"][] = 1
 
-            w.observs["checkboxes_mask"][1][] = 1
-
-            w.observs["img_tabs"][1][:options][] = ["Original", "Google Maps"]
-
-            w.observs["information"][1][] = node(:p, ui["help_texts"]["User Image"])
-
-            println("User uploaded a valid img url! user img rfn: $(register(fn))")
+            ui[:img_info][] = node(:p, "width: $_w  height: $_h")
+            ui[:information][] = node(:p, ui[:help_texts]["User Image"])
 
         catch err return
 
-        finally w.observs["go"][1]["is-loading"][] = false end end
+        finally ui[:go]["is-loading"][] = false end end
 
     on(w, "go") do args
-        w.observs["go"][1]["is-loading"][] = true
+        ui[:go]["is-loading"][] = true
 
         try
-            input_name = w.observs["inputs_mask"][1][:key][]
-            funcs_tab = w.observs["funcs_mask"][1][:key][]
-            funcs[input_name](w, ui["inputs"][input_name][])
-            println("go pressed, reached end of instructions! input: $input")
+            input_name = ui[:inputs_mask][:key][]
+            funcs_tab = ui[:funcs_mask][:key][]
+            funcs[input_name](w, ui[:inputs][input_name][])
 
         catch err return
 
-        finally w.observs["go"][1]["is-loading"][] = false end end
+        finally ui[:go]["is-loading"][] = false  end end
 
     on(w, "img_click") do args
-        w.observs["click_info"][1][] = node(:p, "x: $(args[1]) y: $(args[2])")
+        println("display_img clicked! args: $args")
+        ui[:go]["is-loading"][] = false
 
-        selected_func = w.observs["inputs_mask"][1][:key][]
-        if selected_func == "User Image"
-            ui["inputs"][selected_func][] = ui["inputs"][selected_func][] * "$(args[7] ? args[1] : args[2]),"
-        end
+        try
+            ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
+            selected_func = ui[:inputs_mask][:key][]
 
-        try println("img clicked! args: $args")
-        catch end end
+            if selected_func == "User Image" && ui[:funcs_mask][:key][] == "Set Scale"
+                ui[:inputs][selected_func][] = ui[:inputs][selected_func][] * "$(args[7] ? args[1] : args[2]),"
+            end
+
+        catch err return
+
+        finally ui[:go]["is-loading"][] = false end end
 
     on(w, "img_tabs") do args
-        key = w.observs["img_tabs"][1][]
-        w.observs["imgs_mask"][1][:key][] = key
-
-        println("img tabs clicked! key: $key") end
+        println("img tabs clicked! args: $args")
+        ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
+        ui[:original_mask][] = args == "Original" ? 1 : 0
+        ui[:segs_mask][] = args == "Segmented" ? 1 : 0
+        ui[:plots_mask][] = args == "Plots" ? 1 : 0 end
 
     on(w, "func_tabs") do args
         println("funcs_tabs pressed! args: $args")
-        w.observs["funcs_mask"][1][:key][] = args
-
-        func_name = ui["funcs"][args][]
-        w.observs["inputs_mask"][1][:key][] = func_name
+        ui[:funcs_mask][:key][] = args
+        ui[:inputs_mask][:key][] = ui[:funcs][args][]
 
         if args == "Set Scale"
-            w.observs["img_tabs"][1][:options][] = ["Original", "Google Maps"]
+            ui[:img_tabs][:options][] = ["Original", "Google Maps"]
         elseif args == "Segment Image"
-            w.observs["img_tabs"][1][:options][] = ["Original", "Segmented", "Plots"]
-        end
-    end
+            ui[:img_tabs][:options][] = ["Original", "Segmented", "Plots"]
+        end end
 
     on(w, "inputs_mask") do args
         println("inputs_mask changed! args: $args")
-
-        w.observs["information"][1][] = node(:p,
-            ui["help_texts"][ w.observs["inputs_mask"][1][:key][] ]) end
+        ui[:information][] = node(:p, ui[:help_texts][ ui[:inputs_mask][:key][] ]) end
 
     on(w, "Set Scale") do args
-        w.observs["inputs_mask"][1][:key][] = args end
+        ui[:inputs_mask][:key][] = args end
 
     on(w, "Segment Image") do args
-        w.observs["inputs_mask"][1][:key][] = args end
+        ui[:inputs_mask][:key][] = args end
 
     on(w, "Modify Segments") do args
-        w.observs["inputs_mask"][1][:key][] = args end
+        ui[:inputs_mask][:key][] = args end
 
     on(w, "Export Data") do args
-        w.observs["inputs_mask"][1][:key][] = args end
+        ui[:inputs_mask][:key][] = args end
 
     on(w, "Overlay") do args
-        src = args ? s[ wi[] ]["Overlay_rfn"] : ""
-
-        w.observs["overlay"][1][] = node(:img, attributes=Dict(
-            "src"=>src,
-            "style"=>"position: absolute; top: 0px; left: 0px; opacity: 0.5;"))
-
-            println("Overlay clicked!") end
+        println("Overlay clicked! args: $args")
+        ui[:img_masks][:overlay_mask][] = args ? 1 : 0 end
 
     return w
 end

@@ -5,18 +5,18 @@ using PackageCompiler
 # PackageCompiler.restore_default_sysimage()
 
 compiled_symbols = [
-    :BSON, :Random, :Images, :ImageSegmentation, :Gadfly, :ImageMagick,
+    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :ImageMagick,
     :CuArrays, :Dates, :CSV, :FreeTypeAbstraction, :DataFrames, :Flux,
-    :Metalhead, :Pkg, :AssetRegistry, :Interact, :Mux, :ColorTypes,
+    :Metalhead, :Pkg, :AssetRegistry, :Interact, :ColorTypes, :Mux,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :Distances,
-    :InteractBulma, :JSON,
-]
+    :InteractBulma,
+    ]
 
-compile_list = []
+compile_list = [:ImageSegmentation]
 
 
-for pkg in compiled_symbols
-    print("\nCompiling package: $pkg\n")
+@async for pkg in compile_list
+    print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",
         replace_default=true)
