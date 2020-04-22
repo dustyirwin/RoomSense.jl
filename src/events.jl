@@ -7,6 +7,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
         try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
             println("User uploaded an img! \n args: $args \n fn: $fn")
+            ui[:go_mask][] = 1
 
             s[i][:original_fn] = fn
             s[i][:original_img] = load(fn)
@@ -22,12 +23,11 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 "src"=>register(s[i][:overlay_fn]) * "?dummy=$(now())",
                 "style"=>"position:absolute; opacity:0.9;"))
 
-            ui[:img_tabs][:options][] = ["Original", "Google Maps"]
-
-            ui["Overlay_mask"][] = 1
-
+            ui[:func_tabs][] = "Set Scale"
             ui[:img_info][] = node(:p, "width: $_w  height: $_h")
             ui[:information][] = node(:p, ui[:help_texts]["User Image"])
+            ui["Overlay_mask"][] = 1
+            ui[:img_tabs][:options][] = ["Original"]
 
         catch err
         finally ui[:go]["is-loading"][] = false end end
@@ -39,6 +39,11 @@ function space_cadet(ui::AbstractDict, w::Scope)
             input_name = ui[:inputs_mask][:key][]
 
             println("User clicked Go! input_name: $input_name")
+
+            if ui[:func_tabs][] in ["Segment Image", "Modify Segments"]
+                push!(s, s[i])
+                ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
+                global i += 1 end
 
             go_funcs[input_name](ui, ui[:inputs][input_name][])
 
@@ -73,10 +78,9 @@ function space_cadet(ui::AbstractDict, w::Scope)
         ui[:funcs_mask][:key][] = args
         ui[:inputs_mask][:key][] = ui[:funcs][args][]
 
+        ui["CadetPred_mask"][] = args == "Export Data" ? 1 : 0
         ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
         ui["Labels_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
-        ui["Seeds_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
-        ui["CadetPred_mask"][] = args == "Modify Segments" ? 1 : 0
 
         ui["Labels_mask"][] = haskey(s[i], :labels_img) ? 1 : ui["Labels_mask"][]
         ui["Seeds_mask"][] = haskey(s[i], :seeds_img) ? 1 : ui["Seeds_mask"][]
@@ -84,10 +88,19 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "inputs_mask") do args
         println("inputs_mask changed! args: $args")
-        ui[:information][] = node(:p, ui[:help_texts][ ui[:inputs_mask][:key][] ]) end
+
+        if ui[:inputs_mask][:key][] == "Google Maps"
+            ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Google Maps")) end
+
+        if ui[:inputs_mask][:key][] == "Seeded Region Growing"
+            ui["Seeds_mask"][] = 1 end
+
+        ui[:information][] = node(:p, ui[:help_texts][ ui[:inputs_mask][:key][] ])
+        end
 
     on(w, "Set Scale") do args
-        ui[:inputs_mask][:key][] = args end
+        ui[:inputs_mask][:key][] = args
+        end
 
     on(w, "Segment Image") do args
         ui[:inputs_mask][:key][] = args end

@@ -20,7 +20,7 @@ ui[:func_panel] = vbox(
         vbox(vskip(0.5em), ui[:img_info])),
     vskip(1em),
     hbox(hskip(1em),
-        ui[:go], hskip(0.5em),
+        ui[:go_mask], hskip(0.5em),
         ui[:funcs_mask], hskip(0.5em),
         ui[:inputs_mask], hskip(0.5em),
         vbox(vskip(0.5em), hbox(values(ui[:checkbox_masks])..., hskip(0.5em), ui[:click_info]))

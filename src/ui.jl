@@ -47,7 +47,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :font_size => 27,
     :font => FTFont("./fonts/OpenSans-Bold.ttf"),
     :img_url_input => textbox("Paste http(s) img link here..."),
-    :img_tabs => tabs([], value="Original"),
+    :img_tabs => tabs(["Original"]),
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),
     :click_info => Observable(node(:p,"")),
     :information => Observable(node(:p, "")),
@@ -57,16 +57,16 @@ const ui = Dict{Union{Symbol,String},Any}(
 
 
 ui[:imgs] = OrderedDict(
-    Symbol("$(k)_img") => Observable(node(:img, style=Dict("position"=>"absolute")))
-        for k in ui[:img_syms])
+    Symbol("$(k)_img") => Observable(node(:img, style=Dict("position"=>"absolute"))) for k in ui[:img_syms])
 ui[:imgs][:gmap_img] = Observable(gmap());
 ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
-ui[:funcs_mask] = mask(ui[:funcs]);
-ui[:inputs_mask] = mask(ui[:inputs], key="User Image");
-ui[:checkbox_masks] = Dict("$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
-ui[:img_masks] = Dict(Symbol("$(k)_mask")=>mask(Observable(
-    [ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
-
+ui[:funcs_mask] = mask(ui[:funcs], index=0);
+ui[:inputs_mask] = mask(ui[:inputs], index=0);
+ui[:checkbox_masks] = Dict(
+    "$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
+ui[:img_masks] = Dict(
+    Symbol("$(k)_mask")=>mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
+ui[:go_mask] = mask([ ui[:go] ], index=0)
 
 for collection in [:imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]
     merge!(ui, Dict(ui[collection]...))
