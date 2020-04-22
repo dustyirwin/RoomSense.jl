@@ -4,7 +4,7 @@ make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels))
 
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 
-make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+make_overlay_img(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
 
 # verbose funcs
@@ -253,31 +253,43 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
             "key=$maps_api_key&"
     ) end
 
+
+function update_segs_img(ui::Dict)
+    s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
+    segs_fn = s[i][:original_fn][1:end-4] * "_segs.png"
+    save(segs_fn, s[i][:segs_img])
+    ui[:segs_img][] = make_clickable_img(
+        "segs_img", ui[:img_click], register(segs_fn)*"?dummy=$(now())")
+    ui[:img_tabs][] = "Segmented"
+    end
+
 function go_seg_img(ui::Dict, args::Any, alg::Function)
     println("creating segs img! alg: $alg args: $args")
+    s[i][:segs] = alg(Gray.(s[i][:original_img]), args)
+    update_segs_img(ui)
+    end
 
-    s[i]["segs"] = alg(Gray.(s[i]["Original_img"]), args)
-    s[i]["segs_img"] = make_segs_img(s[i]["segs"], ui["Colorize"][])
-    segs_fn = s[i]["Original_fn"][1:end-4] * "_segs.jpg"
-    save(segs_fn, s[i]["segs_img"])
-    ui[:segs_img][] = make_clickable_img("segs_img", ui[:img_click], register(segs_fn)*"?dummy=$(now())")
-    ui[:img_tabs][] = "Segmented" end
+function go_mod_segs(ui::Dict, args::Int64, alg::Function)
+    println("modifying segs img! alg: $alg args: $args")
+    s[i][:segs] = alg(s[i][:segs], args, s[i][:scale][1])
+    update_segs_img(ui)
+    end
 
 
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
-            s[i]["scale"][1] = ceil(calc_scale(parse_input_str(args)))
+            s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
             ui[:img_info][] = node(:p,
-                "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $(s[i]["scale"][1]) px / ft²")
+                "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $(s[i]["scale"][1]) pxs / unit area")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
         ui, args, fast_scanning),
     "Felzenszwalb" => (ui::Dict, args::Int64) -> go_seg_img(
         ui, args, felzenszwalb),
-    "Seeded Region Growing" => (ui::Dict, args::Any) -> go_seg_img(
+    "Seeded Region Growing" => (ui::Dict, args::String) -> go_seg_img(
         ui, parse_input_str(args), seeded_region_growing),
-    "Prune Segments by MGS" => (ui, args::Any) -> go_seg_img(
+    "Prune Segments by MGS" => (ui::Dict, args::Int64) -> go_mod_segs(
         ui, args, prune_min_size),
     "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
         ui, args, prune_segments),

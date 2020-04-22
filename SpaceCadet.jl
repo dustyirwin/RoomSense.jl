@@ -48,10 +48,11 @@ println("\nComplete. Loading codebase...\n")
 const i = 1  # work index
 
 if @isdefined s
-else const s = [Dict{Any,Any}(
-    "scale" => [1.,"ft",""],
-    "segs_types" => nothing,
-    "selected_areas" => Vector{Int64}())] end
+else const s = [ Dict{Any,Any}(
+    :scale => [1.,"ft",""],
+    :segs_types => nothing,
+    :selected_areas => Vector{Int64}())
+    ] end
 
 @time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")

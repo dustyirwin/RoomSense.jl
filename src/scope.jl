@@ -35,8 +35,7 @@ ui[:img_masks][:original_mask][:index][] = 1
 ui[:/] = () -> node(:div,
     node(:div, ui[:func_panel], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
-    [node(:div, v, style=Dict("position"=>"absolute"))
-        for v in values(ui[:img_masks])]...,
+    values(ui[:img_masks])...,
     );
 
 

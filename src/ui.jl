@@ -37,7 +37,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
         "Felzenszwalb" => "Select the threshold value above, higher values generatea fewer pixel groups.",
         "Seeded Region Growing" => "Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
-        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels.",
+        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels (if you haven't set the scale).",
         "Prune Segment" => "Remove segment by label and merge with most similar neighbor.",
         "User Image" => "Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         "Assign Space Types" => "Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
@@ -57,7 +57,8 @@ const ui = Dict{Union{Symbol,String},Any}(
 
 
 ui[:imgs] = OrderedDict(
-    Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
+    Symbol("$(k)_img") => Observable(node(:img, style=Dict("position"=>"absolute")))
+        for k in ui[:img_syms])
 ui[:imgs][:gmap_img] = Observable(gmap());
 ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
 ui[:funcs_mask] = mask(ui[:funcs]);

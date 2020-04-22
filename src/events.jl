@@ -8,17 +8,19 @@ function space_cadet(ui::AbstractDict, w::Scope)
             download(args, fn)
             println("User uploaded an img! \n args: $args \n fn: $fn")
 
-            s[i]["Original_fn"] = fn
-            s[i]["Original_img"] = load(fn)
-            _w = s[i]["Original_width"] = width(s[i]["Original_img"])
-            _h = s[i]["Original_height"] = height(s[i]["Original_img"])
-            s[i]["Overlay_img"] = make_transparent(s[i]["Original_img"])
-            save(fn[1:end-4] * "_Overlay.jpg", s[i]["Overlay_img"])
+            s[i][:original_fn] = fn
+            s[i][:original_img] = load(fn)
+            _w = s[i][:original_width] = width(s[i][:original_img])
+            _h = s[i][:original_height] = height(s[i][:original_img])
+            s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
+            s[i][:overlay_img] = make_overlay_img(s[i][:original_img])
+            save(s[i][:overlay_fn], s[i][:overlay_img])
 
-            ui[:original_img][] = make_clickable_img("original", ui[:img_click], register(fn))
+            ui[:original_img][] = make_clickable_img(
+                "original_img", ui[:img_click], register(fn) * "?dummy=$(now())")
             ui[:overlay_img][] = node(:img, attributes=Dict(
-                "src"=>register(fn[1:end-4] * "_Overlay.jpg"),
-                "style"=>"top: 0px; left: 0px; opacity:0.7;"))
+                "src"=>register(s[i][:overlay_fn]) * "?dummy=$(now())",
+                "style"=>"position:absolute; opacity:0.9;"))
 
             ui[:img_tabs][:options][] = ["Original", "Google Maps"]
 
