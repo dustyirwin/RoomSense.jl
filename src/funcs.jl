@@ -255,11 +255,10 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
 
 function update_segs_img(ui::Dict)
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
-    segs_fn = s[i][:original_fn][1:end-4] * "_segs.png"
-    save(segs_fn, s[i][:segs_img])
+    s[i][:segs_fn] = s[i][:original_fn][1:end-4] * "_segs.png"
+    save(s[i][:segs_fn], s[i][:segs_img])
     ui[:segs_img][] = make_clickable_img(
-        "segs_img", ui[:img_click], register(segs_fn)*"?dummy=$(now())")
-    ui[:img_tabs][] = "Segmented"
+        "segs_img", ui[:img_click], register(s[i][:segs_fn])*"?dummy=$(now())")
     end
 
 function go_seg_img(ui::Dict, args::Any, alg::Function)
@@ -274,12 +273,20 @@ function go_mod_segs(ui::Dict, args::Int64, alg::Function)
     update_segs_img(ui)
     end
 
+function go_make_labels(ui::Dict, segs::SegmentedImage)
+    s[i][:labels_img] = make_labels_img(s[i][:segs])
+    s[i][:labels_fn] = s[i][:original_fn][1:end-4] * "_labels.png"
+    save(s[i][:labels_fn], s[i][:labels_img])
+    ui[:labels_img][] = node(:img, attributes=Dict(
+        "src"=>register(s[i][:labels_fn]) * "?dummy=$(now())",
+        "style"=>"position:absolute; opacity:0.9;"))
+    end
 
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
-            s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
-            ui[:img_info][] = node(:p,
-                "width: $(s[i][:original_width]) height: $(s[i][:original_height]) scale: $(s[i][:scale][1]) pxs / unit area")
+        s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
+        ui[:img_info][] = node(:p,
+            "width: $(s[i][:original_width]) height: $(s[i][:original_height]) scale: $(s[i][:scale][1]) pxs / unit area")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
@@ -293,9 +300,9 @@ const go_funcs = Dict(
     "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
         ui, args, prune_segments),
     "Assign Space Types" => (ui::Dict, args::Any) -> begin
-            launch_space_editor()
+        launch_space_editor()
         end,
     "Export Data to CSV" => (ui::Dict, args::Any) -> begin
-            export_CSV()
+        export_CSV()
         end,
 )

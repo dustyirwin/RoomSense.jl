@@ -10,8 +10,7 @@ ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[])
 for k in [:original_img, :segs_img]
     img_name = "$k"
     ui[:imgs][k][] = make_clickable_img(img_name, ui[:img_click])
-end
-
+    end
 
 ui[:func_panel] = vbox(
     hbox(ui[:func_tabs], hskip(1em),
@@ -36,7 +35,7 @@ ui[:/] = () -> node(:div,
     node(:div, ui[:func_panel], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
     values(ui[:img_masks])...,
+    ui[:confirm],
     );
-
 
 ui[:scope].dom = ui[:/]()

@@ -51,7 +51,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),
     :click_info => Observable(node(:p,"")),
     :information => Observable(node(:p, "")),
-    :alert => alert(""),
+    :confirm => confirm(""),
     :go => button("Go!"),
     )
 

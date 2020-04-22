@@ -14,7 +14,7 @@ using ImageSegmentation: fast_scanning, felzenszwalb,
     segment_mean, segment_labels, SegmentedImage
 using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox,
     dropdown, textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator,
-    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!, alert
+    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 #using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
@@ -48,10 +48,10 @@ println("\nComplete. Loading codebase...\n")
 const i = 1  # work index
 
 if @isdefined s
-else const s = [ Dict{Any,Any}(
+else const s = Dict{Symbol,Any}[ Dict(
     :scale => [1.,"ft",""],
     :segs_types => nothing,
-    :selected_areas => Vector{Int64}())
+    :selected_areas => Vector{Int64}()),
     ] end
 
 @time include("./secrets/secrets.jl")

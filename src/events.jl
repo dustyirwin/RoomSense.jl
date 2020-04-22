@@ -42,13 +42,20 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
             if ui[:func_tabs][] in ["Segment Image", "Modify Segments"]
                 push!(s, s[i])
+                global i += 1
+
                 ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
-                global i += 1 end
+                go_funcs[input_name](ui, ui[:inputs][input_name][])
 
-            go_funcs[input_name](ui, ui[:inputs][input_name][])
+                # session cleanup
+                ui["Labels"][] ? go_make_labels(ui, s[i][:segs]) : if haskey(s[i], :labels_img); delete!(s[i][:labels_img]) end
 
-        catch err; println(err); return
-        finally ui[:go]["is-loading"][] = false  end end
+            else
+                go_funcs[input_name](ui, ui[:inputs][input_name][])
+            end
+
+        catch err; error(err); return
+        finally ui[:go]["is-loading"][] = false end end
 
     on(w, "img_click") do args
         println("display_img clicked! args: $args")
@@ -121,18 +128,18 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
         ui[:img_masks][:labels_mask][] = args ? 1 : 0
 
-        if haskey(s[i], :segs) && !haskey(s[i], :labels_img) &&
-            length(s[i][:segs].segment_labels) < 1000
+        if args && haskey(s[i], :segs) && !haskey(s[i], :labels_img)
+            segs_ln = length(s[i][:segs].segment_labels)
 
-            s[i][:labels_img] = make_labels_img(s[i][:segs])
-            s[i][:labels_fn] = s[i][:original_fn][1:end-4] * "_labels.png"
-            save(s[i][:labels_fn], s[i][:labels_img])
-            ui[:labels_img][] = node(:img, attributes=Dict(
-                "src"=>register(s[i][:labels_fn]) * "?dummy=$(now())",
-                "style"=>"position:absolute; opacity:0.9;"))
+            if segs_ln > 1000
+                ui[:confirm]("You are attempting to label $segs_ln segments. \nThis operation could take a long time. Continue?"
+                ) do resp
+
+                resp ? go_make_labels(ui, ui[:segs]) : return end
+        end end
+
+        ui[:go]["is-loading"][] = false
         end
-
-        ui[:go]["is-loading"][] = false end
 
     return w
 end

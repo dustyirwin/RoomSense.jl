@@ -1,21 +1,19 @@
 using PackageCompiler
 
-
 # julia --trace-compile=space_cadet_trace.jl
 # PackageCompiler.restore_default_sysimage()
 
 compiled_symbols = [
-    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :ImageMagick,
-    :CuArrays, :Dates, :CSV, :FreeTypeAbstraction, :DataFrames, :Flux,
-    :Metalhead, :Pkg, :AssetRegistry, :Interact, :ColorTypes, :Mux,
-    :ImageTransformations, :Logging, :WebIO, :JSExpr, :Distances,
+    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :CuArrays, :Dates,
+    :CSV, :FreeTypeAbstraction, :DataFrames, :Metalhead, :Pkg, :AssetRegistry,
+    :Interact, :Mux, :Flux, :ImageTransformations, :Logging, :WebIO, :JSExpr,
     :InteractBulma,
     ]
 
 compile_list = [:ImageSegmentation]
 
 
-for pkg in compiled_symbols
+@async for pkg in compiled_symbols
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",
