@@ -6,8 +6,10 @@ ui[:scope] = Scope(
         for (k,v) in ui if v isa Observables.AbstractObservable))
 
 ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[])
+ui[:stdd_click] = Observable(ui[:scope], "stdd_click", Union{Int,Bool}[])
 
-for k in [:original_img, :segs_img]
+
+for k in [:user_img, :segs_img]
     img_name = "$k"
     ui[:imgs][k][] = make_clickable_img(img_name, ui[:img_click])
     end
@@ -28,7 +30,7 @@ ui[:func_panel] = vbox(
     ui[:img_tabs],
     );
 
-ui[:img_masks][:original_mask][:index][] = 1
+ui[:img_masks][:user_mask][:index][] = 1
 
 
 ui[:/] = () -> node(:div,
@@ -36,10 +38,12 @@ ui[:/] = () -> node(:div,
     node(:div, ui[:func_panel], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
     node(:div,
-        ui[:original_mask],
+        ui[:user_mask],
         ui[:segs_mask],
         ui[:overlay_mask],
         ui[:labels_mask],
     ));
 
 ui[:scope].dom = ui[:/]()
+
+ui[:space_editor] = (model) -> node(:div,)

@@ -36,7 +36,7 @@ function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix,
 
     return (X, Y) end
 
-function update_model(model, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
+function update_model(model::Any, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
     for i in inds
         x = X[:,:,:,i:i]
         y = Y[:,:,i:i]

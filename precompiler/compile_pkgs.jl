@@ -10,7 +10,7 @@ compiled_symbols = [
     :InteractBulma,
     ]
 
-compile_list = [:CuArrays, :NNlib]  # CuArrays updated to 2.1.0 from 2.0.1
+compile_list = [:Mux]  # Mux loading in 0.231s
 
 
 @async for pkg in compile_list

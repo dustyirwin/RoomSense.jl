@@ -44,9 +44,9 @@ println("\nComplete. Loading codebase...\n")
 
 const i = 1  # work index
 
-if @isdefined s
+if @isdefined s  # user session data
 else const s = Dict{Symbol,Any}[ Dict(
-    :scale => [1.,"ft",""],
+    :scale => [1.,""],
     :segs_types => nothing,
     :selected_areas => Vector{Int64}()),
     ] end

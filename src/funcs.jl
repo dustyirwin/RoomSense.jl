@@ -134,7 +134,7 @@ function make_highlight_img(segs::SegmentedImage, img::Matrix, seg_labels::Vecto
             else; img[j,k] = RGB{N0f8}(0.,0.,0.)
     end end end
 
-    save(s[i][:original_fn][1:end-4] * "_highlight.png", make_transparent(img))
+    save(s[i][:user_fn][1:end-4] * "_highlight.png", make_transparent(img))
     return register(img_fln[1:end-4] * "_highlight.png") * "?dummy=$(now())" end
 
 function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
@@ -173,35 +173,40 @@ function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     export_text = "Data exported to $(filename).
  Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
 
-function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model)
-    on(sdw, "click_stdd") do args
-        global s
+function launch_space_editor(scope::Scope, model)
+    img_deep = deepcopy(s[i][:segs_img]) # TODO: find a way to compsite segs & user img into
+
+    on(scope, "click_stdd") do args
         @show args
-        img_deep = deepcopy(s[i][:user_img])
-        hs = highlight_segs(segs, img_deep, img_fln, [args])
+        s[i][:highlight_img] = highlight_segs(s[i][:segs], img_deep, s[i][:segs_fn], [args])
+        ui[:highlight_img][] = make_clickable_img("highlight_img", ui[:click_stdd], hs)
     end
 
-    ui["Cadet Pred"][] ? get_segs_types(s[i][:segs], s[i][:user_img], model) : nothing
+    ui["CadetPred"][] ? get_segs_types(s[i][:segs], s[i][:user_img], model) : nothing
 
-    if :segs_details_html in keys(s[i]); else
+    if haskey(s[i], :segs_details_html); else
     s[i][:segs_details_html], s[i][:dds], s[i][:checks], s[i][:spins] = make_segs_details(
         s[i][:segs], s[i][:segs_types], s[i][:scale][1], s[i][:scale][2],
-        length(s[i][:segs].segment_labels)) end end
+        length(s[i][:segs].segment_labels))
+    end end
 
-function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
+function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, segs_limit::Int64)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
     segs_details = length(segs_details) > segs_limit ? segs_details[1:segs_limit] : segs_details  # restricted to the Top 100 elements by size
 
     area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
     summary_text = hbox(
-        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : scale_units) Total Segs: $(length(segment_labels(segs))) (Top $segs_limit)")
+        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : "unit area")
+        Total Segs: $(length(segment_labels(segs))) (Top $segs_limit)")
 
-    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end, label="""
-        $lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units""", attributes=Dict(
-            "onclick"=>"""Blink.msg("click_stdd", $lbl)"""))
-        for (lbl, px_ct) in segs_details)
+        # TODO: add statistical analysis to summary_text. Probably from Statistics or OnlineStats?
+
+    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end,
+        label="$lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units",
+        events=Dict("click_stdd"=> @js () -> $click_stdd[] = $lbl; ))
+            for (lbl, px_ct) in segs_details)
     checks = OrderedDict(lbl => checkbox(label="Export?", value=true) for (lbl, px_ct) in segs_details)
-    spins = OrderedDict(lbl => spinbox(-100:100, value=0, label="Area +/-") for (lbl, px_ct) in segs_details)
+    spins = OrderedDict(lbl => spinbox(0., value=0., label="Area +/-") for (lbl, px_ct) in segs_details)
 
     details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
         for (lbl, px_ct) in segs_details]
@@ -253,7 +258,7 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
 
 function update_segs_img(ui::Dict)
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
-    s[i][:segs_fn] = s[i][:original_fn][1:end-4] * "_segs.png"
+    s[i][:segs_fn] = s[i][:user_fn][1:end-4] * "_segs.png"
     save(s[i][:segs_fn], s[i][:segs_img])
     ui[:segs_img][] = make_clickable_img(
         "segs_img", ui[:img_click], register(s[i][:segs_fn])*"?dummy=$(now())")
@@ -262,7 +267,7 @@ function update_segs_img(ui::Dict)
 
 function go_seg_img(ui::Dict, args::Any, alg::Function)
     println("creating segs img! alg: $alg args: $args")
-    s[i][:segs] = alg(Gray.(s[i][:original_img]), args)
+    s[i][:segs] = alg(Gray.(s[i][:user_img]), args)
     update_segs_img(ui)
     end
 
@@ -274,7 +279,7 @@ function go_mod_segs(ui::Dict, args::Int64, alg::Function)
 
 function go_make_labels(ui::Dict)
     s[i][:labels_img] = make_labels_img(s[i][:segs])
-    s[i][:labels_fn] = s[i][:original_fn][1:end-4] * "_labels.png"
+    s[i][:labels_fn] = s[i][:user_fn][1:end-4] * "_labels.png"
     save(s[i][:labels_fn], s[i][:labels_img])
     ui[:labels_img][] = make_clickable_img(
         "labels_img", ui[:img_click], register(s[i][:labels_fn])*"?dummy=$(now())")
@@ -285,8 +290,9 @@ const f = Dict()
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
         s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
+        s[i][:scale][2] = args
         ui[:img_info][] = node(:p,
-            "width: $(s[i][:original_width]) height: $(s[i][:original_height]) scale: $(s[i][:scale][1]) pxs / unit area")
+            "width: $(s[i][:user_width]) height: $(s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / unit area")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
@@ -300,7 +306,7 @@ const go_funcs = Dict(
     "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
         ui, args, prune_segments),
     "Assign Space Types" => (ui::Dict, args::Any) -> begin
-        launch_space_editor()
+        launch_space_editor() # essectially, launch new tab pointing space editor url
         end,
     "Export Data to CSV" => (ui::Dict, args::Any) -> begin
         export_CSV()

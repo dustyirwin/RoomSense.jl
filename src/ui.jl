@@ -5,7 +5,7 @@ settheme!(mytheme)
 # settheme!(:nativehtml)
 
 const ui = Dict{Union{Symbol,String},Any}(
-    :img_syms => [:original, :segs, :overlay, :labels, :highlight, :seeds, :plots, :gmap],
+    :img_syms => [:user, :segs, :overlay, :labels, :highlight, :seeds, :plots, :gmap],
     :funcs => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(k=>k for k in [
@@ -64,8 +64,8 @@ ui[:funcs_mask] = mask(ui[:funcs], index=0);
 ui[:inputs_mask] = mask(ui[:inputs], index=0);
 ui[:checkbox_masks] = Dict(
     "$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
-ui[:img_masks] = Dict(Symbol("$(k)_mask")=>
-mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
+ui[:img_masks] = Dict(Symbol("$(k)_mask")=>mask(
+    Observable([ui[:imgs][Symbol("$(k)_img")]]), index=0) for k in ui[:img_syms])
 ui[:go_mask] = mask([ ui[:go] ], index=0)
 
 for collection in [:imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]

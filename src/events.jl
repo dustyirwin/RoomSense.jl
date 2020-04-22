@@ -9,16 +9,16 @@ function space_cadet(ui::AbstractDict, w::Scope)
             println("User uploaded an img! \n args: $args \n fn: $fn")
             ui[:go_mask][] = 1
 
-            s[i][:original_fn] = fn
-            s[i][:original_img] = load(fn)
-            _w = s[i][:original_width] = width(s[i][:original_img])
-            _h = s[i][:original_height] = height(s[i][:original_img])
+            s[i][:user_fn] = fn
+            s[i][:user_img] = load(fn)
+            _w = s[i][:user_width] = width(s[i][:user_img])
+            _h = s[i][:user_height] = height(s[i][:user_img])
             s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
-            s[i][:overlay_img] = make_transparent(s[i][:original_img])
+            s[i][:overlay_img] = make_transparent(s[i][:user_img])
             save(s[i][:overlay_fn], s[i][:overlay_img])
 
-            ui[:original_img][] = make_clickable_img(
-                "original_img", ui[:img_click], register(fn) * "?dummy=$(now())")
+            ui[:user_img][] = make_clickable_img(
+                "user_img", ui[:img_click], register(fn) * "?dummy=$(now())")
             ui[:overlay_img][] = make_clickable_img(
                 "overlay_img", ui[:img_click], register(s[i][:overlay_fn]) * "?dummy=$(now())")
 
@@ -60,8 +60,11 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "img_click") do args
         ui[:go]["is-loading"][] = true
-        println("img clicked! args: $args")
         selected_func = ui[:inputs_mask][:key][]
+        args[1] = Int64(ceil(args[1] * (args[5] / args[3])))
+        args[2] = Int64(ceil(args[2] * (args[6] / args[4])))
+
+        println("args: $args")
 
         if selected_func == "User Image"
             ui[:inputs][selected_func][] = ui[:inputs][selected_func][] * "$(args[7] ? args[1] : args[2]),"
@@ -81,7 +84,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
     on(w, "img_tabs") do args
         println("img tabs clicked! args: $args")
         ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
-        ui[:original_mask][] = args == "Original" ? 1 : 0
+        ui[:user_mask][] = args == "Original" ? 1 : 0
         ui[:segs_mask][] = args == "Segmented" ? 1 : 0
         ui[:plots_mask][] = args == "Plots" ? 1 : 0 end
 
