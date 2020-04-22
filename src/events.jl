@@ -14,20 +14,20 @@ function space_cadet(ui::AbstractDict, w::Scope)
             _w = s[i][:original_width] = width(s[i][:original_img])
             _h = s[i][:original_height] = height(s[i][:original_img])
             s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
-            s[i][:overlay_img] = make_transparent_img(s[i][:original_img])
+            s[i][:overlay_img] = make_transparent(s[i][:original_img])
             save(s[i][:overlay_fn], s[i][:overlay_img])
 
             ui[:original_img][] = make_clickable_img(
                 "original_img", ui[:img_click], register(fn) * "?dummy=$(now())")
-            ui[:overlay_img][] = node(:img, attributes=Dict(
-                "src"=>register(s[i][:overlay_fn]) * "?dummy=$(now())",
-                "style"=>"position:absolute; opacity:0.9;"))
+            ui[:overlay_img][] = make_clickable_img(
+                "overlay_img", ui[:img_click], register(s[i][:overlay_fn]) * "?dummy=$(now())")
 
             ui[:func_tabs][] = "Set Scale"
             ui[:img_info][] = node(:p, "width: $_w  height: $_h")
             ui[:information][] = node(:p, ui[:help_texts]["User Image"])
             ui["Overlay_mask"][] = 1
             ui[:img_tabs][:options][] = ["Original"]
+            ui[:img_tabs][] = "Original"
 
         catch err
         finally ui[:go]["is-loading"][] = false end end
@@ -47,31 +47,36 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
                 go_funcs[input_name](ui, ui[:inputs][input_name][])
 
-                # session cleanup
-                ui["Labels"][] ? go_make_labels(ui, s[i][:segs]) : if haskey(s[i], :labels_img); delete!(s[i][:labels_img]) end
+                # session index cleanup
+                if haskey(s[i], :labels_img); delete!(s[i][:labels_img]) end
+                if ui["Labels"][]; ui["Labels"][] = true end
 
             else
                 go_funcs[input_name](ui, ui[:inputs][input_name][])
             end
 
-        catch err; error(err); return
+        catch err
         finally ui[:go]["is-loading"][] = false end end
 
     on(w, "img_click") do args
-        println("display_img clicked! args: $args")
-        ui[:go]["is-loading"][] = false
+        ui[:go]["is-loading"][] = true
+        println("img clicked! args: $args")
+        selected_func = ui[:inputs_mask][:key][]
 
-        try
+        if selected_func == "User Image"
+            ui[:inputs][selected_func][] = ui[:inputs][selected_func][] * "$(args[7] ? args[1] : args[2]),"
             ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
-            selected_func = ui[:inputs_mask][:key][]
 
-            if selected_func == "User Image" && ui[:funcs_mask][:key][] == "Set Scale"
-                ui[:inputs][selected_func][] = ui[:inputs][selected_func][] * "$(args[7] ? args[1] : args[2]),"
-            end
+        elseif ui[:img_tabs][] in ["Original", "Segmented"]
+            lbl = s[i][:segs].image_indexmap[args[1], args[2]]
+            segs_ln = length(s[i][:segs].segment_labels)
+            ui[:click_info][] = node(:p, "label: $lbl size: $(
+                s[i][:scale][1] != 1. ? "$(segs_ln / s[i][:scale][1]) unit area" :
+                "$segs_ln pxs") ")
+        end
 
-        catch err return
-
-        finally ui[:go]["is-loading"][] = false end end
+        ui[:go]["is-loading"][] = false
+        end
 
     on(w, "img_tabs") do args
         println("img tabs clicked! args: $args")
@@ -128,15 +133,15 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
         ui[:img_masks][:labels_mask][] = args ? 1 : 0
 
-        if args && haskey(s[i], :segs) && !haskey(s[i], :labels_img)
+        if args && haskey(s[i], :segs) && length(s[i][:segs].segment_labels) > 500
             segs_ln = length(s[i][:segs].segment_labels)
-
-            if segs_ln > 1000
-                ui[:confirm]("You are attempting to label $segs_ln segments. \nThis operation could take a long time. Continue?"
-                ) do resp
-
-                resp ? go_make_labels(ui, ui[:segs]) : return end
-        end end
+            txt = "You are attempting to label $segs_ln segments. This operation could take a very long time. Continue?"
+            ui[:confirm](txt) do resp
+                resp ? go_make_labels(ui) : ui["Labels"][] = false
+            end
+        elseif args && haskey(s[i], :segs)
+            go_make_labels(ui)
+        end
 
         ui[:go]["is-loading"][] = false
         end

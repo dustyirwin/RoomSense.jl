@@ -4,7 +4,7 @@ mytheme = compile_theme(variables = variables_file)
 settheme!(mytheme)
 
 const ui = Dict{Union{Symbol,String},Any}(
-    :img_syms => [:original, :overlay, :segs, :highlight, :seeds, :labels, :plots, :gmap],
+    :img_syms => [:original, :segs, :overlay, :labels, :highlight, :seeds, :plots, :gmap],
     :funcs => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(k=>k for k in [
@@ -55,17 +55,16 @@ const ui = Dict{Union{Symbol,String},Any}(
     :go => button("Go!"),
     )
 
-
 ui[:imgs] = OrderedDict(
-    Symbol("$(k)_img") => Observable(node(:img, style=Dict("position"=>"absolute"))) for k in ui[:img_syms])
+    Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
 ui[:imgs][:gmap_img] = Observable(gmap());
 ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
 ui[:funcs_mask] = mask(ui[:funcs], index=0);
 ui[:inputs_mask] = mask(ui[:inputs], index=0);
 ui[:checkbox_masks] = Dict(
     "$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
-ui[:img_masks] = Dict(
-    Symbol("$(k)_mask")=>mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
+ui[:img_masks] = Dict(Symbol("$(k)_mask")=>
+mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=0) for k in ui[:img_syms])
 ui[:go_mask] = mask([ ui[:go] ], index=0)
 
 for collection in [:imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]

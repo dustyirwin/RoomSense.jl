@@ -4,7 +4,7 @@ make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels))
 
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 
-make_transparent_img(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
 
 # verbose funcs
@@ -45,7 +45,7 @@ function make_labels_img(segs::SegmentedImage)
             labels_img, "$label", ui[:font], ui[:font_size], x_centroid, y_centroid,
             halign=:hcenter, valign=:vcenter) end
 
-    return make_transparent_img(labels_img, 1.0, 0.0) end
+    return make_transparent(labels_img, 1.0, 0.0) end
 
 function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}}, height::Int64, width::Int64)
     seeds_img = zeros(height, width)
@@ -75,7 +75,6 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
        c = length(segs.segment_labels)
        update = "alg:" * "$alg"[19:end] * "
            segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
-       #@js_ w document.getElementById("segs_info").innerHTML = $update;
    end
        return segs end
 
@@ -128,16 +127,15 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function highlight_segs(segs::SegmentedImage, img::Matrix, img_fln::String, args::Vector)
+function make_highlight_img(segs::SegmentedImage, img::Matrix, seg_labels::Vector)
     for j in 1:height(img)
         for k in 1:width(img)
-            if segs.image_indexmap[j,k] in args
+            if segs.image_indexmap[j,k] in seg_labels
             else; img[j,k] = RGB{N0f8}(0.,0.,0.)
     end end end
 
-    ima = make_transparent(img)
-    save(img_fln[1:end-4] * "_highlight.png", ima)
-    get_dummy("_highlight.png", img_fln, ima) end
+    save(s[i][:original_fn][1:end-4] * "_highlight.png", make_transparent(img))
+    return register(img_fln[1:end-4] * "_highlight.png") * "?dummy=$(now())" end
 
 function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
     df = DataFrame(
@@ -175,7 +173,7 @@ function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     export_text = "Data exported to $(filename).
  Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
 
-function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model::Chain)
+function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model)
     handle(sdw, "click_stdd") do args
         global s, w
         @show args
@@ -221,13 +219,14 @@ function get_img_from_url(img_url_raw::String)
 function make_clickable_img(
         img_name::String,
         img_click::Observable{Array{Union{Int,Bool},1}},
-        src="https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg")
+        src="https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg",
+        opacity=0.9)
 
     node(:img,
         attributes=Dict(
             "id"=>img_name,
             "src"=>src,
-            "style"=>"padding: 0px; border: 0px; margin: 0px;"),
+            "style"=>"position:absolute; opacity:$opacity;"),
         events=Dict("click" => @js () -> $img_click[] = [
             event.pageY - document.getElementById($img_name).offsetTop,
             event.pageX,
@@ -273,14 +272,15 @@ function go_mod_segs(ui::Dict, args::Int64, alg::Function)
     update_segs_img(ui)
     end
 
-function go_make_labels(ui::Dict, segs::SegmentedImage)
+function go_make_labels(ui::Dict)
     s[i][:labels_img] = make_labels_img(s[i][:segs])
     s[i][:labels_fn] = s[i][:original_fn][1:end-4] * "_labels.png"
     save(s[i][:labels_fn], s[i][:labels_img])
-    ui[:labels_img][] = node(:img, attributes=Dict(
-        "src"=>register(s[i][:labels_fn]) * "?dummy=$(now())",
-        "style"=>"position:absolute; opacity:0.9;"))
+    ui[:labels_img][] = make_clickable_img(
+        "labels_img", ui[:img_click], register(s[i][:labels_fn])*"?dummy=$(now())")
     end
+
+const f = Dict()
 
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin

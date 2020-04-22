@@ -29,15 +29,14 @@ using AssetRegistry: register
 using Random: seed!
 using CSV: write
 using Dates: now
-using Metalhead
 using PlotlyJS
 using WebIO
-using Flux
-using JSON
 using Mux
-using CuArrays
 using Logging
 # using ColorTypes
+# using Metalhead
+#using CuArrays
+#using Flux
 
 end
 
@@ -56,7 +55,7 @@ else const s = Dict{Symbol,Any}[ Dict(
 
 @time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")
-@time include("./src/models.jl")
+# @time include("./src/models.jl")
 @time include("./src/ui.jl")
 @time include("./src/scope.jl")
 @time include("./src/events.jl")

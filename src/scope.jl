@@ -32,10 +32,14 @@ ui[:img_masks][:original_mask][:index][] = 1
 
 
 ui[:/] = () -> node(:div,
+    ui[:confirm],
     node(:div, ui[:func_panel], attributes=Dict(
         "classList"=>"navbar", "position"=>"fixed")),
-    values(ui[:img_masks])...,
-    ui[:confirm],
-    );
+    node(:div,
+        ui[:original_mask],
+        ui[:segs_mask],
+        ui[:overlay_mask],
+        ui[:labels_mask],
+    ));
 
 ui[:scope].dom = ui[:/]()

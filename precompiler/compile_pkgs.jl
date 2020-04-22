@@ -10,10 +10,10 @@ compiled_symbols = [
     :InteractBulma,
     ]
 
-compile_list = [:ImageSegmentation]
+compile_list = [:CuArrays]  # CuArrays updated to 2.1.0 from 2.0.1
 
 
-@async for pkg in compiled_symbols
+@async for pkg in compile_list
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",
