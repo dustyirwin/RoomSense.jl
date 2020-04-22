@@ -2,6 +2,7 @@
 variables_file = joinpath(examplefolder, "darkly", "_variables.scss")
 mytheme = compile_theme(variables = variables_file)
 settheme!(mytheme)
+# settheme!(:nativehtml)
 
 const ui = Dict{Union{Symbol,String},Any}(
     :img_syms => [:original, :segs, :overlay, :labels, :highlight, :seeds, :plots, :gmap],

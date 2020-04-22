@@ -4,13 +4,13 @@ using PackageCompiler
 # PackageCompiler.restore_default_sysimage()
 
 compiled_symbols = [
-    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :CuArrays, :Dates,
-    :CSV, :FreeTypeAbstraction, :DataFrames, :Metalhead, :Pkg, :AssetRegistry,
-    :Interact, :Mux, :Flux, :ImageTransformations, :Logging, :WebIO, :JSExpr,
+    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :Dates, :CSV,
+    :FreeTypeAbstraction, :DataFrames, :Metalhead, :Pkg, :AssetRegistry,
+    :Interact, :Mux, :ImageTransformations, :Logging, :WebIO, :JSExpr,
     :InteractBulma,
     ]
 
-compile_list = [:CuArrays]  # CuArrays updated to 2.1.0 from 2.0.1
+compile_list = [:CuArrays, :NNlib]  # CuArrays updated to 2.1.0 from 2.0.1
 
 
 @async for pkg in compile_list

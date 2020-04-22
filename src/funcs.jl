@@ -174,20 +174,19 @@ function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
  Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
 
 function launch_space_editor(segs::SegmentedImage, img::Matrix, img_fln::String, model)
-    handle(sdw, "click_stdd") do args
-        global s, w
+    on(sdw, "click_stdd") do args
+        global s
         @show args
-        img_deep = deepcopy(s[wi]["user_img"])
+        img_deep = deepcopy(s[i][:user_img])
         hs = highlight_segs(segs, img_deep, img_fln, [args])
     end
 
-    s[wi]["segs_types"] = ui["predict_space_type"][] ? get_segs_types(
-        s[wi]["segs"], s[wi]["user_img"], model) : nothing
+    ui["Cadet Pred"][] ? get_segs_types(s[i][:segs], s[i][:user_img], model) : nothing
 
-    if "segs_details_html" in collect(keys(s[wi])); else
-    s[wi]["segs_details_html"], s[wi]["dds"], s[wi]["checks"], s[wi]["spins"] = make_segs_details(
-        s[wi]["segs"], s[wi]["segs_types"], s[wi]["scale"][1], s[wi]["scale"][2],
-        length(segment_labels(s[wi]["segs"]))) end end
+    if :segs_details_html in keys(s[i]); else
+    s[i][:segs_details_html], s[i][:dds], s[i][:checks], s[i][:spins] = make_segs_details(
+        s[i][:segs], s[i][:segs_types], s[i][:scale][1], s[i][:scale][2],
+        length(s[i][:segs].segment_labels)) end end
 
 function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, scale_units::String, segs_limit::Int64)
     segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
@@ -258,6 +257,7 @@ function update_segs_img(ui::Dict)
     save(s[i][:segs_fn], s[i][:segs_img])
     ui[:segs_img][] = make_clickable_img(
         "segs_img", ui[:img_click], register(s[i][:segs_fn])*"?dummy=$(now())")
+    ui[:img_tabs][] = "Segmented"; ui["Labels"][] = false
     end
 
 function go_seg_img(ui::Dict, args::Any, alg::Function)

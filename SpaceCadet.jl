@@ -9,12 +9,12 @@ using Pkg
 try pkg"activate ." catch
      pkg"instantiate"; pkg"activate ." end
 
-using ImageSegmentation: fast_scanning, felzenszwalb,
-    seeded_region_growing, prune_segments, segment_pixel_count, labels_map,
-    segment_mean, segment_labels, SegmentedImage
 using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox,
     dropdown, textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator,
     mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!
+using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing,
+    prune_segments, segment_pixel_count, labels_map, segment_mean,
+    segment_labels, SegmentedImage
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 #using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
@@ -22,21 +22,19 @@ using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
 using FreeTypeAbstraction: renderstring!, FTFont
 using InteractBulma: compile_theme, examplefolder
 using ImageTransformations: imresize
+using AssetRegistry: register
 using DataFrames: DataFrame
 using BSON: @save, @load
 using JSExpr: @js, Scope
-using AssetRegistry: register
 using Random: seed!
 using CSV: write
 using Dates: now
+using Metalhead
 using PlotlyJS
+using Logging
+using NNlib
 using WebIO
 using Mux
-using Logging
-# using ColorTypes
-# using Metalhead
-#using CuArrays
-#using Flux
 
 end
 
@@ -55,7 +53,7 @@ else const s = Dict{Symbol,Any}[ Dict(
 
 @time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")
-# @time include("./src/models.jl")
+@time include("./src/models.jl")
 @time include("./src/ui.jl")
 @time include("./src/scope.jl")
 @time include("./src/events.jl")

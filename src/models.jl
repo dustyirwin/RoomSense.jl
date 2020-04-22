@@ -1,5 +1,5 @@
 
-#@load "./models/SqueezeNet_50g.bson" model
+@load "./models/SqueezeNet_50g.bson" sn_g50
 
 function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix, X=[], Y=[])
     bs = get_segment_bounds(segs)
@@ -36,7 +36,7 @@ function make_training_data(segs::SegmentedImage, segs_types::Dict, img::Matrix,
 
     return (X, Y) end
 
-function update_model(model::Chain, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
+function update_model(model, X::Array{Float32,4}, Y::Array{Float32,3}, inds::Array{Int64}, epochs::Int64)
     for i in inds
         x = X[:,:,:,i:i]
         y = Y[:,:,i:i]
@@ -61,7 +61,9 @@ function get_segs_types(segs::SegmentedImage, img::Matrix, model, segs_types=Dic
         img_slice |> gpu
         w = width(img_slice)
         h = height(img_slice)
-        pred = findmax(model(reshape(img_slice, (w,h,1,1))))
-        segs_types[label] = detailed_space_types[pred[2]] end
+        pred = model(reshape(img_slice, (w,h,1,1)))
+        max_pred = findmax(pred)
+        segs_types[label] = [detailed_space_types[max_pred[2]], pred] # confidence level of prediction
+        end
 
     return segs_types end
