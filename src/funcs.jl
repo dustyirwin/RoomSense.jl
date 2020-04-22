@@ -4,7 +4,7 @@ make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels))
 
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
 
-make_overlay_img(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
+make_transparent_img(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.val), abs(alpha-e.val)) for e in GrayA.(img)]
 
 
 # verbose funcs
@@ -27,33 +27,33 @@ function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
-function make_labels_img(segs::SegmentedImage, draw_labels::Bool, font::Vector{Ptr{FreeType.FT_FaceRec}})
-    overlay_img = Float16.(zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
-    if draw_labels == true
-        for (label, count) in collect(segs.segment_pixel_count)
-            oneoverpxs = 1 / count
-            label_pts = []
-            for x in 1:size(segs.image_indexmap)[1]
-                for y in 1:size(segs.image_indexmap)[2]
-                    if segs.image_indexmap[x, y] == label
-                        push!(label_pts, (x, y))
-            end end end
-            x_centroid = ceil(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
-            y_centroid = ceil(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
-            try label = label * labels[label] catch end
-            renderstring!(
-                overlay_img, "$label", font, (28, 28), x_centroid, y_centroid,
-                halign=:hcenter, valign=:vcenter) end end
-    return make_transparent(overlay_img, 1.0, 0.0) end
+function make_labels_img(segs::SegmentedImage)
+    labels_img = Float16.(zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
 
-function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}}, height::Int64, width::Int64,
-        font::Vector{Ptr{FreeType.FT_FaceRec}}, font_size::Int64)
-    overlay_img = zeros(height, width)
+    for (label, count) in collect(segs.segment_pixel_count)
+        oneoverpxs = 1 / count
+        label_pts = []
+        for x in 1:size(segs.image_indexmap)[1]
+            for y in 1:size(segs.image_indexmap)[2]
+                if segs.image_indexmap[x, y] == label
+                    push!(label_pts, (x, y))
+        end end end
+        x_centroid = ceil(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
+        y_centroid = ceil(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
+        try label = label * labels[label] catch end
+        renderstring!(
+            labels_img, "$label", ui[:font], ui[:font_size], x_centroid, y_centroid,
+            halign=:hcenter, valign=:vcenter) end
+
+    return make_transparent_img(labels_img, 1.0, 0.0) end
+
+function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}}, height::Int64, width::Int64)
+    seeds_img = zeros(height, width)
     for seed in seeds
         renderstring!(
-            overlay_img, "$(seed[2])", font, (font_size, font_size),
+            seeds_img, "$(seed[2])", ui[:font], ui[:font_size],
             seed[1][1], seed[1][2], halign=:hcenter, valign=:vcenter) end
-    return make_transparent(overlay_img, 1.0, 0.0) end
+    return make_transparent(seeds_img, 1.0, 0.0) end
 
 function make_plot_img(segs::SegmentedImage, scale::Float64)
     return plot(
@@ -253,7 +253,6 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
             "key=$maps_api_key&"
     ) end
 
-
 function update_segs_img(ui::Dict)
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
     segs_fn = s[i][:original_fn][1:end-4] * "_segs.png"
@@ -280,7 +279,7 @@ const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
             s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
             ui[:img_info][] = node(:p,
-                "width: $(s[i]["Original_width"]) height: $(s[i]["Original_height"]) scale: $(s[i]["scale"][1]) pxs / unit area")
+                "width: $(s[i][:original_width]) height: $(s[i][:original_height]) scale: $(s[i][:scale][1]) pxs / unit area")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(

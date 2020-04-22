@@ -13,7 +13,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             _w = s[i][:original_width] = width(s[i][:original_img])
             _h = s[i][:original_height] = height(s[i][:original_img])
             s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
-            s[i][:overlay_img] = make_overlay_img(s[i][:original_img])
+            s[i][:overlay_img] = make_transparent_img(s[i][:original_img])
             save(s[i][:overlay_fn], s[i][:overlay_img])
 
             ui[:original_img][] = make_clickable_img(
@@ -74,12 +74,13 @@ function space_cadet(ui::AbstractDict, w::Scope)
         ui[:inputs_mask][:key][] = ui[:funcs][args][]
 
         ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
+        ui["Labels_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
+        ui["Seeds_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
+        ui["CadetPred_mask"][] = args == "Modify Segments" ? 1 : 0
 
-        if args == "Set Scale"
-            ui[:img_tabs][:options][] = ["Original", "Google Maps"]
-        elseif args == "Segment Image"
-            ui[:img_tabs][:options][] = ["Original", "Segmented", "Plots"]
-        end end
+        ui["Labels_mask"][] = haskey(s[i], :labels_img) ? 1 : ui["Labels_mask"][]
+        ui["Seeds_mask"][] = haskey(s[i], :seeds_img) ? 1 : ui["Seeds_mask"][]
+        end
 
     on(w, "inputs_mask") do args
         println("inputs_mask changed! args: $args")
@@ -100,6 +101,25 @@ function space_cadet(ui::AbstractDict, w::Scope)
     on(w, "Overlay") do args
         println("Overlay clicked! args: $args")
         ui[:img_masks][:overlay_mask][] = args ? 1 : 0 end
+
+    on(w, "Labels") do args
+        ui[:go]["is-loading"][] = true
+        println("Labels clicked! args: $args")
+
+        ui[:img_masks][:labels_mask][] = args ? 1 : 0
+
+        if haskey(s[i], :segs) && !haskey(s[i], :labels_img) &&
+            length(s[i][:segs].segment_labels) < 1000
+
+            s[i][:labels_img] = make_labels_img(s[i][:segs])
+            s[i][:labels_fn] = s[i][:original_fn][1:end-4] * "_labels.png"
+            save(s[i][:labels_fn], s[i][:labels_img])
+            ui[:labels_img][] = node(:img, attributes=Dict(
+                "src"=>register(s[i][:labels_fn]) * "?dummy=$(now())",
+                "style"=>"position:absolute; opacity:0.9;"))
+        end
+
+        ui[:go]["is-loading"][] = false end
 
     return w
 end

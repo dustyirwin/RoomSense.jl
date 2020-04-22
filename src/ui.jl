@@ -32,7 +32,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
-            ["Overlay", "Seeds", "Labels", "Colorize", "CadetPred"]),
+            ["Overlay", "Labels", "Seeds", "Colorize", "CadetPred"]),
     :help_texts => Dict(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
         "Felzenszwalb" => "Select the threshold value above, higher values generatea fewer pixel groups.",
@@ -44,8 +44,8 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Export Data to CSV" => "Exports segment data to CSV.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
-    :font_size => 30,
-    :font => newface("./fonts/OpenSans-Bold.ttf"),
+    :font_size => 27,
+    :font => FTFont("./fonts/OpenSans-Bold.ttf"),
     :img_url_input => textbox("Paste http(s) img link here..."),
     :img_tabs => tabs([], value="Original"),
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),

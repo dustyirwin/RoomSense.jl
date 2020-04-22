@@ -19,7 +19,7 @@ using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
 #using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
 #    Scale.y_log10
-using FreeTypeAbstraction: renderstring!, newface, FreeType
+using FreeTypeAbstraction: renderstring!, FTFont
 using InteractBulma: compile_theme, examplefolder
 using ImageTransformations: imresize
 using DataFrames: DataFrame
