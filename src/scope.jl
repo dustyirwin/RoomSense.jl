@@ -16,7 +16,7 @@ for k in [:user_img, :segs_img]
 
 ui[:func_panel] = vbox(
     hbox(ui[:func_tabs], hskip(1em),
-        vbox(vskip(0.5em), ui[:step_index]), hskip(1em),
+        vbox(vskip(0.5em), ui[:step]), hskip(1em),
         vbox(vskip(0.3em), ui[:img_url_input]), hskip(1em),
         vbox(vskip(0.5em), ui[:img_info])),
     vskip(1em),

@@ -28,6 +28,7 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using Metalhead
+using PlotlyJS
 using ImageIO
 using Logging
 using NNlib
@@ -50,7 +51,7 @@ else const s = Dict{Symbol,Any}[ Dict(
     :selected_segs => Dict{Int64,Union{Missing,Int64}}()
     )] end
 
-plotly()  # Plotly backend
+# plotlyjs()  # Plotly backend
 
 @time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")

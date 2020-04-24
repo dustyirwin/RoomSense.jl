@@ -7,10 +7,10 @@ pkg_symbols = [
     :BSON, :Random, :Images, :ImageSegmentation, :Dates, :CSV, :Metalhead,
     :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact, :Mux,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma, :NNlib,
-    :Plots,
+    :Plots, :PlotlyJS
     ]
 
-compile_pkgs = []
+compile_pkgs = [:ImageIO]  # ImageIO new package
 
 @async for pkg in compile_pkgs
     print("\nCompiling package: $pkg\n\n")

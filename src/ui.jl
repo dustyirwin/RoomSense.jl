@@ -23,13 +23,13 @@ const ui = Dict{Union{Symbol,String},Any}(
     :inputs => OrderedDict(
         "Fast Scanning" => widget(0.05:0.01:0.25),
         "Felzenszwalb" => widget(25:5:125),
-        "*Seeded Region Growing" => widget("*func under construction"),
+        "Seeded Region Growing" => widget("*func under construction"),
         "Prune Segments by MGS" => widget(100),
         "Prune Segment" => widget(0),
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
         "Export Data to CSV" => Observable(node(:div)),
-        "*Google Maps" => textbox("*func under construction"),
+        "Google Maps" => textbox("*func under construction"),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -40,7 +40,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Seeded Region Growing" => "Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
         "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole area units or pixels (if you haven't set the scale).",
         "Prune Segment" => "Remove segment by label and merge with most similar neighbor.",
-        "User Image" => "Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        "User Image" => "Click two points on image below and enter distance in whole units above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         "Assign Space Types" => "Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
         "Export Data to CSV" => "Exports segment data to CSV.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
@@ -52,7 +52,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),
     :click_info => Observable(node(:p,"")),
     :information => Observable(node(:p, "")),
-    :step_index => Observable(node(:strong, "step: $i")),
+    :step => Observable(node(:strong, "step: $i")),
     :confirm => confirm(""),
     :go => button("Go!"),
     )
@@ -60,8 +60,6 @@ const ui = Dict{Union{Symbol,String},Any}(
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
 ui[:imgs][:gmap_img] = Observable(node(:div, gmap()));
-ui[:imgs][:plot_img] = Observable(node(:div, plot([0])));
-ui[:imgs][:hist_img] = Observable(node(:div, histogram([0])));
 ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
 ui[:funcs_mask] = mask(ui[:funcs], index=0);
 ui[:inputs_mask] = mask(ui[:inputs], index=0);
@@ -70,10 +68,10 @@ ui[:checkbox_masks] = Dict(
 ui[:img_masks] = Dict(
     Symbol("$(k)_mask")=>mask(Observable([ui[:imgs][Symbol("$(k)_img")]]), index=0)
     for k in ui[:img_syms])
-ui[:plots_mask] = mask(
-    Observable([node(:div, ui[:imgs][:plot_img], ui[:imgs][:hist_img])]), index=0);
 ui[:gmap_mask] = mask(Observable([gmap()]), index=0)
 ui[:go_mask] = mask([ ui[:go] ], index=0)
+ui[:plots] = Observable(node(:div));
+ui[:plots_mask] = mask(Observable([ ui[:plots] ]), index=0);
 
 for collection in [
     :imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]

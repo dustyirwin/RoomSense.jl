@@ -2,6 +2,7 @@
 function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "img_url_input") do args
+
         ui[:go]["is-loading"][] = true
 
         try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
@@ -16,6 +17,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
             s[i][:overlay_img] = make_transparent(s[i][:user_img])
             save(s[i][:overlay_fn], s[i][:overlay_img])
+            s[i][:plots] == nothing
 
             ui[:labels_img][] = node(:img)
 
@@ -35,6 +37,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
         finally ui[:go]["is-loading"][] = false end end
 
     on(w, "go") do args
+
         ui[:go]["is-loading"][] = true
 
         try
@@ -43,27 +46,30 @@ function space_cadet(ui::AbstractDict, w::Scope)
             println("User clicked Go! input_name: $input_name")
 
             if ui[:func_tabs][] in ["Segment Image", "Modify Segments"]
-                push!(s, s[i])
-                global i += 1
+                global s, i # load globals
+                push!(s, s[i]) # advance session
+                i += 1  # advance index
 
-                ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
+                # s[i][:segs_details] = nothing
+                s[i][:labels_img] = nothing
+                s[i][:plots] = nothing
+
+                # run func with input(s)
                 go_funcs[input_name](ui, ui[:inputs][input_name][])
 
-                # update plots
-                @async begin
-                vs = [values(s[i][:segs].segment_pixel_count)...]
-                ui[:plot_img][] = plot(vs); ui[:histogram][] = histogram(vs) end
-
                 # update ui
-                if haskey(s[i], :labels_img); delete!(s[i][:labels_img]) end
-                if ui["Labels"][]; ui["Labels"][] = true end
-                if !("Plots" in ui[:img_tabs][:options][])
-                    ui[:img_tabs][:options][] = push!(ui[:img_tabs][:options][], "Plots")
-                    end
+                ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
+                ui[:img_tabs][:options][] = length(s[i][:segs].segment_labels) < 500 ?
+                    unique!(push!(ui[:img_tabs][:options][], "Plots")) : ui[:img_tabs][:options][]
+                ui[:step][] = node(:strong, "step: $i")
+                ui[:img_info][] = node(:p, "
+                    height: $(height(s[i][:user_img]))
+                    width: $(width(s[i][:user_img]))
+                    segments: $(length(s[i][:segs].segment_labels))")
 
             else
                 go_funcs[input_name](ui, ui[:inputs][input_name][])
-            end
+                end
 
         catch err
         finally ui[:go]["is-loading"][] = false end end
@@ -138,12 +144,23 @@ function space_cadet(ui::AbstractDict, w::Scope)
         end
 
     on(w, "img_tabs") do args
+        ui[:go]["is-loading"][] = true
         println("img tabs clicked! args: $args")
+
         ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
         ui[:user_mask][] = args == "Original" ? 1 : 0
         ui[:segs_mask][] = args == "Segmented" ? 1 : 0
+        ui[:labels_mask][] = args == "Plots" ? 0 : 1
+        ui[:overlay_mask][] = args == "Plots" ? 0 : 1
+        ui[:seeds_mask][] = args == "Plots" ? 0 : 1
         ui[:plots_mask][] = args == "Plots" ? 1 : 0
-        end
+
+        if args == "Plots" && s[i][:plots] == nothing
+            s[i][:plots] = PlotlyJS.plot([values(s[i][:segs].segment_pixel_count)...])
+            ui[:plots][] = node(:div, s[i][:plots])
+            end
+
+        ui[:go]["is-loading"][] = false end
 
     on(w, "func_tabs") do args
         println("funcs_tabs pressed! args: $args")
@@ -189,6 +206,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "Labels") do args
         ui[:go]["is-loading"][] = true
+
         println("Labels clicked! args: $args")
 
         if args && haskey(s[i], :segs) && length(s[i][:segs].segment_labels) > 500
