@@ -45,7 +45,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Export Data to CSV" => "Exports segment data to CSV.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
-    :font_size => 27,
+    :font_size => 24,
     :font => FTFont("./fonts/OpenSans-Bold.ttf"),
     :img_url_input => textbox("Paste http(s) img link here..."),
     :img_tabs => tabs(["Original"]),
@@ -60,7 +60,7 @@ const ui = Dict{Union{Symbol,String},Any}(
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
 ui[:imgs][:gmap_img] = Observable(node(:div, gmap()));
-ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
+ui[:func_tabs] = tabs([keys(ui[:funcs])...], index=0);
 ui[:funcs_mask] = mask(ui[:funcs], index=0);
 ui[:inputs_mask] = mask(ui[:inputs], index=0);
 ui[:checkbox_masks] = Dict(

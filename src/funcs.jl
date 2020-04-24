@@ -174,8 +174,8 @@ function launch_space_editor(scope::Scope, model)
 
     ui["CadetPred"][] ? get_segs_types(s[i][:segs], s[i][:user_img], model) : nothing
 
-    if haskey(s[i], :segs_details_html); else
-    s[i][:segs_details_html], s[i][:dds], s[i][:checks], s[i][:spins] = make_segs_details(
+    if !haskey(s[i], :segs_details_html)
+        s[i][:segs_details_html], s[i][:dds], s[i][:checks], s[i][:spins] = make_segs_details(
         s[i][:segs], s[i][:segs_types], s[i][:scale][1], s[i][:scale][2],
         length(s[i][:segs].segment_labels))
     end end
