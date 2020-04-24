@@ -23,13 +23,13 @@ const ui = Dict{Union{Symbol,String},Any}(
     :inputs => OrderedDict(
         "Fast Scanning" => widget(0.05:0.01:0.25),
         "Felzenszwalb" => widget(25:5:125),
-        "Seeded Region Growing" => widget("help text?"),
+        "*Seeded Region Growing" => widget("*func under construction"),
         "Prune Segments by MGS" => widget(100),
         "Prune Segment" => widget(0),
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
         "Export Data to CSV" => Observable(node(:div)),
-        "Google Maps" => textbox("eg Nike World Campus Beaverton, OR", size=40),
+        "*Google Maps" => textbox("*func under construction", size=40),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -52,6 +52,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :img_info => Observable(node(:strong, "<-- paste image weblink here")),
     :click_info => Observable(node(:p,"")),
     :information => Observable(node(:p, "")),
+    :step_index => Observable(node(:strong, "step: $i")),
     :confirm => confirm(""),
     :go => button("Go!"),
     )

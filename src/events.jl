@@ -84,6 +84,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
             label = s[i][:segs].image_indexmap[args[1], args[2]]
             area = ceil(segment_pixel_count(s[i][:segs])[label] / s[i][:scale][1])
             n_segs = length(s[i][:segs].segment_labels)
+            if ui[:highlight_mask][] == 0 && args[7]; ui[:highlight_mask][] = 1 end
 
             # click, no mods
             ui[:click_info][] = node(:p, "label: $label size:
@@ -94,21 +95,19 @@ function space_cadet(ui::AbstractDict, w::Scope)
             if args[7] && !args[8]
                 s[i][:selected_segs] = [(label, area)]
                 update_highlight_img(deepcopy(s[i][:user_img]))
-                ui[:highlight_mask][] = 1
 
             # combine segment click info(s), shift key: 8
             elseif args[8]
                 unique!(push!(s[i][:selected_segs], (label, area)))
-                s[i][:click_info] = "Total Area: ~$(sum([area for (label, area) in s[i][:selected_segs]])) $(
+                ui[:click_info][] = node(:p, "Total Area: ~$(sum([area for (label, area) in s[i][:selected_segs]])) $(
                     s[i][:scale][1] != 1 ? "unit area" : "pixels ")" *
-                    "Labels: $(join(["$label, " for (label, area) in s[i][:selected_segs]]))"
+                    "Labels: $(join(["$label, " for (label, area) in s[i][:selected_segs]]))")
                 if args[7] == true
-                    update_highlight_img(deepcopy(s[i][:user_img]))
-                    ui[:highlight_mask][] = 1 end
+                    update_highlight_img(deepcopy(s[i][:user_img])) end
 
             else
-                s[i][:selected_segs] = Tuple{Int64,Int64}[]
                 ui[:highlight_mask][] = 0
+                s[i][:selected_segs] = Tuple{Int64,Int64}[]
             end end
 
         if func == "Prune Segment"
