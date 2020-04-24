@@ -29,7 +29,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
         "Export Data to CSV" => Observable(node(:div)),
-        "*Google Maps" => textbox("*func under construction", size=40),
+        "*Google Maps" => textbox("*func under construction"),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -78,5 +78,5 @@ ui[:go_mask] = mask([ ui[:go] ], index=0)
 for collection in [
     :imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]
 
-    merge!(ui, Dict(ui[collection]...))
-    end
+    merge!(ui, Dict(ui[collection]...)
+    ) end

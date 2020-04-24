@@ -47,7 +47,7 @@ if @isdefined s  # user session data
 else const s = Dict{Symbol,Any}[ Dict(
     :scale => [1.,""],
     :segs_types => nothing,
-    :selected_areas => Tuple{Int64,Int64}[]
+    :selected_segs => Dict{Int64,Union{Missing,Int64}}()
     )] end
 
 plotly()  # Plotly backend

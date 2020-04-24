@@ -88,26 +88,27 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
             # click, no mods
             ui[:click_info][] = node(:p, "label: $label size:
-                $(s[i][:scale][1] != 1. ? "$area unit area" :
+                $(s[i][:scale][1] != 1. ? "$area unit²" :
                 "$area pxs")" * " @ y: $(args[1]) x: $(args[2])")
 
             # highlight segment(s), ctrl key: 7
             if args[7] && !args[8]
-                s[i][:selected_segs] = [(label, area)]
+                s[i][:selected_segs] = Dict{Int64,Union{Missing,Int64}}()
+                s[i][:selected_segs][label] = area
                 update_highlight_img(deepcopy(s[i][:user_img]))
 
-            # combine segment click info(s), shift key: 8
+            # combine segment click info(s), shift key: 8, remove segment, alt key: 9
             elseif args[8]
-                unique!(push!(s[i][:selected_segs], (label, area)))
-                ui[:click_info][] = node(:p, "Total Area: ~$(sum([area for (label, area) in s[i][:selected_segs]])) $(
-                    s[i][:scale][1] != 1 ? "unit area" : "pixels ")" *
-                    "Labels: $(join(["$label, " for (label, area) in s[i][:selected_segs]]))")
-                if args[7] == true
-                    update_highlight_img(deepcopy(s[i][:user_img])) end
+                args[9] ? s[i][:selected_segs][label]=missing : s[i][:selected_segs][label]=area
+                ui[:click_info][] = node(:p,
+                    "Total Area: ~$(sum([v for (k,v) in s[i][:selected_segs] if !(v isa Missing)])) "*
+                    "$(s[i][:scale][1] != 1 ? "unit²" : "pxs")  Labels: $(join(["$k, " for (k,v) in s[i][:selected_segs] if !(v isa Missing)]))"
+                    )
+                if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
 
             else
                 ui[:highlight_mask][] = 0
-                s[i][:selected_segs] = Tuple{Int64,Int64}[]
+                s[i][:selected_segs] = Dict{Int64,Union{Missing,Int64}}()
             end end
 
         if func == "Prune Segment"

@@ -40,7 +40,7 @@ function make_labels_img(segs::SegmentedImage)
         end end end
         x_centroid = ceil(Int64, oneoverpxs * sum([i[1] for i in label_pts]))
         y_centroid = ceil(Int64, oneoverpxs * sum([i[2] for i in label_pts]))
-        try label = label * labels[label] catch end
+
         renderstring!(
             labels_img, "$label", ui[:font], ui[:font_size], x_centroid, y_centroid,
             halign=:hcenter, valign=:vcenter) end
@@ -251,10 +251,11 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
 
 function update_highlight_img(deep_img::Matrix)
     if !haskey(s[i], :highlight_fn); s[i][:highlight_fn] = s[i][:user_fn][1:end-4] * "_highlight.png" end
+    selected_segs = [k for (k,v) in s[i][:selected_segs] if !(v isa Missing)]
 
     for j in 1:height(deep_img)
         for k in 1:width(deep_img)
-            if s[i][:segs].image_indexmap[j,k] in [t[1] for t in s[i][:selected_segs]]
+            if s[i][:segs].image_indexmap[j,k] in selected_segs
             else; deep_img[j,k] = RGB{N0f8}(0.,0.,0.)
             end end end
 
