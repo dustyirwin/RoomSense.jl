@@ -5,7 +5,7 @@ settheme!(mytheme)
 # settheme!(:nativehtml)
 
 const ui = Dict{Union{Symbol,String},Any}(
-    :img_syms => [:user, :segs, :overlay, :labels, :highlight, :seeds, :plots, :gmap],
+    :img_syms => [:user, :segs, :overlay, :labels, :highlight, :seeds],
     :funcs => OrderedDict(
         "Set Scale"=>dropdown(
             OrderedDict(k=>k for k in [
@@ -24,7 +24,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Fast Scanning" => widget(0.05:0.01:0.25),
         "Felzenszwalb" => widget(25:5:125),
         "Seeded Region Growing" => widget("help text?"),
-        "Prune Segments by MGS" => widget(0),
+        "Prune Segments by MGS" => widget(100),
         "Prune Segment" => widget(0),
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
@@ -33,12 +33,12 @@ const ui = Dict{Union{Symbol,String},Any}(
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
-            ["Overlay", "Labels", "Seeds", "Colorize", "CadetPred"]),
+            ["Colorize", "Overlay", "Labels", "Seeds",  "CadetPred"]),
     :help_texts => Dict(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
-        "Felzenszwalb" => "Select the threshold value above, higher values generatea fewer pixel groups.",
+        "Felzenszwalb" => "Select the threshold value above, higher values generates fewer pixel groups.",
         "Seeded Region Growing" => "Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
-        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole ft², m² or pixels (if you haven't set the scale).",
+        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole area units or pixels (if you haven't set the scale).",
         "Prune Segment" => "Remove segment by label and merge with most similar neighbor.",
         "User Image" => "Click two points on image below and enter distance in whole feet above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
         "Assign Space Types" => "Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
@@ -58,16 +58,24 @@ const ui = Dict{Union{Symbol,String},Any}(
 
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
-ui[:imgs][:gmap_img] = Observable(gmap());
+ui[:imgs][:gmap_img] = Observable(node(:div, gmap()));
+ui[:imgs][:plot_img] = Observable(node(:div, plot([0])));
+ui[:imgs][:hist_img] = Observable(node(:div, histogram([0])));
 ui[:func_tabs] = tabs([keys(ui[:funcs])...]);
 ui[:funcs_mask] = mask(ui[:funcs], index=0);
 ui[:inputs_mask] = mask(ui[:inputs], index=0);
 ui[:checkbox_masks] = Dict(
     "$(k)_mask"=>mask(Observable([v]),index=0) for (k,v) in ui[:checkboxes])
-ui[:img_masks] = Dict(Symbol("$(k)_mask")=>mask(
-    Observable([ui[:imgs][Symbol("$(k)_img")]]), index=0) for k in ui[:img_syms])
+ui[:img_masks] = Dict(
+    Symbol("$(k)_mask")=>mask(Observable([ui[:imgs][Symbol("$(k)_img")]]), index=0)
+    for k in ui[:img_syms])
+ui[:plots_mask] = mask(
+    Observable([node(:div, ui[:imgs][:plot_img], ui[:imgs][:hist_img])]), index=0);
+ui[:gmap_mask] = mask(Observable([gmap()]), index=0)
 ui[:go_mask] = mask([ ui[:go] ], index=0)
 
-for collection in [:imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]
+for collection in [
+    :imgs, :img_masks, :funcs, :checkboxes, :inputs, :checkbox_masks]
+
     merge!(ui, Dict(ui[collection]...))
-end
+    end

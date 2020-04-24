@@ -127,15 +127,6 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function make_highlight_img(segs::SegmentedImage, img::Matrix, seg_labels::Vector)
-    for j in 1:height(img)
-        for k in 1:width(img)
-            if segs.image_indexmap[j,k] in seg_labels
-            else; img[j,k] = RGB{N0f8}(0.,0.,0.)
-    end end end
-
-    save(s[i][:user_fn][1:end-4] * "_highlight.png", make_transparent(img))
-    return register(img_fln[1:end-4] * "_highlight.png") * "?dummy=$(now())" end
 
 function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
     df = DataFrame(
@@ -245,16 +236,33 @@ function make_clickable_img(
     )) end
 
 function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
-    node(:iframe,
-        width="$w",
-        height="$h",
-        frameborder="0",
-        style=Dict("border"=>"0"),
-        src="https://www.google.com/maps/embed/v1/view?"*
-            "zoom=$zoom&"*
-            "center=$lat,$lng&"*
-            "key=$maps_api_key&"
+    node(:div,
+        node(:iframe,
+            width="$w",
+            height="$h",
+            frameborder="0",
+            style=Dict("border"=>"0"),
+            src="https://www.google.com/maps/embed/v1/view?"*
+                "zoom=$zoom&"*
+                "center=$lat,$lng&"*
+                "key=$maps_api_key&"),
+        attributes=Dict("style"=>"position:absolute;")
     ) end
+
+function update_highlight_img(deep_img::Matrix)
+    if !haskey(s[i], :highlight_fn); s[i][:highlight_fn] = s[i][:user_fn][1:end-4] * "_highlight.png" end
+
+    for j in 1:height(deep_img)
+        for k in 1:width(deep_img)
+            if s[i][:segs].image_indexmap[j,k] in [t[1] for t in s[i][:selected_segs]]
+            else; deep_img[j,k] = RGB{N0f8}(0.,0.,0.)
+            end end end
+
+    s[i][:highlight_img] = make_transparent(deep_img)
+    save(s[i][:highlight_fn], s[i][:highlight_img])
+    ui[:highlight_img][] = make_clickable_img("highlight_img", ui[:img_click],
+        register(s[i][:highlight_fn])*"?dummy=$(now())", 0.7)
+    end
 
 function update_segs_img(ui::Dict)
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
@@ -277,7 +285,7 @@ function go_mod_segs(ui::Dict, args::Int64, alg::Function)
     update_segs_img(ui)
     end
 
-function go_make_labels(ui::Dict)
+function update_labels_img(ui::Dict)
     s[i][:labels_img] = make_labels_img(s[i][:segs])
     s[i][:labels_fn] = s[i][:user_fn][1:end-4] * "_labels.png"
     save(s[i][:labels_fn], s[i][:labels_img])

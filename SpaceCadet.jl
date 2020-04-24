@@ -17,8 +17,6 @@ using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing,
     segment_labels, SegmentedImage
 using Images: save, load, height, width, Gray, GrayA, RGB, N0f8,
     FixedPointNumbers
-#using Gadfly: plot, inch, draw, SVG, Guide.xlabel, Guide.ylabel, Geom.bar,
-#    Scale.y_log10
 using FreeTypeAbstraction: renderstring!, FTFont
 using InteractBulma: compile_theme, examplefolder
 using ImageTransformations: imresize
@@ -30,10 +28,11 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using Metalhead
-using PlotlyJS
+using ImageIO
 using Logging
 using NNlib
 using WebIO
+using Plots
 using Mux
 
 end
@@ -48,8 +47,10 @@ if @isdefined s  # user session data
 else const s = Dict{Symbol,Any}[ Dict(
     :scale => [1.,""],
     :segs_types => nothing,
-    :selected_areas => Vector{Int64}()),
-    ] end
+    :selected_areas => Tuple{Int64,Int64}[]
+    )] end
+
+plotly()  # Plotly backend
 
 @time include("./secrets/secrets.jl")
 @time include("./src/funcs.jl")

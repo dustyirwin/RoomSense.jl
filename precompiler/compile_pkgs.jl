@@ -3,17 +3,16 @@ using PackageCompiler
 # julia --trace-compile=space_cadet_trace.jl
 # PackageCompiler.restore_default_sysimage()
 
-compiled_symbols = [
-    :BSON, :Random, :Images, :ImageSegmentation, :PlotlyJS, :Dates, :CSV,
-    :FreeTypeAbstraction, :DataFrames, :Metalhead, :Pkg, :AssetRegistry,
-    :Interact, :Mux, :ImageTransformations, :Logging, :WebIO, :JSExpr,
-    :InteractBulma,
+pkg_symbols = [
+    :BSON, :Random, :Images, :ImageSegmentation, :Dates, :CSV, :Metalhead,
+    :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact, :Mux,
+    :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma, :NNlib,
+    :Plots,
     ]
 
-compile_list = [:Mux]  # Mux loading in 0.231s
+compile_pkgs = []
 
-
-@async for pkg in compile_list
+@async for pkg in compile_pkgs
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",

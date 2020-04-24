@@ -42,6 +42,9 @@ ui[:/] = () -> node(:div,
         ui[:segs_mask],
         ui[:overlay_mask],
         ui[:labels_mask],
+        ui[:highlight_mask],
+        ui[:gmap_mask],
+        ui[:plots_mask],
     ));
 
 ui[:scope].dom = ui[:/]()
