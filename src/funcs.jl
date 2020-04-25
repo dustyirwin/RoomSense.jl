@@ -136,7 +136,7 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
         area_unit=String[],
         space_type=String[])
 
-    csv_fln = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
+    csv_fn = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
 
     for (label, px_ct) in collect(segment_pixel_count(segs))
         if label in keys(checks) && checks[label][]
@@ -148,8 +148,8 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
                 scale_unit,
                 dds[label][]]) end end
 
-    write(csv_fln, df)
-    return "Data exported to $csv_fln" end
+    write(csv_fn, df)
+    return csv_fn end
 
 function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     s_exp = deepcopy(s[end])

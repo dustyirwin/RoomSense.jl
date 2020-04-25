@@ -1,5 +1,6 @@
 
-function space_cadet(ui::AbstractDict, w::Scope)
+function space_cadet(ui::AbstractDict)
+    w = ui[:scope]
 
     on(w, "img_url_input") do args
 
@@ -30,6 +31,7 @@ function space_cadet(ui::AbstractDict, w::Scope)
                 @async ui[:information][] = node(:p, ui[:help_texts]["User Image"])
                 @async ui[:img_tabs][:options][] = ["Original"]
                 @async ui[:img_tabs][] = "Original"
+                @async ui["Overlay"][] = true
             end
 
         catch err
@@ -151,9 +153,11 @@ function space_cadet(ui::AbstractDict, w::Scope)
         ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
         ui[:user_mask][] = args == "Original" ? 1 : 0
         ui[:segs_mask][] = args == "Segmented" ? 1 : 0
-        ui[:labels_mask][] = args == "Plots" ? 0 : ui["Labels_mask"][] > 0 ? 1 : 0
-        ui[:overlay_mask][] = args == "Plots" ? 0 : ui["Seeds_mask"][] > 0 ? 1 : 0
+        ui[:labels_mask][] = args == "Plots" ? 0 : ui["Labels"][] == true ? 1 : 0
+        ui[:overlay_mask][] = args == "Plots" ? 0 : ui["Overlay"][] == true ? 1 : 0
+        ui[:highlight_mask][] = args == "Plots" ? 0 : ui[:highlight_mask][]
         ui[:plots_mask][] = args == "Plots" ? 1 : 0
+
 
         ui["Labels_mask"][] = args != "Plots" && haskey(s[i], :segs) ? 1 : 0
         ui["Overlay_mask"][] = args in ["Plots", "Original"] ? 0 : 1
@@ -168,9 +172,11 @@ function space_cadet(ui::AbstractDict, w::Scope)
 
     on(w, "func_tabs") do args
         println("funcs_tabs pressed! args: $args")
+
         ui[:funcs_mask][:key][] = args
         ui[:inputs_mask][:key][] = ui[:funcs][args][]
 
+        ui[:units_mask][] = args == "Set Scale" ? 1 : 0
         ui["CadetPred_mask"][] = args == "Export Data" ? 1 : 0
         ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
         ui["Labels_mask"][] = args in ["Original", "Segment Image", "Modify Segments"] &&

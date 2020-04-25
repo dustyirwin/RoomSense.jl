@@ -18,7 +18,7 @@ const ui = Dict{Union{Symbol,String},Any}(
                 "Prune Segments by MGS", "Prune Segment"])),
         "Export Data"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Assign Space Types", "Export Data to CSV"])),
+                "Assign Space Types", "Export Data to ZIP"])),
     ),
     :inputs => OrderedDict(
         "Fast Scanning" => widget(0.05:0.01:0.25),
@@ -28,8 +28,9 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Prune Segment" => widget(0),
         "User Image" => textbox("See instructions below...", size=40),
         "Assign Space Types" => Observable(node(:div)),
-        "Export Data to CSV" => Observable(node(:div)),
+        "Export Data to ZIP" => Observable(node(:div)),
         "Google Maps" => textbox("*func under construction"),
+        "Units" => radiobuttons(["ft", "m"], stack=false),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -47,15 +48,15 @@ const ui = Dict{Union{Symbol,String},Any}(
     ),
     :font_size => 24,
     :font => FTFont("./fonts/OpenSans-Bold.ttf"),
-    :img_url_input => textbox("Paste http(s) img link here..."),
+    :img_url_input => textbox("PASTE (CTRL+V) the http web-link to your image ( .jpg .png .bmp ) here..."),
     :img_tabs => tabs(["Original"]),
-    :img_info => Observable(node(:strong, "<-- paste image weblink here")),
-    :click_info => Observable(node(:p,"")),
-    :information => Observable(node(:p, "")),
+    :img_info => Observable(node(:p)),
+    :click_info => Observable(node(:p)),
+    :information => Observable(node(:p)),
     :step => Observable(node(:strong, "step: $i")),
     :confirm => confirm(""),
     :go => button("Go!"),
-    )
+    );
 
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
@@ -78,3 +79,6 @@ for collection in [
 
     merge!(ui, Dict(ui[collection]...)
     ) end
+
+ui[:units] = radiobuttons(["ft", "m"], stack=false)
+ui[:units_mask] = mask([ ui[:units] ], index=0)

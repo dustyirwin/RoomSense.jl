@@ -10,11 +10,8 @@ function assetserve(dirs=true)
     req -> fresp(joinpath(absdir(req), req[:path]...))) end
 
 
-const assetserver = @isdefined(assetserver) ? assetserver :
-    route("assetserver/:key", assetserve(), Mux.notfound())
+@isdefined(assetserver) ? assetserver :
+const assetserver = route("assetserver/:key", assetserve(), Mux.notfound())
 
-
-if @isdefined webserver
-else; const webserver = WebIO.webio_serve(
-    page("/", req -> space_cadet(ui, ui[:scope])), 8000)
-end
+@isdefined(webserver) ? webserver :
+const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui)), 8000)

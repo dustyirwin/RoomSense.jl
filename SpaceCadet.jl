@@ -11,7 +11,7 @@ try pkg"activate ." catch
 
 using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox,
     dropdown, textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator,
-    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!
+    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!, checkboxes
 using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing,
     prune_segments, segment_pixel_count, labels_map, segment_mean,
     segment_labels, SegmentedImage
@@ -36,6 +36,8 @@ using WebIO
 using Plots
 using Mux
 
+#using Revise
+
 end
 
 @time begin
@@ -53,14 +55,14 @@ else const s = Dict{Symbol,Any}[ Dict(
 
 # plotlyjs()  # Plotly backend
 
-@time include("./secrets/secrets.jl")
-@time include("./src/funcs.jl")
-@time include("./src/models.jl")
-@time include("./src/ui.jl")
-@time include("./src/scope.jl")
-@time include("./src/events.jl")
-@time include("./src/server.jl")
+@time include("./secrets/secrets.jl");
+@time include("./src/funcs.jl");
+@time include("./src/models.jl");
+@time include("./src/ui.jl");
+@time include("./src/scope.jl");
+@time include("./src/events.jl");
+@time include("./src/server.jl");
 
-println("All finished! Coded with ♡ by dustin.irwin@cadmusgroup.com 2019.")
+println("All finished! Coded with ♡ by dusty.irwin@gmail.com 2019.")
 
 end  # begin

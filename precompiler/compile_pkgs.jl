@@ -7,12 +7,12 @@ pkg_symbols = [
     :BSON, :Random, :Images, :ImageSegmentation, :Dates, :CSV, :Metalhead,
     :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact, :Mux,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma, :NNlib,
-    :Plots, :PlotlyJS
+    :Plots, :PlotlyJS, :ImageIO, :Revise
     ]
 
-compile_pkgs = [:ImageIO]  # ImageIO new package
+compile_pkgs = []  # ImageIO new package, Revise fixed?
 
-@async for pkg in compile_pkgs
+for pkg in pkg_symbols
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg; precompile_statements_file="./precompiler/space_cadet_trace.jl",

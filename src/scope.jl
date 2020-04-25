@@ -3,10 +3,10 @@ const ObsDict = Dict{String, Tuple{Observables.AbstractObservable, Union{Nothing
 
 ui[:scope] = Scope(
     observs=ObsDict("$k"=>(v, nothing)
-        for (k,v) in ui if v isa Observables.AbstractObservable))
+        for (k,v) in ui if v isa Observables.AbstractObservable));
 
-ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[])
-ui[:stdd_click] = Observable(ui[:scope], "stdd_click", Union{Int,Bool}[])
+ui[:img_click] = Observable(ui[:scope], "img_click", Union{Int,Bool}[]);
+ui[:stdd_click] = Observable(ui[:scope], "stdd_click", Union{Int,Bool}[]);
 
 
 for k in [:user_img, :segs_img]
@@ -15,18 +15,18 @@ for k in [:user_img, :segs_img]
     end
 
 ui[:func_panel] = vbox(
-    hbox(ui[:func_tabs], hskip(1em),
-        vbox(vskip(0.5em), ui[:step]), hskip(1em),
-        vbox(vskip(0.3em), ui[:img_url_input]), hskip(1em),
+    hbox(ui[:func_tabs], hskip(0.75em),
+        vbox(vskip(0.5em), ui[:step]), hskip(0.5em),
         vbox(vskip(0.5em), ui[:img_info])),
     vskip(1em),
     hbox(hskip(1em),
         ui[:go_mask], hskip(0.5em),
         ui[:funcs_mask], hskip(0.5em),
         ui[:inputs_mask], hskip(0.5em),
-        vbox(vskip(0.5em), hbox(values(ui[:checkbox_masks])..., hskip(0.5em), ui[:click_info]))
+        ui[:units_mask], hskip(0.5em),
+        vbox(vskip(0.75em), hbox(values(ui[:checkbox_masks])..., hskip(0.5em), ui[:click_info]))
     ),
-    hbox(hskip(1em), ui[:information]), vskip(0.7em),
+    hbox(hskip(1em), ui[:information]), vskip(0.75em),
     ui[:img_tabs],
     );
 
@@ -45,8 +45,10 @@ ui[:/] = () -> node(:div,
         ui[:highlight_mask],
         ui[:gmap_mask],
         ui[:plots_mask],
-    ));
+    ),
+    node(:div, ui[:img_url_input]),
+    )
 
 ui[:scope].dom = ui[:/]()
 
-ui[:space_editor] = (model) -> node(:div,)
+ui[:space_editor] = () -> node(:div,);
