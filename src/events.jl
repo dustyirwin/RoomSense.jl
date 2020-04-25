@@ -116,9 +116,15 @@ function space_cadet(ui::AbstractDict)
                 if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
 
             else
-                ui[:highlight_mask][] = 0
-                s[i][:selected_segs] = Dict{Int64,Union{Missing,Int64}}()
-            end end
+                if !isempty(s[i][:selected_segs])
+                    ui[:confirm]("This action will clear all selected segments. Continue?") do resp
+                    if !resp return
+                    else
+                        ui[:highlight_mask][] = 0
+                        s[i][:selected_segs] = Dict{Int64,Union{Missing,Int64}}()
+                    end end end
+
+        end end
 
         if func == "Prune Segment"
             ui[:input][func][] = s[i][:segs].image_indexmap[args[1], args[2]] end
@@ -150,6 +156,7 @@ function space_cadet(ui::AbstractDict)
         ui[:go]["is-loading"][] = true
         println("img tabs clicked! args: $args")
 
+        ui[:img_url_mask][] = args == "Original" ? 1 : 0
         ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
         ui[:user_mask][] = args == "Original" ? 1 : 0
         ui[:segs_mask][] = args == "Segmented" ? 1 : 0

@@ -69,8 +69,9 @@ ui[:checkbox_masks] = Dict(
 ui[:img_masks] = Dict(
     Symbol("$(k)_mask")=>mask(Observable([ui[:imgs][Symbol("$(k)_img")]]), index=0)
     for k in ui[:img_syms])
-ui[:gmap_mask] = mask(Observable([gmap()]), index=0)
+ui[:gmap_mask] = mask(Observable([ gmap() ]), index=0);
 ui[:go_mask] = mask([ ui[:go] ], index=0)
+ui[:img_url_mask] = mask(Observable([ ui[:img_url_input] ]), index=1);
 ui[:plots] = Observable(node(:div));
 ui[:plots_mask] = mask(Observable([ ui[:plots] ]), index=0);
 

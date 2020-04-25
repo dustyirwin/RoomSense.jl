@@ -46,7 +46,7 @@ ui[:/] = () -> node(:div,
         ui[:gmap_mask],
         ui[:plots_mask],
     ),
-    node(:div, ui[:img_url_input]),
+    ui[:img_url_mask]
     )
 
 ui[:scope].dom = ui[:/]()
