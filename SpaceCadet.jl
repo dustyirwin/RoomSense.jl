@@ -31,7 +31,7 @@ using Dates: now
 using Metalhead
 using PlotlyJS
 using ImageIO
-using ZipFile
+using InfoZIP
 using Logging
 using Flux
 using WebIO
@@ -66,9 +66,10 @@ new_instance = () -> Dict{Symbol,Any}(
 if @isdefined s
 else const s = [new_instance()] end
 
-@time include("./secrets/secrets.jl");
+@time include("./src/secrets.jl");
 @time include("./src/funcs.jl");
 @time include("./src/models.jl");
+@time include("./src/maps.jl");
 @time include("./src/ui.jl");
 @time include("./src/scope.jl");
 @time include("./src/events.jl");

@@ -60,13 +60,13 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Download Data as ZIP" => "Exports segment data as a zip file.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
+    :information => Observable(node(:p)),
     :font_size => 24,
     :font => FTFont("./fonts/OpenSans-Bold.ttf"),
     :img_url_input => textbox("PASTE (CTRL+V) the http web-link to your image ( .jpg .png .bmp ) here..."),
     :img_tabs => tabs(["Original"]),
     :img_info => Observable(node(:p)),
     :click_info => Observable(node(:p)),
-    :information => Observable(node(:p)),
     :step => Observable(node(:strong, "step: $i")),
     :confirm => confirm(""),
     :alert => alert(""),
@@ -82,7 +82,7 @@ ui[:inputs] = OrderedDict(
     "User Image" => textbox("See instructions below...", size=40),
     "Assign Space Types" => dropdown(
         OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
-    "Download Data as ZIP" => Observable(node(:strong, "Zip file download link")),
+    "Download Data as ZIP" => Observable(node(:a)),
     "Google Maps" => textbox("*func under construction"),
     "Units" => radiobuttons(["ft", "m"], stack=false),
     )

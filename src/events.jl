@@ -6,7 +6,7 @@ function space_cadet(ui::AbstractDict)
         global s, i # load globals
         ui[:go]["is-loading"][] = true
 
-        try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
+        try fn = "./tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
             s[i][:user_img] = load(fn)
             @async println("User uploaded an img! \n args: $args \n fn: $fn")
@@ -199,7 +199,13 @@ function space_cadet(ui::AbstractDict)
         ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
         ui["Labels_mask"][] = args in ["Original", "Segment Image", "Modify Segments"] &&
             haskey(s[i], :segs) ? 1 : 0
-        end
+
+        if args == "Export Data"
+            try update_highlight_img(deepcopy(s[i][:user_img]))
+            ui[:highlight_mask][] = 1 catch
+            end end
+
+        end # do
 
     on(w, "inputs_mask") do args
         println("inputs_mask changed! args: $args")
@@ -268,11 +274,5 @@ function space_cadet(ui::AbstractDict)
         ui[:highlight_mask][] = 1
         end
 
-    on(w, "Download Data as Zip") do args
-        export_session_data(s)
-        
-        confirm
-
-    end
     return w
 end

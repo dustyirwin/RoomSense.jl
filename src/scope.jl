@@ -37,18 +37,20 @@ ui[:img_masks][:user_mask][:index][] = 1
 ui[:/] = () -> node(:div,
     ui[:confirm],
     ui[:alert],
-    node(:div, ui[:func_panel], attributes=Dict(
-        "classList"=>"navbar", "position"=>"fixed")),
-    vbox(node(:div,
+    node(:div,
+        ui[:func_panel],
+        attributes=Dict("classList"=>"navbar", "position"=>"fixed")),
+    ui[:img_url_mask],
+    node(:div,
         ui[:user_mask],
         ui[:segs_mask],
         ui[:overlay_mask],
         ui[:labels_mask],
+        # ui[:seeds_mask],
         ui[:highlight_mask],
         ui[:gmap_mask],
         ui[:plots_mask],
         ),
-    ui[:img_url_mask])
     )
 
 ui[:scope].dom = ui[:/]()

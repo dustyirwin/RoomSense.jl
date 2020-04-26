@@ -4,13 +4,13 @@ using PackageCompiler
 # PackageCompiler.restore_default_sysimage()
 
 pkg_symbols = [
-    :BSON, :Random, :Images, :ImageSegmentation, :Dates, :CSV, :Metalhead,
+    :BSON, :Random, :Images, :ImageSegmentation, :Dates, :Metalhead,
     :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact, :Mux,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma,
     :Plots, :PlotlyJS, :ImageIO
     ]
 
-compile_pkgs = [:Flux]  # added Flux for gpu, NNlib
+compile_pkgs = [:Flux, :InfoZIP, :ZipFile, :CSV, :Interact]  # added pkgs / funcs
 
 for pkg in pkg_symbols
     print("\nCompiling package: $pkg\n\n")

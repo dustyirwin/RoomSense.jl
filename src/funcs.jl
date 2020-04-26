@@ -75,8 +75,8 @@ function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64,
        c = length(segs.segment_labels)
        update = "alg:" * "$alg"[19:end] * "
            segs:$(length(segs.segment_labels)) k=$(round(k, digits=3)) mgs:$mgs"
-   end
-       return segs end
+       end
+   return segs end
 
 function parse_input_str(input::String)
     input = replace(input, " "=>""); if input == ""; return 0 end
@@ -127,28 +127,29 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, checks::OrderedDict, img_fln::String, scale::Float64, scale_unit::String)
+function export_CSV()
     df = DataFrame(
         segment_label=Int64[],
         segment_pixel_count=Int64[],
         area_estimate=Int64[],
-        area_estimate_adjusted=Int64[],
         area_unit=String[],
         space_type=String[])
 
-    csv_fn = "$(img_fln[1:end-4])_" * replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
+    csv_fn = "$(s[i][:user_fn][1:end-4])_" *
+        replace(replace("$(now())", "."=>"-"), ":"=>"-") * ".csv"
 
-    for (label, px_ct) in collect(segment_pixel_count(segs))
-        if label in keys(checks) && checks[label][]
-            push!(df, [
-                label,
-                px_ct,
-                ceil(px_ct/scale[1]),
-                ceil((px_ct)/scale[1] + spins[label][]),
-                scale_unit,
-                dds[label][]]) end end
+    for (label, px_ct) in s[i][:segs].segment_pixel_count
+        push!(df, [
+            label,
+            px_ct,
+            ceil(px_ct / s[i][:scale][1]),
+            ui["Units"][],
+            try s[i][:space_types][label] catch; "Unknown" end,
+            ])
+        end
 
     write(csv_fn, df)
+    s[i][:csv_df] = df
     return csv_fn end
 
 function export_session_data(s::Array{Dict{Symbol,Any},1})
@@ -157,8 +158,7 @@ function export_session_data(s::Array{Dict{Symbol,Any},1})
     dt = string(now())[1:10]
     fn = "exports$(user_trunc[4:end])_$(dt).BSON"
     @save fn s_end
-    return fn
-    end
+    return fn end
 
 function get_img_from_url(img_url_raw::String)
     img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw
@@ -192,20 +192,6 @@ function make_clickable_img(
                 event.altKey,
                 ];),
             Dict("keydown" => @js () -> $img_keydown[] = event.keyCode;))
-    ) end
-
-function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
-    node(:div,
-        node(:iframe,
-            width="$w",
-            height="$h",
-            frameborder="0",
-            style=Dict("border"=>"0"),
-            src="https://www.google.com/maps/embed/v1/view?"*
-                "zoom=$zoom&"*
-                "center=$lat,$lng&"*
-                "key=$maps_api_key&"),
-        attributes=Dict("style"=>"position:absolute;")
     ) end
 
 function update_highlight_img(deep_img::Matrix)
@@ -282,6 +268,18 @@ function get_space_type(label::Int64, model)
     s[i][:space_types][label] = ui[:space_types][max_pred[2]]
     end
 
+function write_zip()
+    zip_fn = "./exports" * s[i][:user_fn][6:end-4] * "_space_cadet_data.zip"
+    s[i][:csv_fn] = export_CSV()
+
+    create_zip(zip_fn, Dict(
+        s[i][:csv_fn][7:end] => read(s[i][:csv_fn]),
+        s[i][:segs_fn][7:end] => read(s[i][:segs_fn]),
+        s[i][:labels_fn][7:end] => read(s[i][:labels_fn]),
+        s[i][:overlay_fn][7:end] => read(s[i][:overlay_fn]),
+        # s[i][:seeds_fn]=> load(s[i][:seeds_fn]),
+        ))
+    return zip_fn end
 
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
@@ -308,13 +306,17 @@ const go_funcs = Dict(
         for (label, size) in s[i][:selected_spaces]
             s[i][:space_types][label] = ui["CadetPred"][] ? try
                 get_space_type(label, sn_g50) catch
-                    "CadetPred Error!" end : ui[:space_types][args]
+                    "CadetPredError1" end : ui[:space_types][args]
             end
         update_highlight_img(deepcopy(s[i][:user_img]))
         ui[:alert]("Assigned space types:\n$(join([ "$k: $v\n" for (k,v) in
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))"
             ) end,
-    "Export Data to Zip" => (ui::Dict, args::Any) -> begin
-        #export_data_to_zip()
+    "Download Data as ZIP" => (ui::Dict, args::Any) -> begin
+        s[i][:csv_fn] = export_CSV()
+        zip_fn = write_zip()
+        txt = "Thank you for using Space Cadet! Please email questions and comments to dustin.irwin@cadmusgroup.com"
+        ui[:alert](txt)
+        ui[:information][] = node(:a, "Click here to download ZIP", href=zip_fn)
         end,
     )
