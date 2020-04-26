@@ -6,7 +6,7 @@ settheme!(mytheme)
 
 const ui = Dict{Union{Symbol,String},Any}(
     :img_syms => [:user, :segs, :overlay, :labels, :highlight, :seeds],
-    :available_space_types => OrderedDict{Int64,String}(
+    :space_types => OrderedDict{Int64,String}(
         1=>"Building Support - Other",                   2=>"Building Support - Mechanical Room",
         3=>"Building Support - Garbage",                 4=>"Building Support - Electrical",
         5=>"Building Support - Mechnical Mezzanine",     6=>"Process - Other",
@@ -45,7 +45,7 @@ const ui = Dict{Union{Symbol,String},Any}(
                 "Prune Segments by MGS", "Prune Segment"])),
         "Export Data"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Assign Space Types", "Export Data to ZIP"])),
+                "Assign Space Types", "Export Data to Zip"])),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -70,7 +70,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :information => Observable(node(:p)),
     :step => Observable(node(:strong, "step: $i")),
     :confirm => confirm(""),
-    :alert => alert("Images larger than FHD are not supported. Reduce the image size below 2.036e6 pixels (1920 x 1080)"),
+    :alert => alert(""),
     :go => button("Go!"),
     );
 
@@ -79,10 +79,10 @@ ui[:inputs] = OrderedDict(
     "Felzenszwalb" => widget(25:5:125),
     "Seeded Region Growing" => widget("*func under construction"),
     "Prune Segments by MGS" => widget(100),
-    "Prune Segment" => node(:p, "shift+click to select a space, shift+alt+click to unselect a space, ctrl+click to highlight a space. You may combine these commands. "),
+    "Prune Segment" => node(:p, "shift+click to select a space, shift+alt+click to unselect a space, ctrl+click to highlight selected spaces. You may combine these commands."),
     "User Image" => textbox("See instructions below...", size=40),
     "Assign Space Types" => dropdown(
-        OrderedDict(v=>k for (k,v) in ui[:available_space_types]), multiple=false),
+        OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
     "Export Data to ZIP" => Observable(node(:div)),
     "Google Maps" => textbox("*func under construction"),
     "Units" => radiobuttons(["ft", "m"], stack=false),

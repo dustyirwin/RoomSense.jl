@@ -213,11 +213,11 @@ function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
 
 function update_highlight_img(deep_img::Matrix)
     if !haskey(s[i], :highlight_fn); s[i][:highlight_fn] = s[i][:user_fn][1:end-4] * "_highlight.png" end
-    selected_segs = [k for (k,v) in s[i][:selected_segs] if !(v isa Missing)]
+    selected_spaces = [k for (k,v) in s[i][:selected_spaces] if !(v isa Missing)]
 
     for j in 1:height(deep_img)
         for k in 1:width(deep_img)
-            if s[i][:segs].image_indexmap[j,k] in selected_segs
+            if s[i][:segs].image_indexmap[j,k] in selected_spaces
             else; deep_img[j,k] = RGB{N0f8}(0.,0.,0.)
             end end end
 
@@ -286,7 +286,8 @@ const go_funcs = Dict(
         s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
         s[i][:scale][2] = args
         ui[:img_info][] = node(:p,
-            "width: $(s[i][:user_width]) height: $(s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / unit area")
+            "width: $(s[i][:user_width]) height: $(
+                s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / unit area")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
@@ -297,14 +298,17 @@ const go_funcs = Dict(
         ui, parse_input_str(args), seeded_region_growing),
     "Prune Segments by MGS" => (ui::Dict, args::Int64) -> go_mod_segs(
         ui, args, prune_min_size),
-    "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
+    "Prune Segment" => (ui::Dict, args::String) -> go_seg_img(
         ui, args, prune_segments),
-    "Assign Space Types" => (ui::Dict, args::Vector{Int64}) -> begin
-        for label in args
-            s[i][:assigned_space_types][k] = ui["CadetPred"][] ?
-                get_space_type(label, sn_g50) : ui[:available_space_types][ ui[:inputs]["Assign Space Types"][] ]
-        end end,
-    "Export Data to CSV" => (ui::Dict, args::Any) -> begin
+    "Assign Space Types" => (ui::Dict, args::Int64) -> begin
+        for (label, size) in s[i][:selected_spaces]
+            space_type = ui["CadetPred"][] ? get_space_type(label, sn_g50) : ui[:space_types][args]
+            s[i][:space_types][label] = space_type
+            end
+        ui[:alert]("Selected space types:\n$(join([ "$k: $v\n" for (k,v) in
+            s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))")
+        end,
+    "Export Data to Zip" => (ui::Dict, args::Any) -> begin
         export_CSV()
         end,
-)
+    )

@@ -29,6 +29,7 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using Metalhead
+using CuArrays
 using PlotlyJS
 using ImageIO
 using Logging
@@ -56,8 +57,8 @@ new_instance = () -> Dict{Symbol,Any}(
     :seeds_img => nothing,
     :labels_img => nothing,
     :overlay_img => nothing,
-    :selected_segs => OrderedDict{Int64,Union{Missing,Int64}}(),
-    :assigned_space_types => OrderedDict{Int64,Union{Missing,String}}(),
+    :selected_spaces => OrderedDict{Int64,Union{Missing,Int64}}(),
+    :space_types => OrderedDict{Int64,Union{Missing,String}}(),
     )
 
 # user session data
