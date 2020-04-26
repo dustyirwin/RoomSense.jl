@@ -8,25 +8,31 @@ function space_cadet(ui::AbstractDict)
 
         try fn = "tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
-            @async ui[:func_tabs][] = "Set Scale"; ui[:go_mask][] = 1
+            s[i][:user_img] = load(fn)
             @async println("User uploaded an img! \n args: $args \n fn: $fn")
+            _w = s[i][:user_width] = width(s[i][:user_img])
+            _h = s[i][:user_height] = height(s[i][:user_img])
+
+            if _w * _h > 1920 * 1080
+                txt = "Images larger than FHD are not supported. Reduce the image size below 2.036e6 pixels (1920 x 1080)"
+                ui[:alert]()
+                return end
+
+            @async ui[:func_tabs][] = "Set Scale"
+            @async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
 
             @sync begin
-                @async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
-
                 s[i][:user_fn] = fn
-                s[i][:user_img] = load(fn)
-                @async ui[:user_img][] = make_clickable_img(
-                    "user_img", ui[:img_click], register(fn) * "?dummy=$(now())")
-                _w = s[i][:user_width] = width(s[i][:user_img])
-                _h = s[i][:user_height] = height(s[i][:user_img])
+                @async ui[:user_img][] = make_clickable_img("user_img",
+                    ui[:img_click], ui[:img_keydown], register(fn) * "?dummy=$(now())")
 
                 s[i][:overlay_img] = make_transparent(s[i][:user_img])
                 s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
                 save(s[i][:overlay_fn], s[i][:overlay_img])
-                @async ui[:overlay_img][] = make_clickable_img(
-                    "overlay_img", ui[:img_click], register(s[i][:overlay_fn]) * "?dummy=$(now())")
+                @async ui[:overlay_img][] = make_clickable_img("overlay_img",
+                    ui[:img_click], ui[:img_keydown], register(s[i][:overlay_fn]) * "?dummy=$(now())")
 
+                # reset ui
                 @async ui[:img_info][] = node(:p, "width: $_w  height: $_h")
                 @async ui[:information][] = node(:p, ui[:help_texts]["User Image"])
                 @async ui[:img_tabs][:options][] = ["Original"]
@@ -146,7 +152,7 @@ function space_cadet(ui::AbstractDict)
             save(s[i][:seeds_fn], s[i][:seeds_img])
 
             ui[:seeds_img][] = make_clickable_img(
-                "seeds_img", ui[:img_click], register(s[i][:seeds_fn]) * "?dummy=$(now())")
+                "seeds_img", ui[:img_click], ui[:img_keydown], register(s[i][:seeds_fn]) * "?dummy=$(now())")
             end
 
         ui[:go]["is-loading"][] = false

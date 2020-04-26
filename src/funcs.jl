@@ -163,47 +163,6 @@ function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
     export_text = "Data exported to $(filename).
  Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
 
-function launch_space_editor(scope::Scope, model)
-    img_deep = deepcopy(s[i][:segs_img]) # TODO: find a way to compsite segs & user img into
-
-    on(scope, "click_stdd") do args
-        @show args
-        s[i][:highlight_img] = highlight_segs(s[i][:segs], img_deep, s[i][:segs_fn], [args])
-        ui[:highlight_img][] = make_clickable_img("highlight_img", ui[:click_stdd], hs)
-    end
-
-    ui["CadetPred"][] ? get_segs_types(s[i][:segs], s[i][:user_img], model) : nothing
-
-    if !haskey(s[i], :segs_details_html)
-        s[i][:segs_details_html], s[i][:dds], s[i][:checks], s[i][:spins] = make_segs_details(
-        s[i][:segs], s[i][:segs_types], s[i][:scale][1], s[i][:scale][2],
-        length(s[i][:segs].segment_labels))
-    end end
-
-function make_segs_details(segs::SegmentedImage, segs_types::Union{Dict, Nothing}, scale::Float64, segs_limit::Int64)
-    segs_details = sort!(collect(segs.segment_pixel_count), by=x -> x[2], rev=true)
-    segs_details = length(segs_details) > segs_limit ? segs_details[1:segs_limit] : segs_details  # restricted to the Top 100 elements by size
-
-    area_sum = sum([pixel_count / scale for (label, pixel_count) in segs.segment_pixel_count])
-    summary_text = hbox(
-        "Total Area: $(ceil(area_sum)) $(scale == 1 ? "pxs" : "unit area")
-        Total Segs: $(length(segment_labels(segs))) (Top $segs_limit)")
-
-        # TODO: add statistical analysis to summary_text. Probably from Statistics or OnlineStats?
-
-    dds = OrderedDict(lbl => dropdown(dd_opts, value=try segs_types[lbl] catch; "" end,
-        label="$lbl - $(scale > 1 ? ceil(px_ct / scale) : px_ct) $scale_units",
-        events=Dict("click_stdd"=> @js () -> $click_stdd[] = $lbl; ))
-            for (lbl, px_ct) in segs_details)
-    checks = OrderedDict(lbl => checkbox(label="Export?", value=true) for (lbl, px_ct) in segs_details)
-    spins = OrderedDict(lbl => spinbox(0., value=0., label="Area +/-") for (lbl, px_ct) in segs_details)
-
-    details = [node(:div, hbox(dds[lbl], vbox(vskip(1.5em), spins[lbl]), vbox(vskip(2em), checks[lbl])))
-        for (lbl, px_ct) in segs_details]
-
-    html = hbox(hskip(0.75em), vbox(node(:p, summary_text) , vbox(details)))
-    return html, dds, checks, spins end
-
 function get_img_from_url(img_url_raw::String)
     img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw
     fn = "assets/" * split(img_url_cleaned, "/")[end][1:end-5]
@@ -211,28 +170,32 @@ function get_img_from_url(img_url_raw::String)
     return fn end
 
 function make_clickable_img(
-        img_name::String,
-        img_click::Observable{Array{Union{Int,Bool},1}},
-        src="https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg",
-        opacity=0.9)
+    img_name::String,
+    img_click::Observable{Array{Union{Int,Bool},1}},
+    img_keydown::Observable{Array{Union{Int,Bool},1}},
+    src=register("./assets/cadet.png");
+    alt="Cadet logo image from: https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg",
+    opacity=0.9)
 
     node(:img,
         attributes=Dict(
             "id"=>img_name,
             "src"=>src,
             "style"=>"position:absolute; opacity:$opacity;"),
-        events=Dict("click" => @js () -> $img_click[] = [
-            event.pageY - document.getElementById($img_name).offsetTop,
-            event.pageX,
-            document.getElementById($img_name).height,
-            document.getElementById($img_name).width,
-            document.getElementById($img_name).naturalHeight,
-            document.getElementById($img_name).naturalWidth,
-            event.ctrlKey,
-            event.shiftKey,
-            event.altKey,
-            ];
-    )) end
+        events=merge!(
+            Dict("click" => @js () -> $img_click[] = [
+                event.pageY - document.getElementById($img_name).offsetTop,
+                event.pageX,
+                document.getElementById($img_name).height,
+                document.getElementById($img_name).width,
+                document.getElementById($img_name).naturalHeight,
+                document.getElementById($img_name).naturalWidth,
+                event.ctrlKey,
+                event.shiftKey,
+                event.altKey,
+                ];),
+            Dict("keydown" => @js () -> $img_keydown[] = event.keyCode;))
+    ) end
 
 function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
     node(:div,
@@ -261,15 +224,15 @@ function update_highlight_img(deep_img::Matrix)
     s[i][:highlight_img] = make_transparent(deep_img)
     save(s[i][:highlight_fn], s[i][:highlight_img])
     ui[:highlight_img][] = make_clickable_img("highlight_img", ui[:img_click],
-        register(s[i][:highlight_fn])*"?dummy=$(now())", 0.7)
+        ui[:img_keydown], register(s[i][:highlight_fn])*"?dummy=$(now())", opacity=0.7)
     end
 
 function update_segs_img(ui::Dict)
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
     s[i][:segs_fn] = s[i][:user_fn][1:end-4] * "_segs.png"
     save(s[i][:segs_fn], s[i][:segs_img])
-    ui[:segs_img][] = make_clickable_img(
-        "segs_img", ui[:img_click], register(s[i][:segs_fn])*"?dummy=$(now())")
+    ui[:segs_img][] = make_clickable_img("segs_img",
+        ui[:img_click], ui[:img_keydown], register(s[i][:segs_fn])*"?dummy=$(now())")
     ui[:img_tabs][] = "Segmented"; ui["Labels"][] = false
     end
 
@@ -290,10 +253,33 @@ function update_labels_img(ui::Dict)
     s[i][:labels_fn] = s[i][:user_fn][1:end-4] * "_labels.png"
     save(s[i][:labels_fn], s[i][:labels_img])
     ui[:labels_img][] = make_clickable_img(
-        "labels_img", ui[:img_click], register(s[i][:labels_fn])*"?dummy=$(now())")
+        "labels_img", ui[:img_click], ui[:img_keydown], register(s[i][:labels_fn])*"?dummy=$(now())")
     end
 
-const f = Dict()
+function make_img_slices(segs::SegmentedImage, img::Matrix, img_slices=Dict())
+    for i in segment_labels(segs)
+        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; missing end
+        img_slice32 = Float32.(imresize(img_slice, (128,128)))
+        img_slices[i] = img_slice32
+        end
+    return img_slices
+    end
+
+function get_space_type(label::Int64, model)
+    model |> gpu
+    bs = get_segment_bounds(s[i][:segs])
+    img_slice = s[i][:img_slices][label]
+
+    img_slice |> gpu
+    w = width(img_slice)
+    h = height(img_slice)
+    pred_vec = model(reshape(img_slice, (w,h,1,1)))
+    max_pred = findmax(pred)
+
+    # confidence level of prediction
+    s[i][:segs_types][label] = [detailed_space_types[max_pred[2]], pred_vec]
+    end
+
 
 const go_funcs = Dict(
     "User Image" => (ui::Dict, args::String) -> begin
@@ -313,9 +299,11 @@ const go_funcs = Dict(
         ui, args, prune_min_size),
     "Prune Segment" => (ui::Dict, args::Any) -> go_seg_img(
         ui, args, prune_segments),
-    "Assign Space Types" => (ui::Dict, args::Any) -> begin
-        launch_space_editor() # essectially, launch new tab pointing space editor url
-        end,
+    "Assign Space Types" => (ui::Dict, args::Vector{Int64}) -> begin
+        for label in args
+            s[i][:assigned_space_types][k] = ui["CadetPred"][] ?
+                get_space_type(label, sn_g50) : ui[:available_space_types][ ui[:inputs]["Assign Space Types"][] ]
+        end end,
     "Export Data to CSV" => (ui::Dict, args::Any) -> begin
         export_CSV()
         end,

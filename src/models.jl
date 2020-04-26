@@ -47,23 +47,3 @@ function update_model(model::Any, X::Array{Float32,4}, Y::Array{Float32,3}, inds
     end
 
     return model end
-
-function get_segs_types(segs::SegmentedImage, img::Matrix, model, segs_types=Dict(), img_slices=Dict())
-    bs = get_segment_bounds(segs)
-    model |> gpu
-
-    for i in segment_labels(segs)
-        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; continue end
-        img_slice32 = Float32.(imresize(img_slice, (128,128)))
-        img_slices[i] = img_slice32 end
-
-    for (label, img_slice) in img_slices
-        img_slice |> gpu
-        w = width(img_slice)
-        h = height(img_slice)
-        pred = model(reshape(img_slice, (w,h,1,1)))
-        max_pred = findmax(pred)
-        segs_types[label] = [detailed_space_types[max_pred[2]], pred] # confidence level of prediction
-        end
-
-    return segs_types end

@@ -11,7 +11,8 @@ try pkg"activate ." catch
 
 using Interact: Widgets, Observables, Observable, OrderedDict, node, checkbox,
     dropdown, textbox, button, em, hbox, hskip, vbox, vskip, tabs, tabulator,
-    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!, checkboxes
+    mask, widget, Widgets.radiobuttons, Widgets.confirm, settheme!, checkboxes,
+    alert
 using ImageSegmentation: fast_scanning, felzenszwalb, seeded_region_growing,
     prune_segments, segment_pixel_count, labels_map, segment_mean,
     segment_labels, SegmentedImage
@@ -46,14 +47,22 @@ println("\nComplete. Loading codebase...\n")
 
 const i = 1  # work index
 
-if @isdefined s  # user session data
-else const s = Dict{Symbol,Any}[ Dict(
-    :scale => [1.,""],
-    :segs_types => nothing,
-    :selected_segs => Dict{Int64,Union{Missing,Int64}}()
-    )] end
+@async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
 
-# plotlyjs()  # Plotly backend
+new_instance = () -> Dict{Symbol,Any}(
+    :scale => [1.,""],
+    :plots => nothing,
+    :user_img => nothing,
+    :seeds_img => nothing,
+    :labels_img => nothing,
+    :overlay_img => nothing,
+    :selected_segs => OrderedDict{Int64,Union{Missing,Int64}}(),
+    :assigned_space_types => OrderedDict{Int64,Union{Missing,String}}(),
+    )
+
+# user session data
+if @isdefined s
+else const s = [new_instance()] end
 
 @time include("./secrets/secrets.jl");
 @time include("./src/funcs.jl");

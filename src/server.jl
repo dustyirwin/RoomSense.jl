@@ -1,8 +1,6 @@
 
 const p = rand(8000:8000)
 
-# Asset("./css/space_cadet.css")
-
 function assetserve(dirs=true)
     absdir(req) = AssetRegistry.registry["/assetserver/" * req[:params][:key]]
     branch(req -> (isfile(absdir(req)) && isempty(req[:path])) ||
