@@ -6,11 +6,11 @@ using PackageCompiler
 pkg_symbols = [
     :BSON, :Random, :Images, :ImageSegmentation, :Dates, :CSV, :Metalhead,
     :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact, :Mux,
-    :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma, :NNlib,
-    :Plots, :PlotlyJS, :ImageIO, :Revise
+    :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma,
+    :Plots, :PlotlyJS, :ImageIO
     ]
 
-compile_pkgs = [:CuArrays]  # added CuArrays for gpu
+compile_pkgs = [:Flux]  # added Flux for gpu, NNlib
 
 for pkg in pkg_symbols
     print("\nCompiling package: $pkg\n\n")

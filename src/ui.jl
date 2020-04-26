@@ -42,10 +42,10 @@ const ui = Dict{Union{Symbol,String},Any}(
                 "Fast Scanning", "Felzenszwalb", "Seeded Region Growing"])),  #Vector{Tuple{CartesianIndex,Int64}}
         "Modify Segments"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Prune Segments by MGS", "Prune Segment"])),
+                "Prune Segments by MGS", "Prune Segment(s)"])),
         "Export Data"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Assign Space Types", "Export Data to Zip"])),
+                "Assign Space Types", "Download Data as ZIP"])),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
@@ -53,12 +53,12 @@ const ui = Dict{Union{Symbol,String},Any}(
     :help_texts => Dict(
         "Fast Scanning" => "Select the threshold value above, higher values generates fewer pixel groups.",
         "Felzenszwalb" => "Select the threshold value above, higher values generates fewer pixel groups.",
-        "Seeded Region Growing" => "Click image to create a segment seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
-        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole area units or pixels (if you haven't set the scale).",
-        "Prune Segment" => "Remove segment by label and merge with most similar neighbor.",
-        "User Image" => "Click two points on image below and enter distance in whole units above. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
-        "Assign Space Types" => "Enter the amount of segments you want to review space types for. Segments are sorted largest to smallest.",
-        "Export Data to CSV" => "Exports segment data to CSV.",
+        "Seeded Region Growing" => "Click image to create a segmentation seed at that location. Ctrl+click to increase, alt-click to decrease, the seed number.",
+        "Prune Segments by MGS" => "Removes any segment below the input minimum group size (MGS) in whole units or pixels (if you haven't set the scale).",
+        "Prune Segment(s)" => "Click the space(s) to remove and press Go! to merge with their most similar neighbor. Shift+click to select multiple spaces.",
+        "User Image" => "Click two points on image below and enter horizontal distance in whole units above. Ctrl+click to use vertical distance. Separate multiple inputs with an ';' e.g. x1, x2, l1; ...",
+        "Assign Space Types" => "Select the space type and click the space(s) you want to assign that type to. Shift+click to select multiple spaces.",
+        "Download Data as ZIP" => "Exports segment data as a zip file.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
     ),
     :font_size => 24,
@@ -79,11 +79,11 @@ ui[:inputs] = OrderedDict(
     "Felzenszwalb" => widget(25:5:125),
     "Seeded Region Growing" => widget("*func under construction"),
     "Prune Segments by MGS" => widget(100),
-    "Prune Segment" => node(:p, "shift+click to select a space, shift+alt+click to unselect a space, ctrl+click to highlight selected spaces. You may combine these commands."),
+    "Prune Segment(s)" => Observable(node(:div,)),
     "User Image" => textbox("See instructions below...", size=40),
     "Assign Space Types" => dropdown(
         OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
-    "Export Data to ZIP" => Observable(node(:div)),
+    "Download Data as ZIP" => Observable(node(:strong, "Zip file download link")),
     "Google Maps" => textbox("*func under construction"),
     "Units" => radiobuttons(["ft", "m"], stack=false),
     )

@@ -29,11 +29,10 @@ using Random: seed!
 using CSV: write
 using Dates: now
 using Metalhead
-using CuArrays
 using PlotlyJS
 using ImageIO
 using Logging
-using NNlib
+using Flux
 using WebIO
 using Plots
 using Mux
@@ -52,6 +51,7 @@ const i = 1  # work index
 
 new_instance = () -> Dict{Symbol,Any}(
     :scale => [1.,""],
+    :preds => Dict(),
     :plots => nothing,
     :user_img => nothing,
     :seeds_img => nothing,

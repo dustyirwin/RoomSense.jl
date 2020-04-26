@@ -14,7 +14,7 @@ function space_cadet(ui::AbstractDict)
             _h = s[i][:user_height] = height(s[i][:user_img])
 
             if _w * _h > 1280 * 720
-                txt = "Images larger than HD resolution are not supported. Reduce the image size below 2.036e6 pixels (1920 x 1080)"
+                txt = "Images larger than HD resolution are not supported. Reduce the image size below 921,600 pixels (1280 x 720)"
                 ui[:alert]()
                 return end
 
@@ -239,8 +239,11 @@ function space_cadet(ui::AbstractDict)
             if length(s[i][:segs].segment_labels) > 1000
                 txt = "You are attempting to label $segs_ln segments. This operation could take a very long time. Continue?"
                 ui[:confirm](txt) do resp
-                resp ? update_labels_img(ui) : ui["Labels"][] = false
-        end end end
+                    resp ? update_labels_img(ui) : ui["Labels"][] = false
+                    end
+            else
+                update_labels_img(ui)
+        end end
 
         ui[:img_masks][:labels_mask][] = args ? 1 : 0
 
@@ -248,7 +251,7 @@ function space_cadet(ui::AbstractDict)
         end
 
     on(w, "Assign Space Types") do args
-        println("space type selected! args:$args")
+        println("Space type selected! args: $args")
         OrderedDict{Int64,Union{Missing,String}}()
 
         for k in keys(s[i][:space_types])
