@@ -309,13 +309,14 @@ const go_funcs = Dict(
         if !haskey(s[i], :img_slices)
             s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
         for (label, size) in s[i][:selected_spaces]
-            s[i][:space_types][label] = ui["CadetPred"][] ?
-                get_space_type(label, sn_g50) : ui[:space_types][args]
+            s[i][:space_types][label] = ui["CadetPred"][] ? try
+                get_space_type(label, sn_g50) catch
+                    "CadetPred Error!" end : ui[:space_types][args]
             end
         update_highlight_img(deepcopy(s[i][:user_img]))
-        ui[:alert]("Selected space types:\n$(join([ "$k: $v\n" for (k,v) in
-            s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))")
-            end,
+        ui[:alert]("Assigned space types:\n$(join([ "$k: $v\n" for (k,v) in
+            s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))"
+            ) end,
     "Export Data to Zip" => (ui::Dict, args::Any) -> begin
         #export_data_to_zip()
         end,

@@ -35,8 +35,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         ),
     :funcs => OrderedDict(
         "Set Scale"=>dropdown(
-            OrderedDict(k=>k for k in [
-                "User Image", "Google Maps"])),
+            OrderedDict(k=>k for k in ["User Image", "Google Maps"])),
         "Segment Image"=>dropdown(
             OrderedDict(k=>k for k in [
                 "Fast Scanning", "Felzenszwalb", "Seeded Region Growing"])),  #Vector{Tuple{CartesianIndex,Int64}}

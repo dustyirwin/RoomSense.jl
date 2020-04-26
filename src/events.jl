@@ -101,9 +101,12 @@ function space_cadet(ui::AbstractDict)
             if ui[:highlight_mask][] == 0 && args[7]; ui[:highlight_mask][] = 1 end
 
             # click, no mods
-            ui[:click_info][] = node(:p, "label: $label size:
-                $(s[i][:scale][1] != 1. ? "$area unit²" :
-                "$area pxs")" * " @ y: $(args[1]) x: $(args[2])")
+            ui[:click_info][] = node(:p, "
+                label: $label
+                size: $(s[i][:scale][1] != 1. ? "$area $(ui["Units"][])²" :
+                    "$area pxs") $(haskey(s[i][:space_types], label) ? "
+                type: $(s[i][:space_types][label])" : "")
+                @ y: $(args[1]) x: $(args[2])")
 
             # highlight segment(s), ctrl key: 7
             if args[7] && !args[8]
@@ -116,7 +119,7 @@ function space_cadet(ui::AbstractDict)
                 args[9] ? s[i][:selected_spaces][label]=missing : s[i][:selected_spaces][label]=area
                 ui[:click_info][] = node(:p,
                     "Total Area: ~$(sum([v for (k,v) in s[i][:selected_spaces] if !(v isa Missing)])) "*
-                    "$(s[i][:scale][1] != 1 ? "unit²" : "pxs")  Labels: $(join(["$k, " for (k,v) in s[i][:selected_spaces] if !(v isa Missing)]))"
+                    "$(s[i][:scale][1] != 1 ? "$(ui["Units"][])²" : "pxs")  Labels: $(join(["$k, " for (k,v) in s[i][:selected_spaces] if !(v isa Missing)]))"
                     )
                 if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
 
