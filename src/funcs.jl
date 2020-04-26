@@ -151,17 +151,14 @@ function export_CSV(segs::SegmentedImage, dds::OrderedDict, spins::OrderedDict, 
     write(csv_fn, df)
     return csv_fn end
 
-function export_session_data(s::Vector{Dict{Any,Any}}, xd=Dict())
-    s_exp = deepcopy(s[end])
-    s_exp["dds"] = Dict(k=>v[] for (k,v) in s_exp["dds"])
-    s_exp["spins"] = Dict(k=>v[] for (k,v) in s_exp["spins"])
-    s_exp["checks"] = Dict(k=>v[] for (k,v) in s_exp["checks"])
-    img_name = split(s[end]["img_fln"][1:end-4], "\\")[end]
+function export_session_data(s::Array{Dict{Symbol,Any},1})
+    s_end = deepcopy(s[end])
+    user_trunc = s_end[:user_fn][1:end-4]
     dt = string(now())[1:10]
-    filename = "$(img_name)_$(dt).BSON"
-    @save filename s_exp
-    export_text = "Data exported to $(filename).
- Please email BSON file to dustin.irwin@cadmusgroup.com with subject: 'SpaceCadet session data'. Thanks!" end
+    fn = "exports$(user_trunc[4:end])_$(dt).BSON"
+    @save fn s_end
+    return fn
+    end
 
 function get_img_from_url(img_url_raw::String)
     img_url_cleaned = img_url_raw[end] == "0" ? img_url_raw[1:end-1] * "1" : img_url_raw

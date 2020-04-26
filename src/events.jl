@@ -268,5 +268,11 @@ function space_cadet(ui::AbstractDict)
         ui[:highlight_mask][] = 1
         end
 
+    on(w, "Download Data as Zip") do args
+        export_session_data(s)
+        
+        confirm
+
+    end
     return w
 end

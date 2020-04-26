@@ -31,6 +31,7 @@ using Dates: now
 using Metalhead
 using PlotlyJS
 using ImageIO
+using ZipFile
 using Logging
 using Flux
 using WebIO
