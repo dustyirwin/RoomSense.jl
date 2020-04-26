@@ -13,8 +13,8 @@ function space_cadet(ui::AbstractDict)
             _w = s[i][:user_width] = width(s[i][:user_img])
             _h = s[i][:user_height] = height(s[i][:user_img])
 
-            if _w * _h > 1920 * 1080
-                txt = "Images larger than FHD are not supported. Reduce the image size below 2.036e6 pixels (1920 x 1080)"
+            if _w * _h > 1280 * 720
+                txt = "Images larger than HD resolution are not supported. Reduce the image size below 2.036e6 pixels (1920 x 1080)"
                 ui[:alert]()
                 return end
 
@@ -94,7 +94,7 @@ function space_cadet(ui::AbstractDict)
             ui[:inputs][func][] = ui[:inputs][func][] * "$(args[7] ? args[1] : args[2]),"
             ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
 
-        elseif ui[:img_tabs][] in ["Original", "Segmented"] && haskey(s[i], :segs)
+        elseif ui[:img_tabs][] in ["Original", "Segmented", "Export Data"] && haskey(s[i], :segs)
             label = s[i][:segs].image_indexmap[args[1], args[2]]
             area = ceil(segment_pixel_count(s[i][:segs])[label] / s[i][:scale][1])
             n_segs = length(s[i][:segs].segment_labels)
@@ -107,7 +107,7 @@ function space_cadet(ui::AbstractDict)
 
             # highlight segment(s), ctrl key: 7
             if args[7] && !args[8]
-                s[i][:selected_spaces] = Dict{Int64,Union{Missing,Int64}}()
+                s[i][:selected_spaces] = OrderedDict{Int64,Union{Missing,Int64}}()
                 s[i][:selected_spaces][label] = area
                 update_highlight_img(deepcopy(s[i][:user_img]))
 
@@ -121,14 +121,18 @@ function space_cadet(ui::AbstractDict)
                 if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
 
             else
-                if !isempty(s[i][:selected_spaces])
+                if length(keys(s[i][:selected_spaces])) > 2
                     ui[:confirm]("This action will clear all selected segments. Continue?") do resp
-                    if !resp return
-                    else
-                        ui[:highlight_mask][] = 0
+                    if resp
                         s[i][:selected_spaces] = Dict{Int64,Union{Missing,Int64}}()
-                    end end end
-        end end
+                        ui[:highlight_mask][] = 0
+                    else
+                        return
+                    end end
+                else
+                    s[i][:selected_spaces] = Dict{Int64,Union{Missing,Int64}}()
+                    ui[:highlight_mask][] = 0
+            end end end
 
         if func == "Prune Segment"
             ui[:input][func][] = s[i][:segs].image_indexmap[args[1], args[2]] end
@@ -227,22 +231,35 @@ function space_cadet(ui::AbstractDict)
 
     on(w, "Labels") do args
         ui[:go]["is-loading"][] = true
-
         println("Labels clicked! args: $args")
 
-        if args && haskey(s[i], :segs) && length(s[i][:segs].segment_labels) > 1000
+        if args && haskey(s[i], :segs)
             segs_ln = length(s[i][:segs].segment_labels)
-            txt = "You are attempting to label $segs_ln segments. This operation could take a very long time. Continue?"
-            ui[:confirm](txt) do resp
+
+            if length(s[i][:segs].segment_labels) > 1000
+                txt = "You are attempting to label $segs_ln segments. This operation could take a very long time. Continue?"
+                ui[:confirm](txt) do resp
                 resp ? update_labels_img(ui) : ui["Labels"][] = false
-            end
-        elseif args && haskey(s[i], :segs)
-            update_labels_img(ui)
-        end
+        end end end
 
         ui[:img_masks][:labels_mask][] = args ? 1 : 0
 
         ui[:go]["is-loading"][] = false
+        end
+
+    on(w, "Assign Space Types") do args
+        println("space type selected! args:$args")
+        OrderedDict{Int64,Union{Missing,String}}()
+
+        for k in keys(s[i][:space_types])
+            try if s[i][:space_types][k] == ui[:space_types][args]
+                s[i][:selected_spaces][k] = s[i][:segs].segment_pixel_count[k]
+                end
+            catch; continue
+            end end
+
+        update_highlight_img(deepcopy(s[i][:user_img]))
+        ui[:highlight_mask][] = 1
         end
 
     return w

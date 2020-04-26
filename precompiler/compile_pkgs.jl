@@ -10,7 +10,7 @@ pkg_symbols = [
     :Plots, :PlotlyJS, :ImageIO, :Revise
     ]
 
-compile_pkgs = []  # ImageIO new package, Revise fixed?
+compile_pkgs = [:CuArrays]  # added CuArrays for gpu
 
 for pkg in pkg_symbols
     print("\nCompiling package: $pkg\n\n")

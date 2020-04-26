@@ -305,10 +305,11 @@ const go_funcs = Dict(
             space_type = ui["CadetPred"][] ? get_space_type(label, sn_g50) : ui[:space_types][args]
             s[i][:space_types][label] = space_type
             end
+        update_highlight_img(deepcopy(s[i][:user_img]))
         ui[:alert]("Selected space types:\n$(join([ "$k: $v\n" for (k,v) in
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))")
-        end,
+            end,
     "Export Data to Zip" => (ui::Dict, args::Any) -> begin
-        export_CSV()
+        #export_to_Zip()
         end,
     )
