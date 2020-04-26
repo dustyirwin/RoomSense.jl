@@ -257,11 +257,15 @@ function update_labels_img(ui::Dict)
     end
 
 function make_img_slices(segs::SegmentedImage, img::Matrix, img_slices=Dict())
+    bs = get_segment_bounds(segs)
+
     for i in segment_labels(segs)
-        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]] catch; missing end
-        img_slice32 = Float32.(imresize(img_slice, (128,128)))
-        img_slices[i] = img_slice32
-        end
+        img_slice = try img[bs[i]["t"]:bs[i]["b"], bs[i]["l"]:bs[i]["r"]]
+                    catch; missing end
+        if length(img_slice[1,:]) > 1 && length(img_slice[:,1]) > 1
+            img_slice32 = Float32.(imresize(img_slice, (128,128)))
+            img_slices[i] = img_slice32
+        end end
     return img_slices
     end
 
@@ -274,10 +278,11 @@ function get_space_type(label::Int64, model)
     w = width(img_slice)
     h = height(img_slice)
     pred_vec = model(reshape(img_slice, (w,h,1,1)))
-    max_pred = findmax(pred)
+    max_pred = findmax(pred_vec)
 
     # confidence level of prediction
-    s[i][:segs_types][label] = [detailed_space_types[max_pred[2]], pred_vec]
+    s[i][:preds][label] = [pred_vec, img_slice]
+    s[i][:space_types][label] = ui[:space_types][max_pred[2]]
     end
 
 
@@ -298,18 +303,20 @@ const go_funcs = Dict(
         ui, parse_input_str(args), seeded_region_growing),
     "Prune Segments by MGS" => (ui::Dict, args::Int64) -> go_mod_segs(
         ui, args, prune_min_size),
-    "Prune Segment" => (ui::Dict, args::String) -> go_seg_img(
+    "Prune Segment(s)" => (ui::Dict, args::String) -> go_seg_img(
         ui, args, prune_segments),
     "Assign Space Types" => (ui::Dict, args::Int64) -> begin
+        if !haskey(s[i], :img_slices)
+            s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
         for (label, size) in s[i][:selected_spaces]
-            space_type = ui["CadetPred"][] ? get_space_type(label, sn_g50) : ui[:space_types][args]
-            s[i][:space_types][label] = space_type
+            s[i][:space_types][label] = ui["CadetPred"][] ?
+                get_space_type(label, sn_g50) : ui[:space_types][args]
             end
         update_highlight_img(deepcopy(s[i][:user_img]))
         ui[:alert]("Selected space types:\n$(join([ "$k: $v\n" for (k,v) in
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))")
             end,
     "Export Data to Zip" => (ui::Dict, args::Any) -> begin
-        #export_to_Zip()
+        #export_data_to_zip()
         end,
     )
