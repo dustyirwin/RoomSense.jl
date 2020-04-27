@@ -144,7 +144,7 @@ function export_CSV()
             px_ct,
             ceil(px_ct / s[i][:scale][1]),
             ui["Units"][],
-            try s[i][:space_types][label] catch; "Unknown" end,
+            try s[i][:space_types][label] catch; "Unassigned" end,
             ])
         end
 
@@ -287,7 +287,7 @@ const go_funcs = Dict(
         s[i][:scale][2] = args
         ui[:img_info][] = node(:p,
             "width: $(s[i][:user_width]) height: $(
-                s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / unit area")
+                s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / $(ui["Units"][])²")
         end,
     "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
@@ -313,10 +313,12 @@ const go_funcs = Dict(
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))"
             ) end,
     "Download Data as ZIP" => (ui::Dict, args::Any) -> begin
+        ui["Labels"][] = true
         s[i][:csv_fn] = export_CSV()
         zip_fn = write_zip()
+        link = register(zip_fn)
         txt = "Thank you for using Space Cadet! Please email questions and comments to dustin.irwin@cadmusgroup.com"
         ui[:alert](txt)
-        ui[:information][] = node(:a, "Click here to download ZIP", href=zip_fn)
+        ui[:information][] = node(:a, "Click here to download ZIP", href=link)
         end,
     )

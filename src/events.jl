@@ -14,8 +14,8 @@ function space_cadet(ui::AbstractDict)
             _h = s[i][:user_height] = height(s[i][:user_img])
 
             if _w * _h > 1280 * 720
-                txt = "Images larger than HD resolution are not supported. Reduce the image size below 921,600 pixels (1280 x 720)"
-                ui[:alert]()
+                txt = "Images larger than HD resolution are not supported. Reduce the image size below 921,600 pixels e.g. 1280 x 720 and try again."
+                ui[:alert](txt)
                 return end
 
             @async ui[:func_tabs][] = "Set Scale"
@@ -261,7 +261,8 @@ function space_cadet(ui::AbstractDict)
 
     on(w, "Assign Space Types") do args
         println("Space type selected! args: $args")
-        OrderedDict{Int64,Union{Missing,String}}()
+        s[i][:selected_spaces] = args == "altKey" ?  #  <-- enable downKey func to NOT retain existing selected_spaces on drop_down change
+            OrderedDict{Int64,Union{Missing,String}}() : s[i][:selected_spaces]
 
         for k in keys(s[i][:space_types])
             try if s[i][:space_types][k] == ui[:space_types][args]

@@ -1,5 +1,5 @@
 println(
-"\nStarting SpaceCadet v0.1! Please wait...\n
+"\nStarting SpaceCadet v0.2! Please wait...\n
 Loading packages...\n")
 
 using Pkg
@@ -75,6 +75,6 @@ else const s = [new_instance()] end
 @time include("./src/events.jl");
 @time include("./src/server.jl");
 
-println("All finished! Coded with ♡ by dusty.irwin@gmail.com 2019.")
+println("All finished! Coded with ♡ by dusty.irwin@gmail.com 2020.")
 
 end  # begin

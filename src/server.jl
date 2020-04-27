@@ -9,8 +9,6 @@ function assetserve(dirs=true)
     end
 
 
-@isdefined(assetserver) ? assetserver :
 const assetserver = route("assetserver/:key", assetserve(), Mux.notfound())
 
-@isdefined(webserver) ? webserver :
 const webserver = WebIO.webio_serve(page("/", req -> space_cadet(ui)), 8000)
