@@ -272,4 +272,9 @@ function space_cadet(ui::AbstractDict)
         ui[:highlight_mask][] = 1
         end
 
+    on(w, "CadetPred") do args
+        ui[:alert](
+        "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction.")
+        end
+
     return w end
