@@ -38,13 +38,12 @@ const ui = Dict{Union{Symbol,String},Any}(
             OrderedDict(k=>k for k in ["User Image", "Google Maps"])),
         "Segment Image"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Fast Scanning", "Felzenszwalb", "Seeded Region Growing"])),  #Vector{Tuple{CartesianIndex,Int64}}
+                "Fast Scanning", "Felzenszwalb", "Seeded Region Growing"])),
         "Modify Segments"=>dropdown(
             OrderedDict(k=>k for k in [
-                "Prune Segments by MGS", "Prune Segment(s)"])),
+                "Prune Segments by MGS", "Prune Segment(s)", "Assign Space Types"])),
         "Export Data"=>dropdown(
-            OrderedDict(k=>k for k in [
-                "Assign Space Types", "Download Data as ZIP"])),
+            OrderedDict(k=>k for k in ["Download Data as ZIP"])),
     ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in

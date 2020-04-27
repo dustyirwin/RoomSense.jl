@@ -8,13 +8,13 @@ function space_cadet(ui::AbstractDict)
 
         try fn = "./tmp/" * split(split(args, "/")[end], "?")[begin]
             download(args, fn)
-            s[i][:user_img] = load(fn)
             @async println("User uploaded an img! \n args: $args \n fn: $fn")
+            s[i][:user_img] = load(fn)
             _w = s[i][:user_width] = width(s[i][:user_img])
             _h = s[i][:user_height] = height(s[i][:user_img])
 
-            if _w * _h > 1280 * 720
-                txt = "Images larger than HD resolution are not supported. Reduce the image size below 921,600 pixels e.g. 1280 x 720 and try again."
+            if _w * _h > 1920 * 1080
+                txt = "Images larger than FHD resolution are not supported. Reduce the image size below e.g. 1920 x 1080 pixels and try again."
                 ui[:alert](txt)
                 return end
 
@@ -195,30 +195,27 @@ function space_cadet(ui::AbstractDict)
         ui[:inputs_mask][:key][] = ui[:funcs][args][]
 
         ui[:units_mask][] = args == "Set Scale" ? 1 : 0
-        ui["CadetPred_mask"][] = args == "Export Data" ? 1 : 0
         ui["Colorize_mask"][] = args in ["Segment Image", "Modify Segments"] ? 1 : 0
         ui["Labels_mask"][] = args in ["Original", "Segment Image", "Modify Segments"] &&
             haskey(s[i], :segs) ? 1 : 0
-
-        if args == "Export Data"
-            try update_highlight_img(deepcopy(s[i][:user_img]))
-            ui[:highlight_mask][] = 1 catch
-            end end
-
         end # do
 
     on(w, "inputs_mask") do args
+        args = ui[:inputs_mask][:key][]
         println("inputs_mask changed! args: $args")
 
-        if ui[:inputs_mask][:key][] == "Google Maps"
-            ui[:img_tabs][:options][] = push!(ui[:img_tabs][:options][], "Google Maps")
+        ui["CadetPred_mask"][] = args == "Assign Space Types" ? 1 : 0
+        ui["Colorize_mask"][] = args == "Assign Space Types" ? 0 : ui["Colorize_mask"][]
+
+        if args == "Google Maps"
+            ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Google Maps"))
         else
             ui[:img_tabs][:options][] = filter!(x -> x != "Google Maps", ui[:img_tabs][:options][])
             end
 
-        if ui[:inputs_mask][:key][] == "Seeded Region Growing"; ui["Seeds_mask"][] = 1 end
+        if args == "Seeded Region Growing"; ui["Seeds_mask"][] = 1 end
 
-        ui[:information][] = node(:p, ui[:help_texts][ ui[:inputs_mask][:key][] ])
+        ui[:information][] = node(:p, ui[:help_texts][ args ])
         end
 
     on(w, "Set Scale") do args
@@ -275,5 +272,4 @@ function space_cadet(ui::AbstractDict)
         ui[:highlight_mask][] = 1
         end
 
-    return w
-end
+    return w end
