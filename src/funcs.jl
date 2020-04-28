@@ -301,12 +301,17 @@ const go_funcs = Dict(
     "Prune Segment(s)" => (ui::Dict, args::String) -> go_seg_img(
         ui, args, prune_segments),
     "Assign Space Types" => (ui::Dict, args::Int64) -> begin
+        if ui["CadetPred"][]
+            txt = "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction. Continue?"
+            ui[:confirm](txt) do resp
+                if !resp; return end
+            end end
         if !haskey(s[i], :img_slices)
             s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
         for (label, size) in s[i][:selected_spaces]
             s[i][:space_types][label] = ui["CadetPred"][] ? try
-                get_space_type(label, sn_g50) catch
-                    "CadetPredError1" end : ui[:space_types][args]
+                get_space_type(label, sn_g50) catch; err
+                    "$err" end : ui[:space_types][args]
             end
         update_highlight_img(deepcopy(s[i][:user_img]))
         ui[:alert]("Assigned space types:\n$(join([ "$k: $v\n" for (k,v) in

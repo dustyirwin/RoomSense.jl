@@ -94,13 +94,13 @@ function space_cadet(ui::AbstractDict)
             ui[:inputs][func][] = ui[:inputs][func][] * "$(args[7] ? args[1] : args[2]),"
             ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
 
-        elseif ui[:img_tabs][] in ["Original", "Segmented", "Export Data"] && haskey(s[i], :segs)
+        elseif ui[:img_tabs][] in ["Original", "Segmented"] && haskey(s[i], :segs)
             label = s[i][:segs].image_indexmap[args[1], args[2]]
             area = ceil(segment_pixel_count(s[i][:segs])[label] / s[i][:scale][1])
             n_segs = length(s[i][:segs].segment_labels)
             if ui[:highlight_mask][] == 0 && args[7]; ui[:highlight_mask][] = 1 end
 
-            # click, no mods
+            # click, no keyMods
             ui[:click_info][] = node(:p, "
                 label: $label
                 size: $(s[i][:scale][1] != 1. ? "$area $(ui["Units"][])²" :
@@ -124,6 +124,7 @@ function space_cadet(ui::AbstractDict)
                 if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
 
             else
+                # warn when unselecting more than 2 spaces
                 if length(keys(s[i][:selected_spaces])) > 2
                     ui[:confirm]("This action will clear all selected segments. Continue?") do resp
                     if resp
@@ -270,11 +271,6 @@ function space_cadet(ui::AbstractDict)
 
         update_highlight_img(deepcopy(s[i][:user_img]))
         ui[:highlight_mask][] = 1
-        end
-
-    on(w, "CadetPred") do args
-        ui[:alert](
-        "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction.")
         end
 
     return w end

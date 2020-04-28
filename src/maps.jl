@@ -1,17 +1,51 @@
+node(:div,
+    node(:iframe,
+        src="/",
+        width="600",
+        height="450",
+        frameborder="0",
+        style="border:0",
+        allowfullscreen=true
+        ),
+    class="map-responsive"
+    )
 
-function gmap(w=640, h=640, zoom=17, lat=45.3463, lng=-122.5931)
-    node(:div,
+
+
+gmap(;
+    h=640,
+    w=640,
+    zoom=17,
+    lat=45.3463,
+    lng=-122.5931,
+    ) = node(:div,
         node(:iframe,
-            width="$w",
             height="$h",
+            width="$w",
             frameborder="0",
-            style=Dict("border"=>"0"),
+            allowfullscreen=true,
+            style=Dict(
+                "border" => "0",
+                "left" => "0",
+                "top" => "0",
+                "height" => "75%",
+                "width" => "100%",
+                "position" => "absolute"),
             src="https://www.google.com/maps/embed/v1/view?"*
-                "zoom=$zoom&"*
-                "center=$lat,$lng&"*
-                "key=$maps_api_key&"),
-        attributes=Dict("style"=>"position:absolute;")
-    ) end
+                "zoom=$zoom&" *
+                "center=$lat,$lng&" *
+                "key=$maps_api_key&"
+            ),
+        style=Dict(
+            "overflow" => "hidden",
+            "padding-bottom" => "56.25%",
+            "position" => "relative",
+            "height" => "0",
+            )
+    )
+
+
+
 
 ###
 map_controls = OrderedDict(k=>button(k) for k in ["↑", "↓", "←", "→", "↷","↶","+","-"])
