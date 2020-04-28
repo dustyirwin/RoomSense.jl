@@ -82,7 +82,7 @@ ui[:inputs] = OrderedDict(
     "Assign Space Types" => dropdown(
         OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
     "Download Data as ZIP" => Observable(node(:a)),
-    "Google Maps" => textbox("Enterfunc under construction"),
+    "Google Maps" => textbox("Enterfunc under construction", size=40),
     "Units" => radiobuttons(["ft", "m"], stack=false),
     )
 ui[:imgs] = OrderedDict(

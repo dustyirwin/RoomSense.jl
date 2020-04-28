@@ -39,16 +39,20 @@ ui[:/] = () -> node(:div,
     ui[:alert],
     ui[:func_panel],
     ui[:img_url_mask],
-    node(:div, [
-        ui[:labels_mask],
-        ui[:overlay_mask],
-        ui[:highlight_mask],
-        # ui[:seeds_mask],
-        ui[:segs_mask],
-        ui[:user_mask],
-        ui[:gmap_mask],
-        ui[:plots_mask],
-        ]...),
+    node(:div, [ node(:div, ui[mask], style=Dict("id"=>"$mask", "z-index"=>"$i")
+        ) for (i, mask) in enumerate([
+            :user_mask,
+            :segs_mask,
+            :plots_mask,
+            :gmap_mask,
+            :seeds_mask,
+            :highlight_mask,
+            :labels_mask,
+            :overlay_mask,
+            ]) ]...
+        ),
     )
+
+
 
 ui[:scope].dom = ui[:/]()

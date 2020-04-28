@@ -12,31 +12,23 @@ download(latlng_url, "./tmp/latlng.json")
 function update_gmap(address="Cadmus Office, Portland, OR")
     latlng_url = latlng_url_from_address(address)
     latlng_url = replace(latlng_url, " "=>"+")
-    json_fn = "./tmp/latlong_$(now())_.json"
+    json_fn = "./tmp/latlong_.json"
 
     download(latlng_url, json_fn)
     latlng_json = JSON.Parser.parse(open(json_fn))
-    s[i][:lat] = latlng_json["results"]["geometry"]["location"]["lat"]
-    s[i][:lng] = latlng_json["results"]["geometry"]["location"]["lng"]
+    s[i][:lat] = latlng_json["results"][1]["geometry"]["location"]["lat"]
+    s[i][:lng] = latlng_json["results"][1]["geometry"]["location"]["lng"]
 
-    ui[:gmap][] = gmap(
-        h=s[i][:user_height],
-        w=s[i][:user_height],
-        lat=s[i][:lat],
-        lng=s[i][:lng],
-    ) end
+    ui[:gmap][] = gmap(s[i][:lat], s[i][:lng])
+    end
 
 gmap(
-    h=600,
-    w=800,
     lat=45.3463,
     lng=-122.593;
     zoom=17,
     ) = node(:div,
         node(:iframe,
             id="gmap",
-            height="$h",
-            width="$w",
             frameborder="0",
             allowfullscreen=true,
             style=Dict(
@@ -52,13 +44,14 @@ gmap(
                 "key=$maps_api_key&"
             ),
         style=Dict(
-            "opacity" => "0.8",
+            "opacity" => "0.75",
             "overflow" => "hidden",
             "padding-bottom" => "56.25%",
             "position" => "relative",
-            "height" => "0",
+            #"height" => "0",
             )
     )
+
 
 
 

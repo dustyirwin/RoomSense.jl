@@ -289,7 +289,7 @@ const go_funcs = Dict(
             "width: $(s[i][:user_width]) height: $(
                 s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / $(ui["Units"][])²")
         end,
-    "Google Maps" => (ui::Dict, args::Any) -> println("Pay Google da monies!"),
+    "Google Maps" => (ui::Dict, args::Any) -> update_gmap(args),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
         ui, args, fast_scanning),
     "Felzenszwalb" => (ui::Dict, args::Int64) -> go_seg_img(

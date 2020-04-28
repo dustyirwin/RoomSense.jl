@@ -33,6 +33,7 @@ using PlotlyJS
 using ImageIO
 using InfoZIP
 using Logging
+using JSON
 using Flux
 using WebIO
 using Plots
