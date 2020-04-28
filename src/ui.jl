@@ -82,12 +82,11 @@ ui[:inputs] = OrderedDict(
     "Assign Space Types" => dropdown(
         OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
     "Download Data as ZIP" => Observable(node(:a)),
-    "Google Maps" => textbox("*func under construction"),
+    "Google Maps" => textbox("Enterfunc under construction"),
     "Units" => radiobuttons(["ft", "m"], stack=false),
     )
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])
-ui[:imgs][:gmap_img] = Observable(node(:div, gmap()));
 ui[:func_tabs] = tabs([ keys(ui[:funcs])... ], key="Set Scale");
 ui[:funcs_mask] = mask(ui[:funcs], index=1);
 ui[:inputs_mask] = mask(ui[:inputs], index=6);
