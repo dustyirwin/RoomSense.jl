@@ -282,14 +282,13 @@ function write_zip()
     return zip_fn end
 
 const go_funcs = Dict(
-    "User Image" => (ui::Dict, args::String) -> begin
-        s[i][:scale][1] = ceil(calc_scale(parse_input_str(args)))
-        s[i][:scale][2] = args
+    "User Image" => (ui::Dict, args::Float64) -> begin
+        s[i][:scale][2] = push!(ceil(calc_scale(args)))
         ui[:img_info][] = node(:p,
             "width: $(s[i][:user_width]) height: $(
                 s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / $(ui["Units"][])²")
         end,
-    "Google Maps" => (ui::Dict, args::Any) -> update_gmap(args),
+    "Google Maps" => (ui::Dict, args::Any) -> ui[:gmap][] = gmap(args),
     "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
         ui, args, fast_scanning),
     "Felzenszwalb" => (ui::Dict, args::Int64) -> go_seg_img(

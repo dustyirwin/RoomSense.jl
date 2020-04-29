@@ -58,6 +58,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Assign Space Types" => "Select the space type and click the space(s) you want to assign that type to. Shift+click to select multiple spaces.",
         "Download Data as ZIP" => "Exports segment data as a zip file.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
+        "Plots" => "Select the plot above.",
     ),
     :information => Observable(node(:p)),
     :font_size => 24,
@@ -66,7 +67,7 @@ const ui = Dict{Union{Symbol,String},Any}(
     :img_tabs => tabs(["Original"]),
     :img_info => Observable(node(:p)),
     :click_info => Observable(node(:p)),
-    :step => Observable(node(:strong, "step: $i")),
+    :undo => button("Undo"),
     :confirm => confirm(""),
     :alert => alert(""),
     :go => button("Go!"),
@@ -78,12 +79,17 @@ ui[:inputs] = OrderedDict(
     "Seeded Region Growing" => widget("*func under construction"),
     "Prune Segments by MGS" => widget(100),
     "Prune Segment(s)" => Observable(node(:div,)),
-    "User Image" => textbox("See instructions below...", size=40),
+    "User Image" => widget(20.0),
     "Assign Space Types" => dropdown(
         OrderedDict(v=>k for (k,v) in ui[:space_types]), multiple=false),
     "Download Data as ZIP" => Observable(node(:a)),
-    "Google Maps" => textbox("Enterfunc under construction", size=40),
+    "Google Maps" => textbox("
+        Enter address and press go! For testing purposes...", size=40),
     "Units" => radiobuttons(["ft", "m"], stack=false),
+    "Plots" => radiobuttons([
+        "areas by label",
+        "area histogram",
+        "type histogram"], stack=false),
     )
 ui[:imgs] = OrderedDict(
     Symbol("$(k)_img") => Observable(node(:img)) for k in ui[:img_syms])

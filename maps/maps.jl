@@ -9,7 +9,7 @@ latlng_url = latlng_url_from_address()
 download(latlng_url, "./tmp/latlng.json")
 
 
-function update_gmap(address="Cadmus Office, Portland, OR")
+function update_js_gmap(address="Cadmus Office, Portland, OR")
     latlng_url = latlng_url_from_address(address)
     latlng_url = replace(latlng_url, " "=>"+")
     json_fn = "./tmp/latlong_.json"
@@ -22,34 +22,31 @@ function update_gmap(address="Cadmus Office, Portland, OR")
     ui[:gmap][] = gmap(s[i][:lat], s[i][:lng])
     end
 
-gmap(
-    lat=45.3463,
-    lng=-122.593;
-    zoom=17,
-    ) = node(:div,
-        node(:iframe,
-            id="gmap",
-            frameborder="0",
-            allowfullscreen=true,
-            style=Dict(
-                "border" => "0",
-                "left" => "0",
-                "top" => "0",
-                "height" => "75%",
-                "width" => "100%",
-                "position" => "absolute"),
-            src="https://www.google.com/maps/embed/v1/view?"*
-                "zoom=$zoom&" *
-                "center=$lat,$lng&" *
-                "key=$maps_api_key&"
-            ),
+gmap(q="Cadmus office Portland OR", zoom=17) = node(:div,
+    node(:iframe,
+        id="gmap",
+        frameborder="0",
+        allowfullscreen=true,
         style=Dict(
-            "opacity" => "0.75",
-            "overflow" => "hidden",
-            "padding-bottom" => "56.25%",
-            "position" => "relative",
-            #"height" => "0",
-            )
+            "border" => "0",
+            "left" => "0",
+            "top" => "0",
+            "height" => "75%",
+            "width" => "100%",
+            "position" => "absolute"),
+        src="https://www.google.com/maps/embed/v1/search?" *
+            "q=$q&" *
+            "zoom=$zoom&" *
+            "key=$maps_api_key&"
+            #"center=$lat,$lng&" *
+        ),
+    style=Dict(
+        "opacity" => "0.75",
+        "overflow" => "hidden",
+        "padding-bottom" => "56.25%",
+        "position" => "relative",
+        "height" => "0",
+        )
     )
 
 

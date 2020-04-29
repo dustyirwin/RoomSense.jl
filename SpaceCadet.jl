@@ -49,16 +49,15 @@ println("\nComplete. Loading codebase...\n")
 
 const i = 1  # work index
 
-@async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
-
 new_instance = () -> Dict{Symbol,Any}(
-    :scale => [1.,""],
+    :scale => [1., [] ],
     :preds => Dict(),
     :plots => nothing,
     :user_img => nothing,
     :seeds_img => nothing,
     :labels_img => nothing,
     :overlay_img => nothing,
+    :clicks => [],
     :selected_spaces => OrderedDict{Int64,Union{Missing,Int64}}(),
     :space_types => OrderedDict{Int64,Union{Missing,String}}(),
     )
@@ -70,7 +69,7 @@ else const s = [new_instance()] end
 @time include("./src/secrets.jl");
 @time include("./src/funcs.jl");
 @time include("./src/models.jl");
-@time include("./src/maps.jl");
+@time include("./maps/maps.jl");
 @time include("./src/ui.jl");
 @time include("./src/scope.jl");
 @time include("./src/events.jl");

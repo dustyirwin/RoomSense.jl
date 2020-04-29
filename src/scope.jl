@@ -17,7 +17,6 @@ for k in [:user_img, :segs_img]
 
 ui[:func_panel] = vbox(
     hbox(ui[:func_tabs], hskip(.5em),
-        vbox(vskip(.5em), ui[:step]), hskip(.5em),
         vbox(vskip(.5em), ui[:img_info])),
     vskip(1em),
     hbox(hskip(1em),
@@ -44,7 +43,7 @@ ui[:/] = () -> node(:div,
             :user_mask,
             :segs_mask,
             :plots_mask,
-            :gmap_mask,
+            :gmap_mask,  # TODO: find magic combo that overlays user img over gmap
             :seeds_mask,
             :highlight_mask,
             :labels_mask,

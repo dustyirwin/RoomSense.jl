@@ -90,11 +90,10 @@ function space_cadet(ui::AbstractDict)
 
         println("args: $args")
 
-        if func == "User Image"
-            ui[:inputs][func][] = ui[:inputs][func][] * "$(args[7] ? args[1] : args[2]),"
+        if !haskey(s[i], :segs)
             ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
 
-        elseif ui[:img_tabs][] in ["Original", "Segmented"] && haskey(s[i], :segs)
+        elseif ui[:img_tabs][] in ["Original", "Segmented"]
             label = s[i][:segs].image_indexmap[args[1], args[2]]
             area = ceil(segment_pixel_count(s[i][:segs])[label] / s[i][:scale][1])
             n_segs = length(s[i][:segs].segment_labels)
@@ -182,12 +181,17 @@ function space_cadet(ui::AbstractDict)
         ui["Overlay_mask"][] = args in ["Plots", "Original"] ? 0 : 1
         ui["Colorize_mask"][] = args in ["Plots", "Original", "Google Maps"] ? 0 : 1
 
-        if args == "Plots" && s[i][:plots] == nothing
-            s[i][:plots] = PlotlyJS.plot([values(s[i][:segs].segment_pixel_count)...])
-            ui[:plots][] = node(:div, s[i][:plots])
-            end
+        if args == "Plots"
+            ui[:inputs_mask][:key][] = "Plots"
+            ui["Colorize_mask"][] = 0
 
-        ui[:go]["is-loading"][] = false end
+            if s[i][:plots] == nothing
+                s[i][:plots] = PlotlyJS.plot([values(s[i][:segs].segment_pixel_count)...])
+                ui[:plots][] = node(:div, s[i][:plots])
+            end end
+
+        ui[:go]["is-loading"][] = false
+        end # on
 
     on(w, "func_tabs") do args
         println("funcs_tabs pressed! args: $args")
@@ -206,13 +210,11 @@ function space_cadet(ui::AbstractDict)
         println("inputs_mask changed! args: $args")
 
         ui["CadetPred_mask"][] = args == "Assign Space Types" ? 1 : 0
-        ui["Colorize_mask"][] = args == "Assign Space Types" ? 0 : ui["Colorize_mask"][]
+        ui["Colorize_mask"][] = args == "Assign Space Types" ? 0 : 1
 
-        if args == "Google Maps"
-            ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Google Maps"))
-        else
-            ui[:img_tabs][:options][] = filter!(x -> x != "Google Maps", ui[:img_tabs][:options][])
-            end
+        ui[:img_tabs][:options][] = args == "Google Maps" ?
+            unique!(push!(ui[:img_tabs][:options][], "Google Maps")) :
+            filter!(x -> x != "Google Maps", ui[:img_tabs][:options][])
 
         if args == "Seeded Region Growing"; ui["Seeds_mask"][] = 1 end
 
@@ -259,8 +261,6 @@ function space_cadet(ui::AbstractDict)
 
     on(w, "Assign Space Types") do args
         println("Space type selected! args: $args")
-        s[i][:selected_spaces] = args == "altKey" ?  #  <-- enable downKey func to NOT retain existing selected_spaces on drop_down change
-            OrderedDict{Int64,Union{Missing,String}}() : s[i][:selected_spaces]
 
         for k in keys(s[i][:space_types])
             try if s[i][:space_types][k] == ui[:space_types][args]
