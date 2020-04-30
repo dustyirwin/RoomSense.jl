@@ -120,7 +120,7 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
     return bounds end
 
 function export_CSV(session::Dict)
-    s=session[:s]; i=session[:i]
+    s=session[:s]; i=session[:i]; ui=session[:ui];
     df = DataFrame(
         segment_label=Int64[],
         segment_pixel_count=Int64[],
@@ -148,9 +148,9 @@ function export_CSV(session::Dict)
 function export_session_data(session::Dict)
     s=session[:s];
     s_end = deepcopy(s[end])
-    user_trunc = s_end[:user_fn][1:end-4]
-    dt = string(now())[1:10]
-    fn = "exports$(user_trunc[6:end])_$(dt).BSON"
+    user_trunc = s_end[:user_fn][7:end-4]
+    dt = "$(now())"[1:10]
+    fn = "./exports/$(user_trunc)_$(dt).BSON"
     @save fn s_end
     return fn end
 
@@ -269,8 +269,8 @@ function get_space_type(session::Dict, label::Int64, model)
     end
 
 function write_zip(session::Dict)
-    s=session[:s]; i=session[:i]
-    zip_fn = "./exports" * s[i][:user_fn][6:end-4] * "_space_cadet_data.zip"
+    s=session[:s]; ui=session[:ui]; i=session[:i]
+    zip_fn = "./exports/" * s[i][:user_fn][7:end-4] * "_space_cadet_data.zip"
     s[i][:csv_fn] = export_CSV(session)
 
     create_zip(zip_fn, Dict(
@@ -321,10 +321,11 @@ const go_funcs = Dict(
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))"
             ) end,
     "Download Data as ZIP" => (session::Dict, args::Any) -> begin
-        s=session[:s]; ui=session[:ui]; i=session[:i];
+        ui=session[:ui]; s=session[:s]; i=session[:i];
+
         ui["Labels"][] = true
         ui["Overlay"][] = true
-        export_session_data(session)
+        @async export_session_data(session)
 
         zip_fn = write_zip(session)
         link = register(zip_fn)

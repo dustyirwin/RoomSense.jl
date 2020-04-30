@@ -77,7 +77,7 @@ function events(session::Dict)
                 go_funcs[input_name](session, ui[:inputs][input_name][])
                 end
 
-        catch err
+        catch err; error(err)
         finally ui[:go]["is-loading"][] = false end end
 
     on(w, "img_click") do args

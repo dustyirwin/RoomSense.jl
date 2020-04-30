@@ -14,11 +14,21 @@ pkg_symbols = unique!([
 compile_pkgs = []  # added pkgs / funcs
 
 
-@async for pkg in compile_pkgs
+@async for pkg in pkg_symbols
     print("\nCompiling package: $pkg\n\n")
     PackageCompiler.create_sysimage(
         pkg;
         precompile_statements_file="./precompiler/space_cadet_trace.jl",
-        sysimage_path = "./pkg_bins",
+        sysimage_path = "./sys/$pkg.so",
         replace_default=false,
+    ) end
+
+
+@async for pkg in pkg_symbols
+    print("\nCompiling package: $pkg\n\n")
+    PackageCompiler.create_sysimage(
+        pkg;
+        precompile_statements_file="./precompiler/space_cadet_trace.jl",
+        #sysimage_path="/sys/$pkg.so",
+        replace_default=true,
     ) end
