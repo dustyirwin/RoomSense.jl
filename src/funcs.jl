@@ -27,7 +27,8 @@ function make_segs_img(segs::SegmentedImage, colorize::Bool)
     if colorize == true; map(i->get_random_color(i), labels_map(segs))
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
-function make_labels_img(segs::SegmentedImage)
+function make_labels_img(session::Dict, segs::SegmentedImage)
+    ui=session[:ui];
     labels_img = Float16.(zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
 
     for (label, count) in collect(segs.segment_pixel_count)
@@ -54,15 +55,6 @@ function make_seeds_img(seeds::Vector{Tuple{CartesianIndex{2},Int64}}, height::I
             seeds_img, "$(seed[2])", ui[:font], ui[:font_size],
             seed[1][1], seed[1][2], halign=:hcenter, valign=:vcenter) end
     return make_transparent(seeds_img, 1.0, 0.0) end
-
-function make_plot_img(segs::SegmentedImage, scale::Float64)
-    return plot(
-        x=[i[1] for i in collect(segs.segment_pixel_count)],
-        y=[i[2] for i in collect(segs.segment_pixel_count)],
-        xlabel("Segment Label"),
-        ylabel(scale > 1 ? "Area" : "Pixels"),
-        bar,
-        y_log10) end
 
 function recursive_segmentation(img_fln::String, alg::Function, max_segs::Int64, mgs::Int64, scale::Float64, k=0.05; j=0.01)
     if alg == felzenszwalb k*=500; j*=500 end
@@ -127,7 +119,8 @@ function get_segment_bounds(segs::SegmentedImage, bounds=Dict())
 
     return bounds end
 
-function export_CSV()
+function export_CSV(session::Dict)
+    s=session[:s]; i=session[:i]
     df = DataFrame(
         segment_label=Int64[],
         segment_pixel_count=Int64[],
@@ -152,11 +145,12 @@ function export_CSV()
     s[i][:csv_df] = df
     return csv_fn end
 
-function export_session_data(s::Array{Dict{Symbol,Any},1})
+function export_session_data(session::Dict)
+    s=session[:s];
     s_end = deepcopy(s[end])
     user_trunc = s_end[:user_fn][1:end-4]
     dt = string(now())[1:10]
-    fn = "exports$(user_trunc[4:end])_$(dt).BSON"
+    fn = "exports$(user_trunc[6:end])_$(dt).BSON"
     @save fn s_end
     return fn end
 
@@ -169,7 +163,6 @@ function get_img_from_url(img_url_raw::String)
 function make_clickable_img(
     img_name::String,
     img_click::Observable{Array{Union{Int,Bool},1}},
-    img_keydown::Observable{Array{Union{Int,Bool},1}},
     src=register("./assets/cadet.png");
     alt="Cadet logo image from: https://i1.sndcdn.com/avatars-000345228439-iwo1om-t500x500.jpg",
     opacity=0.9)
@@ -179,8 +172,8 @@ function make_clickable_img(
             "id"=>img_name,
             "src"=>src,
             "style"=>"position:absolute; opacity:$opacity;"),
-        events=merge!(
-            Dict("click" => @js () -> $img_click[] = [
+        events=Dict(
+            "click" => @js () -> $img_click[] = [
                 event.pageY - document.getElementById($img_name).offsetTop,
                 event.pageX,
                 document.getElementById($img_name).height,
@@ -190,11 +183,12 @@ function make_clickable_img(
                 event.ctrlKey,
                 event.shiftKey,
                 event.altKey,
-                ];),
-            Dict("keydown" => @js () -> $img_keydown[] = event.keyCode;))
+                ];
+            ),
     ) end
 
-function update_highlight_img(deep_img::Matrix)
+function update_highlight_img(session::Dict, deep_img::Matrix)
+    s=session[:s]; ui=session[:ui]; i=session[:i];
     if !haskey(s[i], :highlight_fn); s[i][:highlight_fn] = s[i][:user_fn][1:end-4] * "_highlight.png" end
     selected_spaces = [k for (k,v) in s[i][:selected_spaces] if !(v isa Missing)]
 
@@ -207,36 +201,41 @@ function update_highlight_img(deep_img::Matrix)
     s[i][:highlight_img] = make_transparent(deep_img)
     save(s[i][:highlight_fn], s[i][:highlight_img])
     ui[:highlight_img][] = make_clickable_img("highlight_img", ui[:img_click],
-        ui[:img_keydown], register(s[i][:highlight_fn])*"?dummy=$(now())", opacity=0.7)
+        register(s[i][:highlight_fn])*"?dummy=$(now())", opacity=0.7)
     end
 
-function update_segs_img(ui::Dict)
+function update_segs_img(session::Dict)
+    s=session[:s]; i=session[:i]; ui=session[:ui];
+
     s[i][:segs_img] = make_segs_img(s[i][:segs], ui["Colorize"][])
     s[i][:segs_fn] = s[i][:user_fn][1:end-4] * "_segs.png"
     save(s[i][:segs_fn], s[i][:segs_img])
     ui[:segs_img][] = make_clickable_img("segs_img",
-        ui[:img_click], ui[:img_keydown], register(s[i][:segs_fn])*"?dummy=$(now())")
-    ui[:img_tabs][] = "Segmented"; ui["Labels"][] = false
+        ui[:img_click], register(s[i][:segs_fn]) * "?dummy=$(now())")
+    ui[:img_tabs][] = "Segmented"
     end
 
-function go_seg_img(ui::Dict, args::Any, alg::Function)
+function go_seg_img(session::Dict, args::Any, alg::Function)
+    s=session[:s]; ui=session[:ui]; i=session[:i];
     println("creating segs img! alg: $alg args: $args")
     s[i][:segs] = alg(Gray.(s[i][:user_img]), args)
-    update_segs_img(ui)
+    update_segs_img(session)
     end
 
-function go_mod_segs(ui::Dict, args::Int64, alg::Function)
+function go_mod_segs(session::Dict, args::Int64, alg::Function)
+    ui=session[:ui]; i=session[:i]; s=session[:s]
     println("modifying segs img! alg: $alg args: $args")
     s[i][:segs] = alg(s[i][:segs], args, s[i][:scale][1])
-    update_segs_img(ui)
+    update_segs_img(session)
     end
 
-function update_labels_img(ui::Dict)
-    s[i][:labels_img] = make_labels_img(s[i][:segs])
+function update_labels_img(session::Dict)
+    s=session[:s]; ui=session[:ui]; i=session[:i];
+    s[i][:labels_img] = make_labels_img(session, s[i][:segs])
     s[i][:labels_fn] = s[i][:user_fn][1:end-4] * "_labels.png"
     save(s[i][:labels_fn], s[i][:labels_img])
     ui[:labels_img][] = make_clickable_img(
-        "labels_img", ui[:img_click], ui[:img_keydown], register(s[i][:labels_fn])*"?dummy=$(now())")
+        "labels_img", ui[:img_click], register(s[i][:labels_fn])*"?dummy=$(now())")
     end
 
 function make_img_slices(segs::SegmentedImage, img::Matrix, img_slices=Dict())
@@ -252,7 +251,8 @@ function make_img_slices(segs::SegmentedImage, img::Matrix, img_slices=Dict())
     return img_slices
     end
 
-function get_space_type(label::Int64, model)
+function get_space_type(session::Dict, label::Int64, model)
+    s=session[:s]; i=session[:i]; ui=session[:ui]
     model |> gpu
     bs = get_segment_bounds(s[i][:segs])
     img_slice = s[i][:img_slices][label]
@@ -268,9 +268,10 @@ function get_space_type(label::Int64, model)
     s[i][:space_types][label] = ui[:space_types][max_pred[2]]
     end
 
-function write_zip()
+function write_zip(session::Dict)
+    s=session[:s]; i=session[:i]
     zip_fn = "./exports" * s[i][:user_fn][6:end-4] * "_space_cadet_data.zip"
-    s[i][:csv_fn] = export_CSV()
+    s[i][:csv_fn] = export_CSV(session)
 
     create_zip(zip_fn, Dict(
         s[i][:csv_fn][7:end] => read(s[i][:csv_fn]),
@@ -282,47 +283,53 @@ function write_zip()
     return zip_fn end
 
 const go_funcs = Dict(
-    "User Image" => (ui::Dict, args::Float64) -> begin
+    "User Image" => (session::Dict, args::Float64) -> begin
+        s=session[:s]; i=session[:i]; ui=session[:ui]
         s[i][:scale][2] = push!(ceil(calc_scale(args)))
         ui[:img_info][] = node(:p,
             "width: $(s[i][:user_width]) height: $(
                 s[i][:user_height]) scale: $(s[i][:scale][1]) pxs / $(ui["Units"][])²")
         end,
-    "Google Maps" => (ui::Dict, args::Any) -> ui[:gmap][] = gmap(args),
-    "Fast Scanning" => (ui::Dict, args::Float64) -> go_seg_img(
-        ui, args, fast_scanning),
-    "Felzenszwalb" => (ui::Dict, args::Int64) -> go_seg_img(
-        ui, args, felzenszwalb),
-    "Seeded Region Growing" => (ui::Dict, args::String) -> go_seg_img(
-        ui, parse_input_str(args), seeded_region_growing),
-    "Prune Segments by MGS" => (ui::Dict, args::Int64) -> go_mod_segs(
-        ui, args, prune_min_size),
-    "Prune Segment(s)" => (ui::Dict, args::String) -> go_seg_img(
-        ui, args, prune_segments),
-    "Assign Space Types" => (ui::Dict, args::Int64) -> begin
+    "Google Maps" => (session::Dict, args::Any) -> session[:ui][:gmap][] = gmap(args),
+    "Fast Scanning" => (session::Dict, args::Float64) -> go_seg_img(
+        session, args, fast_scanning),
+    "Felzenszwalb" => (session::Dict, args::Int64) -> go_seg_img(
+        session, args, felzenszwalb),
+    "Seeded Region Growing" => (session::Dict, args::String) -> go_seg_img(
+        session, parse_input_str(args), seeded_region_growing),
+    "Prune Segments by MGS" => (session::Dict, args::Int64) -> go_mod_segs(
+        session, args, prune_min_size),
+    "Prune Segment(s)" => (session::Dict, args::String) -> go_seg_img(
+        session, args, prune_segments),
+    "Assign Space Types" => (session::Dict, args::Int64) -> begin
+        s=session[:s]; ui=session[:ui]; i=session[:i]
+
         if ui["CadetPred"][]
             txt = "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction. Continue?"
             ui[:confirm](txt) do resp
                 if !resp; return end
             end end
-        if !haskey(s[i], :img_slices)
-            s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
-        for (label, size) in s[i][:selected_spaces]
-            s[i][:space_types][label] = ui["CadetPred"][] ? try
-                get_space_type(label, sn_g50) catch; err
-                    "$err" end : ui[:space_types][args]
-            end
-        update_highlight_img(deepcopy(s[i][:user_img]))
+            if !haskey(s[i], :img_slices)
+                s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
+            for (label, size) in s[i][:selected_spaces]
+                s[i][:space_types][label] = ui["CadetPred"][] ? try
+                    get_space_type(session, label, sn_g50) catch
+                    "CadetPredError1" end : ui[:space_types][args]
+                end
+        update_highlight_img(session, deepcopy(s[i][:user_img]))
         ui[:alert]("Assigned space types:\n$(join([ "$k: $v\n" for (k,v) in
             s[i][:space_types] if k in keys(s[i][:selected_spaces]) ]))"
             ) end,
-    "Download Data as ZIP" => (ui::Dict, args::Any) -> begin
+    "Download Data as ZIP" => (session::Dict, args::Any) -> begin
+        s=session[:s]; ui=session[:ui]; i=session[:i];
         ui["Labels"][] = true
-        s[i][:csv_fn] = export_CSV()
-        zip_fn = write_zip()
+        ui["Overlay"][] = true
+        export_session_data(session)
+
+        zip_fn = write_zip(session)
         link = register(zip_fn)
         txt = "Thank you for using Space Cadet! Please email questions and comments to dustin.irwin@cadmusgroup.com"
         ui[:alert](txt)
-        ui[:information][] = node(:a, "Click here to download ZIP", href=link)
+        ui[:information][] = node(:a, "CLICK HERE TO DOWNLOAD ZIP", href=link);
         end,
     )

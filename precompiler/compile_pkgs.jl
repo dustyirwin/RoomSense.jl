@@ -8,9 +8,10 @@ pkg_symbols = unique!([
     :FreeTypeAbstraction, :DataFrames, :Pkg, :AssetRegistry, :Interact,
     :ImageTransformations, :Logging, :WebIO, :JSExpr, :InteractBulma,
     :Plots, :PlotlyJS, :ImageIO, :Flux, :InfoZIP, :ZipFile, :CSV, :Mux,
+    :JSON,
     ])
 
-compile_pkgs = [:BSON]  # added pkgs / funcs
+compile_pkgs = []  # added pkgs / funcs
 
 
 @async for pkg in compile_pkgs

@@ -2,10 +2,11 @@
 /tmp
 /models
 /resources
-/ngrok
+ngrok.exe
 /assets
 secrets.jl
 *.json
 secrets
 /precompiler/*.*
 /exports
+*.BSON

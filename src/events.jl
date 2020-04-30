@@ -1,9 +1,13 @@
 
-function space_cadet(ui::AbstractDict)
-    w = ui[:scope]
+function events(session::Dict)
+    # load session data
+    s = session[:s]
+    ui = session[:ui]
+    w = session[:scope]
+    i = session[:i]
+
 
     on(w, "img_url_input") do args
-        global s, i # load globals
         ui[:go]["is-loading"][] = true
 
         try fn = "./tmp/" * split(split(args, "/")[end], "?")[begin]
@@ -18,26 +22,19 @@ function space_cadet(ui::AbstractDict)
                 ui[:alert](txt)
                 return end
 
-            @async ui[:func_tabs][] = "Set Scale"
-            @async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
-
             @sync begin
+
                 s[i][:user_fn] = fn
                 @async ui[:user_img][] = make_clickable_img("user_img",
-                    ui[:img_click], ui[:img_keydown], register(fn) * "?dummy=$(now())")
+                    ui[:img_click], register(fn) * "?dummy=$(now())")
 
-                s[i][:overlay_img] = make_transparent(s[i][:user_img])
-                s[i][:overlay_fn] = fn[1:end-4] * "_overlay.png"
-                save(s[i][:overlay_fn], s[i][:overlay_img])
-                @async ui[:overlay_img][] = make_clickable_img("overlay_img",
-                    ui[:img_click], ui[:img_keydown], register(s[i][:overlay_fn]) * "?dummy=$(now())")
-
-                # reset ui
+                # reset s & ui
+                @async s[i][:plots] = s[i][:seeds_img] = s[i][:labels_img] = nothing
+                @async ui[:func_tabs][] = "Set Scale"
                 @async ui[:img_info][] = node(:p, "width: $_w  height: $_h")
                 @async ui[:information][] = node(:p, ui[:help_texts]["User Image"])
                 @async ui[:img_tabs][:options][] = ["Original"]
                 @async ui[:img_tabs][] = "Original"
-                @async ui["Overlay"][] = true
             end
 
         catch err
@@ -48,13 +45,12 @@ function space_cadet(ui::AbstractDict)
         ui[:go]["is-loading"][] = true
 
         try
-            global s, i # load globals
             input_name = ui[:inputs_mask][:key][]
-            println("User clicked Go! input_name: $input_name")
+            println("User clicked Go! input_name: $input_name args:$(ui[:inputs][input_name][])")
 
             if ui[:func_tabs][] in ["Segment Image", "Modify Segments"]
-                push!(s, s[i]) # advance session
-                i += 1  # advance index
+                push!(s, s[i]) # advance session step
+                i += 1  # advance step index
 
                 @sync begin
                     # cleanup s[i]
@@ -63,20 +59,22 @@ function space_cadet(ui::AbstractDict)
                     @async s[i][:plots] = nothing
 
                     # run func with input(s)
-                    @sync go_funcs[input_name](ui, ui[:inputs][input_name][])
+                    @sync go_funcs[input_name](session, ui[:inputs][input_name][])
 
                     # update ui
                     @async ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Segmented"))
                     @async ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Plots"))
-                    @async ui[:step][] = node(:strong, "step: $i")
                     @async ui[:img_info][] = node(:p, "
                         height: $(height(s[i][:user_img]))
                         width: $(width(s[i][:user_img]))
                         segments: $(length(s[i][:segs].segment_labels))")
-                    end
+
+                    ui["Overlay_mask"][] = 1
+                    if ui["Labels"][]; ui[:labels_img][] = update_labels_img(session)
+                    end end
 
             else
-                go_funcs[input_name](ui, ui[:inputs][input_name][])
+                go_funcs[input_name](session, ui[:inputs][input_name][])
                 end
 
         catch err
@@ -90,7 +88,7 @@ function space_cadet(ui::AbstractDict)
 
         println("args: $args")
 
-        if !haskey(s[i], :segs)
+        try if !haskey(s[i], :segs)
             ui[:click_info][] = node(:p, "y: $(args[1]) x: $(args[2])")
 
         elseif ui[:img_tabs][] in ["Original", "Segmented"]
@@ -111,7 +109,7 @@ function space_cadet(ui::AbstractDict)
             if args[7] && !args[8]
                 s[i][:selected_spaces] = OrderedDict{Int64,Union{Missing,Int64}}()
                 s[i][:selected_spaces][label] = area
-                update_highlight_img(deepcopy(s[i][:user_img]))
+                update_highlight_img(session, deepcopy(s[i][:user_img]))
 
             # combine segment click info(s), shift key: 8, remove segment, alt key: 9
             elseif args[8]
@@ -120,7 +118,7 @@ function space_cadet(ui::AbstractDict)
                     "Total Area: ~$(sum([v for (k,v) in s[i][:selected_spaces] if !(v isa Missing)])) "*
                     "$(s[i][:scale][1] != 1 ? "$(ui["Units"][])²" : "pxs")  Labels: $(join(["$k, " for (k,v) in s[i][:selected_spaces] if !(v isa Missing)]))"
                     )
-                if args[7]; update_highlight_img(deepcopy(s[i][:user_img])) end
+                if args[7]; update_highlight_img(session, deepcopy(s[i][:user_img])) end
 
             else
                 # warn when unselecting more than 2 spaces
@@ -157,17 +155,17 @@ function space_cadet(ui::AbstractDict)
             save(s[i][:seeds_fn], s[i][:seeds_img])
 
             ui[:seeds_img][] = make_clickable_img(
-                "seeds_img", ui[:img_click], ui[:img_keydown], register(s[i][:seeds_fn]) * "?dummy=$(now())")
+                "seeds_img", ui[:img_click], register(s[i][:seeds_fn]) * "?dummy=$(now())")
             end
 
-        ui[:go]["is-loading"][] = false
-        end
+        catch err
+        finally ui[:go]["is-loading"][] = false
+        end end
 
     on(w, "img_tabs") do args
         ui[:go]["is-loading"][] = true
         println("img tabs clicked! args: $args")
 
-        ui[:img_url_mask][] = args == "Original" ? 1 : 0
         ui[:gmap_mask][] = args == "Google Maps" ? 1 : 0
         ui[:user_mask][] = args == "Original" ? 1 : 0
         ui[:segs_mask][] = args == "Segmented" ? 1 : 0
@@ -176,19 +174,14 @@ function space_cadet(ui::AbstractDict)
         ui[:highlight_mask][] = args == "Plots" ? 0 : ui[:highlight_mask][]
         ui[:plots_mask][] = args == "Plots" ? 1 : 0
 
-
         ui["Labels_mask"][] = args != "Plots" && haskey(s[i], :segs) ? 1 : 0
         ui["Overlay_mask"][] = args in ["Plots", "Original"] ? 0 : 1
         ui["Colorize_mask"][] = args in ["Plots", "Original", "Google Maps"] ? 0 : 1
 
-        if args == "Plots"
-            ui[:inputs_mask][:key][] = "Plots"
-            ui["Colorize_mask"][] = 0
-
-            if s[i][:plots] == nothing
-                s[i][:plots] = PlotlyJS.plot([values(s[i][:segs].segment_pixel_count)...])
-                ui[:plots][] = node(:div, s[i][:plots])
-            end end
+        if s[i][:plots] == nothing && haskey(s[i], :segs)
+            s[i][:plots] = PlotlyJS.plot([values(s[i][:segs].segment_pixel_count)...])
+            ui[:plots][] = node(:div, s[i][:plots])
+        end
 
         ui[:go]["is-loading"][] = false
         end # on
@@ -212,9 +205,16 @@ function space_cadet(ui::AbstractDict)
         ui["CadetPred_mask"][] = args == "Assign Space Types" ? 1 : 0
         ui["Colorize_mask"][] = args == "Assign Space Types" ? 0 : 1
 
-        ui[:img_tabs][:options][] = args == "Google Maps" ?
-            unique!(push!(ui[:img_tabs][:options][], "Google Maps")) :
-            filter!(x -> x != "Google Maps", ui[:img_tabs][:options][])
+        if args == "User Image" && ui[:img_tabs][] != "Original"
+            ui[:img_tabs][] = "Original" end
+
+        if args == "Google Maps"
+            ui[:img_tabs][:options][] = unique!(push!(ui[:img_tabs][:options][], "Google Maps"))
+            ui[:img_tabs][] = "Google Maps"
+        else
+            ui[:img_tabs][:options][] = filter!(x -> x != "Google Maps", ui[:img_tabs][:options][])
+            end
+
 
         if args == "Seeded Region Growing"; ui["Seeds_mask"][] = 1 end
 
@@ -236,7 +236,15 @@ function space_cadet(ui::AbstractDict)
 
     on(w, "Overlay") do args
         println("Overlay clicked! args: $args")
-        ui[:img_masks][:overlay_mask][] = args ? 1 : 0 end
+        ui[:overlay_mask][] = args ? 1 : 0
+
+        if !haskey(s[i], :overlay_fn) && s[i][:user_img] != nothing
+            s[i][:overlay_img] = make_transparent(s[i][:user_img])
+            s[i][:overlay_fn] = s[i][:user_fn][1:end-4] * "_overlay.png"
+            save(s[i][:overlay_fn], s[i][:overlay_img])
+            ui[:overlay_img][] = make_clickable_img("overlay_img",
+                ui[:img_click], register(s[i][:overlay_fn]) * "?dummy=$(now())")
+        end end
 
     on(w, "Labels") do args
         ui[:go]["is-loading"][] = true
@@ -251,7 +259,7 @@ function space_cadet(ui::AbstractDict)
                     resp ? update_labels_img(ui) : ui["Labels"][] = false
                     end
             else
-                update_labels_img(ui)
+                update_labels_img(session)
         end end
 
         ui[:img_masks][:labels_mask][] = args ? 1 : 0
@@ -269,8 +277,8 @@ function space_cadet(ui::AbstractDict)
             catch; continue
             end end
 
-        update_highlight_img(deepcopy(s[i][:user_img]))
+        update_highlight_img(session, deepcopy(s[i][:user_img]))
         ui[:highlight_mask][] = 1
         end
 
-    return w end
+    return session end

@@ -4,7 +4,9 @@ mytheme = compile_theme(variables = variables_file)
 settheme!(mytheme)
 # settheme!(:nativehtml)
 
-const ui = Dict{Union{Symbol,String},Any}(
+function _ui(req=Dict())
+
+ui = Dict{Union{Symbol,String},Any}(
     :img_syms => [:user, :segs, :overlay, :labels, :highlight, :seeds],
     :space_types => OrderedDict{Int64,String}(
         1=>"Building Support - Other",                   2=>"Building Support - Mechanical Room",
@@ -44,7 +46,7 @@ const ui = Dict{Union{Symbol,String},Any}(
                 "Prune Segments by MGS", "Prune Segment(s)", "Assign Space Types"])),
         "Export Data"=>dropdown(
             OrderedDict(k=>k for k in ["Download Data as ZIP"])),
-    ),
+        ),
     :checkboxes => OrderedDict(
         k => checkbox(value=false; label=k) for k in
             ["Overlay", "Colorize", "Labels", "Seeds", "CadetPred"]),
@@ -59,7 +61,7 @@ const ui = Dict{Union{Symbol,String},Any}(
         "Download Data as ZIP" => "Exports segment data as a zip file.",
         "Google Maps" => "Enter site address, adjust map to floorplan overlay and press Go!.",
         "Plots" => "Select the plot above.",
-    ),
+        ),
     :information => Observable(node(:p)),
     :font_size => 24,
     :font => FTFont("./fonts/OpenSans-Bold.ttf"),
@@ -99,7 +101,7 @@ ui[:inputs_mask] = mask(ui[:inputs], index=6);
 ui[:checkbox_masks] = Dict("$(k)_mask"=>mask([v],index=0)
     for (k,v) in ui[:checkboxes])
 ui[:img_masks] = Dict(
-    Symbol("$(k)_mask")=>mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=0)
+    Symbol("$(k)_mask")=>mask(Observable([ ui[:imgs][Symbol("$(k)_img")] ]), index=1)
         for k in ui[:img_syms])
 ui[:gmap] = Observable(gmap());
 ui[:gmap_mask] = mask(Observable([ ui[:gmap] ]), index=0);
@@ -113,5 +115,7 @@ for collection in [
     merge!(ui, Dict(ui[collection]...)
     ) end
 
-ui[:units] = radiobuttons(["ft", "m"], stack=false)
-ui[:units_mask] = mask([ ui[:units] ], index=0)
+ui[:units] = radiobuttons(["ft", "m"], stack=false);
+ui[:units_mask] = mask([ ui[:units] ], index=0);
+
+return ui end # begin

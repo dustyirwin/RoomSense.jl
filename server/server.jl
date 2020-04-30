@@ -1,5 +1,5 @@
 
-const port = rand(8000:9000)
+const port = rand(80:80)
 
 function assetserve(dirs=true)
     absdir(req) = AssetRegistry.registry["/assetserver/" * req[:params][:key]]
@@ -10,21 +10,16 @@ function assetserve(dirs=true)
 
 const assetserver = route("assetserver/:key", assetserve(), Mux.notfound())
 
-function space_cadet(req=Dict())
+function space_cadet(req)
     global sessions
     println("HTTP request for '/' received! req: $req")
-    user_id(req=Dict()) = 1  # TODO: write lookup user_id
-
-    if !haskey(sessions, user_id()) end  # TODO: remember previous sessions
-
+    user_id(req=Dict()) = 1  # db lookup for user_id?
     sessions[user_id()] = Dict{Symbol,Any}(
-        :ui => _ui(req),
+        :ui => _ui(),
         :s => [new_session()],
-        :i => 1,
-        )
-    sessions[user_id()] = _scope(sessions[user_id()])
-    sessions[user_id()] = events(sessions[user_id()])
+        :i => 1, )
+    scope = sessions[user_id()][:scope] = _scope(sessions[user_id()][:ui])
 
-    return sessions[user_id()][:scope] end
+    return scope end
 
-const webserver = WebIO.webio_serve(page("/", req -> space_cadet(req)), 8000)
+const webserver = WebIO.webio_serve(page("/", req -> space_cadet(req)), port)

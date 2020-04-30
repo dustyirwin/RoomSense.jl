@@ -1,27 +1,4 @@
 
-latlng_url_from_address(address="775+Cascade+St+Oregon+City+OR+USA") =
-    "https://maps.googleapis.com/maps/api/geocode/json?"*
-    "address=$address&"*
-    "key=$maps_api_key"
-
-
-latlng_url = latlng_url_from_address()
-download(latlng_url, "./tmp/latlng.json")
-
-
-function update_js_gmap(address="Cadmus Office, Portland, OR")
-    latlng_url = latlng_url_from_address(address)
-    latlng_url = replace(latlng_url, " "=>"+")
-    json_fn = "./tmp/latlong_.json"
-
-    download(latlng_url, json_fn)
-    latlng_json = JSON.Parser.parse(open(json_fn))
-    s[i][:lat] = latlng_json["results"][1]["geometry"]["location"]["lat"]
-    s[i][:lng] = latlng_json["results"][1]["geometry"]["location"]["lng"]
-
-    ui[:gmap][] = gmap(s[i][:lat], s[i][:lng])
-    end
-
 gmap(q="Cadmus office Portland OR", zoom=17) = node(:div,
     node(:iframe,
         id="gmap",
@@ -41,20 +18,38 @@ gmap(q="Cadmus office Portland OR", zoom=17) = node(:div,
             #"center=$lat,$lng&" *
         ),
     style=Dict(
-        "opacity" => "0.75",
+        "opacity" => "0.95",
         "overflow" => "hidden",
-        "padding-bottom" => "56.25%",
+        "padding-bottom" => "52.5%",
         "position" => "relative",
         "height" => "0",
         )
     )
 
 
+#=
+
+latlng_url_from_address(address="775+Cascade+St+Oregon+City+OR+USA") =
+"https://maps.googleapis.com/maps/api/geocode/json?"*
+"address=$address&"*
+"key=$maps_api_key"
+
+latlng_url = latlng_url_from_address()
+download(latlng_url, "./tmp/latlng.json")
 
 
+function update_js_gmap(address="Cadmus Office, Portland, OR")
+    latlng_url = latlng_url_from_address(address)
+    latlng_url = replace(latlng_url, " "=>"+")
+    json_fn = "./tmp/latlong_.json"
 
-###
+    download(latlng_url, json_fn)
+    latlng_json = JSON.Parser.parse(open(json_fn))
+    s[i][:lat] = latlng_json["results"][1]["geometry"]["location"]["lat"]
+    s[i][:lng] = latlng_json["results"][1]["geometry"]["location"]["lng"]
 
+    ui[:gmap][] = gmap(s[i][:lat], s[i][:lng])
+end
 
 map_url_from_latlng(lat, lng, zoom, w, h) =
     "https://maps.googleapis.com/maps/api/staticmap?"*
@@ -78,4 +73,4 @@ address_from_latlng_url(; lat=45, lng=150) =
     "latlng=$(lat),$(lng)&"*
     "key=$map_api_key"
 
-###
+=#

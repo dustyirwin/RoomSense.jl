@@ -40,16 +40,15 @@ using Plots
 using Mux
 
 #using Revise
-
 end
 
 @time begin
 
 println("\nComplete. Loading codebase...\n")
 
-const i = 1  # work index
+sessions = Dict{Any,Any}()  # TODO: save to BSON
 
-new_instance = () -> Dict{Symbol,Any}(
+new_session = () -> Dict{Symbol,Any}(
     :scale => [1., [] ],
     :preds => Dict(),
     :plots => nothing,
@@ -61,10 +60,6 @@ new_instance = () -> Dict{Symbol,Any}(
     :selected_spaces => OrderedDict{Int64,Union{Missing,Int64}}(),
     :space_types => OrderedDict{Int64,Union{Missing,String}}(),
     )
-
-# user session data
-if @isdefined s
-else const s = [new_instance()] end
 
 @time include("./src/secrets.jl");
 @time include("./src/funcs.jl");
