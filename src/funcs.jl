@@ -28,7 +28,7 @@ function make_segs_img(segs::SegmentedImage, colorize::Bool)
     else; map(i->segment_mean(segs, i), labels_map(segs)) end end
 
 function make_labels_img(session::Dict, segs::SegmentedImage)
-    ui=session[:ui];
+    s=session[:s]; i=session[:i]; ui=session[:ui];
     labels_img = Float16.(zeros(size(segs.image_indexmap)[1], size(segs.image_indexmap)[2]))
 
     for (label, count) in collect(segs.segment_pixel_count)
@@ -308,9 +308,10 @@ const go_funcs = Dict(
             txt = "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction. Continue?"
             ui[:confirm](txt) do resp
                 if !resp; return end
+                if !haskey(s[i], :img_slices)
+                    s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
             end end
-            if !haskey(s[i], :img_slices)
-                s[i][:img_slices] = make_img_slices(s[i][:segs], s[i][:user_img]) end
+
             for (label, size) in s[i][:selected_spaces]
                 s[i][:space_types][label] = ui["CadetPred"][] ? try
                     get_space_type(session, label, sn_g50) catch
@@ -330,6 +331,8 @@ const go_funcs = Dict(
         zip_fn = write_zip(session)
         link = register(zip_fn)
         txt = "Thank you for using Space Cadet! Please email questions and comments to dustin.irwin@cadmusgroup.com"
+        ui["Labels"][] = false
+        ui["Overlay"][] = false
         ui[:alert](txt)
         ui[:information][] = node(:a, "CLICK HERE TO DOWNLOAD ZIP", href=link);
         end,

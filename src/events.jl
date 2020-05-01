@@ -54,7 +54,6 @@ function events(session::Dict)
 
                 @sync begin
                     # cleanup s[i]
-                    @async s[i][:segs_details] = nothing
                     @async s[i][:labels_img] = nothing
                     @async s[i][:plots] = nothing
 
@@ -249,23 +248,24 @@ function events(session::Dict)
     on(w, "Labels") do args
         ui[:go]["is-loading"][] = true
         println("Labels clicked! args: $args")
+        try if args && haskey(s[i], :segs) && s[i][:labels_img] == nothing
 
-        if args && haskey(s[i], :segs)
             segs_ln = length(s[i][:segs].segment_labels)
 
             if length(s[i][:segs].segment_labels) > 1000
-                txt = "You are attempting to label $segs_ln segments. This operation could take a very long time. Continue?"
+                txt = "You are attempting to label $segs_ln segments. This operation could take a long time. Continue?"
                 ui[:confirm](txt) do resp
-                    resp ? update_labels_img(ui) : ui["Labels"][] = false
+                    resp ? update_labels_img(session) : ui["Labels"][] = false
                     end
             else
                 update_labels_img(session)
+            end end
+
+            ui[:img_masks][:labels_mask][] = args ? 1 : 0
+
+        catch err; println(err)
+        finally ui[:go]["is-loading"][] = false
         end end
-
-        ui[:img_masks][:labels_mask][] = args ? 1 : 0
-
-        ui[:go]["is-loading"][] = false
-        end
 
     on(w, "Assign Space Types") do args
         println("Space type selected! args: $args")
