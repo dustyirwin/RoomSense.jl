@@ -1,5 +1,6 @@
 
 # terse funcs
+
 make_segs_info(segs::SegmentedImage) = "Processed $(length(segs.segment_labels)) segments."
 
 remove_segments(segs::SegmentedImage, args::Vector{Int64}) = prune_segments(segs, args, diff_fn_wrapper(segs))
@@ -8,6 +9,7 @@ make_transparent(img::Matrix, val=0.0, alpha=1.0) = [GrayA{Float16}(abs(val-e.va
 
 
 # verbose funcs
+
 function diff_fn_wrapper(segs::SegmentedImage)
     diff_fn = (rem_label, neigh_label) -> segment_pixel_count(segs, rem_label) - segment_pixel_count(segs, neigh_label) end
 
@@ -251,7 +253,7 @@ function make_img_slices(segs::SegmentedImage, img::Matrix, img_slices=Dict())
     return img_slices
     end
 
-function get_space_type(session::Dict, label::Int64, model)
+function get_space_type(session::Dict, label::Int64, model::Chain)
     s=session[:s]; i=session[:i]; ui=session[:ui]
     model |> gpu
     bs = get_segment_bounds(s[i][:segs])
@@ -305,7 +307,8 @@ const go_funcs = Dict(
         s=session[:s]; ui=session[:ui]; i=session[:i]
 
         if ui["CadetPred"][]
-            txt = "SpaceCadet will now ignore user inputs and attempt to detect space types automatically. This feature is highly experimental and under construction. Continue?"
+            txt = "SpaceCadet will now ignore user inputs and attempt to detect space types automatically.
+            This feature is still under construction and will likely produce an error. Continue?"
             ui[:confirm](txt) do resp
                 if !resp; return end
                 if !haskey(s[i], :img_slices)
